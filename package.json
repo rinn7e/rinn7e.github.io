@@ -17,23 +17,19 @@
     "generate-pwa-assets": "pwa-assets-generator"
   },
   "devDependencies": {
-    "@fontsource/chenla": "^5.2.5",
-    "@fontsource/moulpali": "^5.2.6",
-    "@tailwindcss/postcss": "^4.1.12",
+    "@fontsource/chenla": "^5.2.6",
+    "@fontsource/moulpali": "^5.2.8",
+    "@tailwindcss/postcss": "^4.3.0",
     "@vite-pwa/assets-generator": "^1.0.2",
-    "@vitejs/plugin-basic-ssl": "^2.1.0",
-    "daisyui": "^5.0.54",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "daisyui": "^5.5.23",
     "elm-debug-transformer": "^1.2.1",
-    "elm-review": "^2.12.0",
-    "elm-tooling": "^1.15.1",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.12",
-    "vite": "^6.3.5",
+    "elm-review": "^2.13.5",
+    "elm-tooling": "^1.17.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.0",
+    "vite": "^8.0.16",
     "vite-plugin-elm": "^3.0.1",
-    "vite-plugin-pwa": "^1.2.0"
-  },
-  "overrides": {
-    "cross-spawn": "7.0.6",
-    "serialize-javascript": "7.0.5"
+    "vite-plugin-pwa": "^1.3.0"
   }
 }

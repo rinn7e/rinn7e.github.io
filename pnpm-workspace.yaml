@@ -1,0 +1,9 @@
+packages:
+  - '.'
+
+overrides:
+  cross-spawn: "^7.0.6"
+
+allowBuilds:
+  esbuild: true
+  sharp: true
