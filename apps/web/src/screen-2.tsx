@@ -73,13 +73,11 @@ const linkView = ({ label, href }: { label: string; href: string }) => (
   </a>
 )
 
-// A close button of screen 2, at the top centre or the bottom
-// centre (`edge`): one at each end of the lines, so the screen is the same
-// turned round. It pops in only once the screen has settled (.pop in
+// The close button of screen 2, at the bottom centre, where the arrow of the
+// portrait was. It pops in only once the screen has settled (.pop in
 // index.css) and sits above the layout of the screen (.screen-2), which covers
 // the whole screen; while hidden it is inert.
 const closeButtonView = (
-  edge: 'top-4' | 'bottom-4',
   settled: boolean,
   onClose: () => void,
   ref?: RefObject<HTMLButtonElement | null>,
@@ -90,7 +88,7 @@ const closeButtonView = (
     aria-label='Close'
     title='Close'
     inert={!settled}
-    className={`pop corner-button fixed ${edge} left-1/2 z-10 flex -translate-x-1/2 size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${settled ? '' : 'pop-hidden'}`}
+    className={`pop corner-button fixed bottom-4 left-1/2 z-10 flex -translate-x-1/2 size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${settled ? '' : 'pop-hidden'}`}
     onClick={onClose}
   >
     <svg
@@ -140,15 +138,16 @@ const sideView = (
 // symmetric about its middle point: the name in a square in the middle, a
 // line from the top down to it with links at its foot on the right, and the
 // same turned round below, a line from it down with links at its head on
-// the left (.screen-2 in index.css). It closes only with its buttons (at the
-// top centre and the bottom centre), or Escape from the keyboard; a click
-// elsewhere does nothing. Always in the page, so its text can fade out too;
+// the left (.screen-2 in index.css). It closes only with its button (at the
+// bottom centre), or Escape from the keyboard; a click elsewhere does
+// nothing. Always in the page, so its text can fade out too;
 // while closed it is inert (no focus, no clicks). A component, not a view
 // function, for the focus and the Escape key.
 export const Screen2 = ({
   open,
   startMode,
   t,
+  overlay,
   onClose,
 }: {
   open: boolean
@@ -156,6 +155,8 @@ export const Screen2 = ({
   startMode: Screen2Mode
   // Where the switch is: 0 the portrait, 1 screen 2
   t: number
+  // Whether the buttons over the page show (Model.overlay)
+  overlay: boolean
   onClose: () => void
 }) => {
   const close = useRef<HTMLButtonElement>(null)
@@ -254,8 +255,7 @@ export const Screen2 = ({
       inert={!open}
       className={`screen-2-layer fixed inset-0 z-20 ${open ? 'screen-2-open' : ''} ${open || t > 0 ? '' : 'invisible'}`}
     >
-      {closeButtonView('top-4', settled, onClose)}
-      {closeButtonView('bottom-4', settled, onClose, close)}
+      {closeButtonView(settled && overlay, onClose, close)}
       <div className='screen-2' style={{ opacity: textAt(t) }}>
         <div className='screen-2-half'>
           <div className='screen-2-side screen-2-spacer' />

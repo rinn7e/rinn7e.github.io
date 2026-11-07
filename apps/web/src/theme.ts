@@ -3,36 +3,45 @@ import * as t from 'io-ts'
 
 import { decodeWith } from '@portfolio/codec'
 
-// Light or dark. The page starts from the visitor's last choice, else from
-// the OS setting; the choice is kept in localStorage.
-export const ThemeCodec = t.keyof({ light: null, dark: null })
+// The look of the page: light or dark
+export type Theme = 'light' | 'dark'
 
-export type Theme = t.TypeOf<typeof ThemeCodec>
+// What the visitor picked: auto (the default) follows the OS setting, light
+// and dark keep to one. The choice is kept in localStorage; a light or dark
+// kept before auto existed still reads as that choice.
+export const ThemeChoiceCodec = t.keyof({ auto: null, light: null, dark: null })
+
+export type ThemeChoice = t.TypeOf<typeof ThemeChoiceCodec>
 
 const STORAGE_KEY = 'portfolio:theme'
 
-export const otherTheme = (theme: Theme): Theme =>
-  theme === 'dark' ? 'light' : 'dark'
+// The order of the theme button: auto, light, dark, then auto again
+export const nextThemeChoice = (choice: ThemeChoice): ThemeChoice =>
+  choice === 'auto' ? 'light' : choice === 'light' ? 'dark' : 'auto'
 
-// A stored value that is missing or not a theme counts as no choice
-export const decodeTheme = (raw: unknown): Theme | null => {
-  const result = decodeWith(ThemeCodec)(raw)
-  return E.isRight(result) ? result.right : null
+// The theme a choice shows, with the OS setting `os` for auto
+export const resolveTheme = (choice: ThemeChoice, os: Theme): Theme =>
+  choice === 'auto' ? os : choice
+
+// A stored value that is missing or not a choice counts as auto
+export const decodeThemeChoice = (raw: unknown): ThemeChoice => {
+  const result = decodeWith(ThemeChoiceCodec)(raw)
+  return E.isRight(result) ? result.right : 'auto'
 }
 
-export const loadTheme = (): Theme | null => {
+export const loadThemeChoice = (): ThemeChoice => {
   try {
-    return decodeTheme(localStorage.getItem(STORAGE_KEY))
+    return decodeThemeChoice(localStorage.getItem(STORAGE_KEY))
   } catch {
-    return null
+    return 'auto'
   }
 }
 
-export const saveTheme = (theme: Theme): void => {
+export const saveThemeChoice = (choice: ThemeChoice): void => {
   try {
-    localStorage.setItem(STORAGE_KEY, theme)
+    localStorage.setItem(STORAGE_KEY, choice)
   } catch {
-    // Not kept; the theme still applies for this visit
+    // Not kept; the choice still applies for this visit
   }
 }
 
@@ -42,7 +51,9 @@ export const osTheme = (): Theme =>
     ? 'dark'
     : 'light'
 
-export const initialTheme = (): Theme => loadTheme() ?? osTheme()
+// The theme the page starts with
+export const initialTheme = (): Theme =>
+  resolveTheme(loadThemeChoice(), osTheme())
 
 // Dark mode is the .dark class on <html>: the Tailwind dark: variant and the
 // design tokens read it

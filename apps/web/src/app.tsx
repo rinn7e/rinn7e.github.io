@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { type Dispatcher } from 'tea-cup-fp'
 
 import { portraitDark, portraitLight } from './portrait/portrait'
@@ -6,12 +6,14 @@ import { PortraitArt } from './portrait/portrait-art'
 import { coverAt } from './portrait/screen-fade'
 import { useScreenTransition } from './portrait/screen-transition'
 import { Screen2, type Screen2Mode } from './screen-2'
+import { type ThemeChoice, nextThemeChoice } from './theme'
 import { type Model, type Msg } from './type'
+import { themeOf } from './update'
 
 // The home page has two screens on one field of characters. Screen 1 is the
-// portrait (PortraitArt); screen 2 shows the links (screen-2.tsx). On both,
-// mirrored at the middle of the sides: the link to the source on GitHub on
-// the left, and the light or dark switch on the right.
+// portrait (PortraitArt); screen 2 shows the links (screen-2.tsx). On both:
+// the link to the source on GitHub in the bottom left corner, and the theme
+// switch (auto, light, dark) in the bottom right corner.
 // A click on an eye, once the red eye is on, or on the arrow button at the
 // bottom centre, at once, fades the face out, leaving the field of
 // characters around it, and screen 2 in on that field. The debug controls
@@ -22,22 +24,37 @@ export interface AppProps {
   dispatch: Dispatcher<Msg>
 }
 
-const sunIconView = () => (
-  <svg
-    viewBox='0 0 24 24'
-    className='size-4 sm:size-5'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='1.75'
-    strokeLinecap='round'
-    aria-hidden='true'
-  >
-    <circle cx='12' cy='12' r='4' />
-    <path d='M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4' />
-  </svg>
-)
+// The icon of each theme choice: lucide's SunMoon, Sun and Moon
+const THEME_ICON_PATHS: Record<ThemeChoice, readonly string[]> = {
+  auto: [
+    'M12 2v2',
+    'M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715',
+    'M16 12a4 4 0 0 0-4-4',
+    'm19 5-1.256 1.256',
+    'M20 12h2',
+  ],
+  light: [
+    'M12 2v2',
+    'M12 20v2',
+    'm4.93 4.93 1.41 1.41',
+    'm17.66 17.66 1.41 1.41',
+    'M2 12h2',
+    'M20 12h2',
+    'm6.34 17.66-1.41 1.41',
+    'm19.07 4.93-1.41 1.41',
+  ],
+  dark: [
+    'M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401',
+  ],
+}
 
-const moonIconView = () => (
+const THEME_LABELS: Record<ThemeChoice, string> = {
+  auto: 'Auto theme',
+  light: 'Light theme',
+  dark: 'Dark theme',
+}
+
+const themeIconView = (choice: ThemeChoice) => (
   <svg
     viewBox='0 0 24 24'
     className='size-4 sm:size-5'
@@ -48,26 +65,32 @@ const moonIconView = () => (
     strokeLinejoin='round'
     aria-hidden='true'
   >
-    <path d='M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z' />
+    {choice === 'light' && <circle cx='12' cy='12' r='4' />}
+    {THEME_ICON_PATHS[choice].map((d) => (
+      <path key={d} d={d} />
+    ))}
   </svg>
 )
 
-// Shows what a press switches to: the moon in light mode, the sun in dark.
-// A control for visitors, so it sits at the middle of the right side, apart
-// from the debug controls in the top right corner (PortraitArt), on every
-// screen: above screen 2 too, so a press there switches the theme rather
-// than closing it.
+// Shows the theme choice in use (auto follows the OS setting); a press moves
+// to the next: auto, light, dark, then auto again. A control for visitors, so it sits in the bottom right corner, apart from
+// the debug controls in the top right corner (PortraitArt), on every screen:
+// above screen 2 too, so a press there switches the theme rather than
+// closing it. Hidden with the other buttons over the page (Model.overlay),
+// popping out (.pop in index.css); while hidden it is inert.
 const themeButtonView = (model: Model, dispatch: Dispatcher<Msg>) => {
-  const toDark = model.theme === 'light'
+  const choice = model.themeChoice
+  const next = nextThemeChoice(choice)
   return (
     <button
       type='button'
-      aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
-      title={toDark ? 'Dark mode' : 'Light mode'}
-      className='corner-button fixed top-1/2 right-4 z-30 flex -translate-y-1/2 size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
-      onClick={() => dispatch({ _tag: 'ToggleTheme' })}
+      aria-label={`${THEME_LABELS[choice]}; switch to ${THEME_LABELS[next].toLowerCase()}`}
+      title={THEME_LABELS[choice]}
+      inert={!model.overlay}
+      className={`pop corner-button fixed right-4 bottom-4 z-30 flex size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${model.overlay ? '' : 'pop-hidden'}`}
+      onClick={() => dispatch({ _tag: 'CycleTheme' })}
     >
-      {toDark ? moonIconView() : sunIconView()}
+      {themeIconView(choice)}
     </button>
   )
 }
@@ -85,16 +108,17 @@ const githubIconView = () => (
 )
 
 // The source of this website, on GitHub. A control for visitors like the
-// theme switch, so it mirrors it at the middle of the left side, on every
-// screen.
-const githubButtonView = () => (
+// theme switch, so it mirrors it in the bottom left corner, on every screen,
+// and hides with it.
+const githubButtonView = (shown: boolean) => (
   <a
     href='https://github.com/rinn7e/rinn7e.github.io'
     target='_blank'
     rel='noopener noreferrer'
     aria-label='The source of this website on GitHub'
     title='GitHub'
-    className='corner-button fixed top-1/2 left-4 z-30 flex -translate-y-1/2 size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
+    inert={!shown}
+    className={`pop corner-button fixed bottom-4 left-4 z-30 flex size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${shown ? '' : 'pop-hidden'}`}
   >
     {githubIconView()}
   </a>
@@ -108,7 +132,24 @@ export const App = ({ model, dispatch }: AppProps) => {
   // What screen 2 opens on: the principles from an eye, the links
   // from the arrow button
   const [startMode, setStartMode] = useState<Screen2Mode>('links')
-  const portrait = model.theme === 'dark' ? portraitDark : portraitLight
+  const portrait = themeOf(model) === 'dark' ? portraitDark : portraitLight
+  // Any press, a click or a tap on empty space or a button, shows the buttons
+  // over the page and restarts the time they stay; it never hides them. A
+  // capture listener on the document, as iOS Safari sends no click to a
+  // handler on <main> for a tap on plain text. Hidden buttons take no focus,
+  // so Tab shows them for the keyboard.
+  useEffect(() => {
+    const show = () => dispatch({ _tag: 'ShowOverlay' })
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') show()
+    }
+    document.addEventListener('pointerdown', show, true)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', show, true)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [dispatch])
   return (
     <main className='portrait-room flex min-h-dvh items-center justify-center px-4'>
       <PortraitArt
@@ -121,13 +162,15 @@ export const App = ({ model, dispatch }: AppProps) => {
         fade={coverAt(t)}
         redEyeStyle={model.redEyeStyle}
         onRedEyeStyle={(style) => dispatch({ _tag: 'SetRedEyeStyle', style })}
+        overlay={model.overlay}
       />
-      {githubButtonView()}
+      {githubButtonView(model.overlay)}
       {themeButtonView(model, dispatch)}
       <Screen2
         open={model.screen2}
         startMode={startMode}
         t={t}
+        overlay={model.overlay}
         onClose={() => dispatch({ _tag: 'CloseScreen2' })}
       />
     </main>

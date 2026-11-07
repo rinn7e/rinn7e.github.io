@@ -89,6 +89,7 @@ export const PortraitArt = ({
   fade,
   redEyeStyle,
   onRedEyeStyle,
+  overlay,
 }: {
   portrait: Portrait
   // Opens screen 2: on the principles from a click on an eye, once
@@ -103,6 +104,8 @@ export const PortraitArt = ({
   // The look of the red eye, and a pick from its switch
   redEyeStyle: RedEyeStyle
   onRedEyeStyle: (style: RedEyeStyle) => void
+  // Whether the buttons over the page show (Model.overlay)
+  overlay: boolean
 }) => {
   const eyeFrames = portrait.eyes[redEyeStyle]
   const lines = useMemo(() => portrait.grid.split('\n'), [portrait.grid])
@@ -491,13 +494,12 @@ export const PortraitArt = ({
           eye, which waits for the red eye. Only while the portrait fully
           shows: it goes as soon as the switch starts, and screen 2
           puts its close button here instead. */}
-      {screen2ButtonView('top', !hold, () => onOpen('links'))}
-      {screen2ButtonView('bottom', !hold, () => onOpen('links'))}
+      {screen2ButtonView(!hold && overlay, () => onOpen('links'))}
       {/* Debug controls, in the dev build only: production leaves them out.
           On a wide screen they sit in the top right corner; on a narrow one
           they fold behind a gear there, which opens them in a panel below
-          it, so they never reach the arrow button at the top centre. Like the arrow button, they belong to the
-          portrait: they fade out as the switch to screen 2 starts
+          it, so they never crowd the screen. Like the arrow button, they
+          belong to the portrait: they fade out as the switch to screen 2 starts
           and back in once the portrait fully shows again (a plain fade,
           .fade in index.css). */}
       {import.meta.env.DEV && (
@@ -777,28 +779,21 @@ const redEyeStyleView = (
 )
 
 // Opens screen 2 at once, without waiting for the red eye as a
-// click on an eye does: an arrow, pointing up at the bottom centre and
-// down at the top centre (the same arrow turned round), both toward the
-// face, so the portrait is the same turned round, like screen
-// 2 with its two close buttons. Always in the page, so it can pop in
-// and out (.pop in index.css); while hidden it is inert (no focus, no
-// clicks).
-const screen2ButtonView = (
-  edge: 'top' | 'bottom',
-  shown: boolean,
-  onOpen: () => void,
-) => (
+// click on an eye does: an arrow at the bottom centre, pointing up toward
+// the face. Always in the page, so it can pop in and out (.pop in
+// index.css); while hidden it is inert (no focus, no clicks).
+const screen2ButtonView = (shown: boolean, onOpen: () => void) => (
   <button
     type='button'
     aria-label='About me'
     title='About me'
     inert={!shown}
-    className={`${CORNER_BUTTON} pop fixed ${edge === 'top' ? 'top-4' : 'bottom-4'} left-1/2 z-10 -translate-x-1/2 ${shown ? '' : 'pop-hidden'}`}
+    className={`${CORNER_BUTTON} pop fixed bottom-4 left-1/2 z-10 -translate-x-1/2 ${shown ? '' : 'pop-hidden'}`}
     onClick={onOpen}
   >
     <svg
       viewBox='0 0 24 24'
-      className={`size-4 sm:size-5 ${edge === 'top' ? 'rotate-180' : ''}`}
+      className='size-4 sm:size-5'
       fill='none'
       stroke='currentColor'
       strokeWidth='1.75'

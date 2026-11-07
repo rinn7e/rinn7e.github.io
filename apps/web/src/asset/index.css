@@ -168,7 +168,7 @@ body {
   opacity: 1;
 }
 
-/* A button of a screen (the arrows on the portrait, the close buttons of the
+/* A button of a screen (the arrow on the portrait, the close button of
  * screen 2) popping in when its screen has fully arrived and out when
  * it starts to leave: it grows from small with a little spring and fades
  * in, and shrinks and fades out faster. Only its scale and opacity change,
@@ -255,13 +255,13 @@ body {
   user-select: none;
   /* A half never shrinks below its text (.screen-2-half), so on a screen
    * too short for the principles the screen scrolls, rather than the text
-   * running under the close buttons */
+   * running under the close button */
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
 /* On a short screen, closer together; on a short phone screen, closer
- * still, just clear of the close buttons */
+ * still, just clear of the close button */
 @media (max-height: 64rem) {
   .screen-2 {
     gap: 1.5rem;

@@ -1,37 +1,49 @@
 import { describe, expect, it } from 'vitest'
 
-import { decodeTheme, otherTheme } from '../src/theme'
+import { decodeThemeChoice, nextThemeChoice, resolveTheme } from '../src/theme'
 import { type Model } from '../src/type'
-import { handleToggleTheme, init } from '../src/update'
+import {
+  handleCycleTheme,
+  handleOsThemeChanged,
+  init,
+  themeOf,
+} from '../src/update'
 
 const [model] = init()
-const light: Model = { ...model, theme: 'light' }
 
 describe('theme', () => {
-  it('toggles between light and dark', () => {
-    const dark = handleToggleTheme(light)
-    expect(dark.theme).toBe('dark')
-    expect(handleToggleTheme(dark).theme).toBe('light')
+  it('starts on auto, following the OS (light in Node)', () => {
+    // The tests run in Node: no localStorage and no matchMedia
+    expect(model.themeChoice).toBe('auto')
+    expect(themeOf(model)).toBe('light')
+  })
+
+  it('cycles auto, light, dark, then auto again', () => {
+    const light = handleCycleTheme(model)
+    expect(light.themeChoice).toBe('light')
+    const dark = handleCycleTheme(light)
+    expect(dark.themeChoice).toBe('dark')
+    expect(handleCycleTheme(dark).themeChoice).toBe('auto')
+    expect(nextThemeChoice('dark')).toBe('auto')
+  })
+
+  it('follows the OS only on auto', () => {
+    const auto: Model = handleOsThemeChanged(model, 'dark')
+    expect(themeOf(auto)).toBe('dark')
+    const light: Model = { ...auto, themeChoice: 'light' }
+    expect(themeOf(light)).toBe('light')
+    expect(resolveTheme('dark', 'light')).toBe('dark')
   })
 
   it('keeps the rest of the model', () => {
-    expect(handleToggleTheme(light).screen2).toBe(light.screen2)
+    expect(handleCycleTheme(model).screen2).toBe(model.screen2)
   })
 
-  it('flips with otherTheme', () => {
-    expect(otherTheme('light')).toBe('dark')
-    expect(otherTheme('dark')).toBe('light')
-  })
-
-  it('reads a stored choice, and treats anything else as no choice', () => {
-    expect(decodeTheme('dark')).toBe('dark')
-    expect(decodeTheme('light')).toBe('light')
-    expect(decodeTheme('blue')).toBeNull()
-    expect(decodeTheme(null)).toBeNull()
-  })
-
-  it('starts light when there is no stored choice and no OS setting', () => {
-    // The tests run in Node: no localStorage and no matchMedia
-    expect(model.theme).toBe('light')
+  it('reads a stored choice, and treats anything else as auto', () => {
+    expect(decodeThemeChoice('dark')).toBe('dark')
+    expect(decodeThemeChoice('light')).toBe('light')
+    expect(decodeThemeChoice('auto')).toBe('auto')
+    expect(decodeThemeChoice('blue')).toBe('auto')
+    expect(decodeThemeChoice(null)).toBe('auto')
   })
 })
