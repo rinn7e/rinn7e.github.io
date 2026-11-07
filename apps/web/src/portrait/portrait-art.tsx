@@ -641,7 +641,7 @@ const animatedBand = (
       }
 
 const CORNER_CONTROL =
-  'corner-button flex h-11 items-center rounded-full border border-line text-ink-muted'
+  'corner-button flex h-9 sm:h-11 items-center rounded-full border border-line text-ink-muted'
 
 // The frame rate of the animation
 const fpsSliderView = (fps: number, setFps: (fps: number) => void) => (
@@ -660,7 +660,7 @@ const fpsSliderView = (fps: number, setFps: (fps: number) => void) => (
   </label>
 )
 
-const CORNER_BUTTON = `${CORNER_CONTROL} size-11 cursor-pointer justify-center transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link`
+const CORNER_BUTTON = `${CORNER_CONTROL} size-9 sm:size-11 cursor-pointer justify-center transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link`
 
 // Freezes the animation where it is (even mid-blink), and plays it on from
 // there. Shows what a press does: pause while playing, play while paused.
@@ -675,7 +675,7 @@ const pauseButtonView = (paused: boolean, onToggle: () => void) => (
   >
     <svg
       viewBox='0 0 24 24'
-      className='size-5'
+      className='size-4 sm:size-5'
       fill='none'
       stroke='currentColor'
       strokeWidth='1.75'
@@ -699,7 +699,7 @@ const blinkButtonView = (onBlink: () => void) => (
   >
     <svg
       viewBox='0 0 24 24'
-      className='size-5'
+      className='size-4 sm:size-5'
       fill='none'
       stroke='currentColor'
       strokeWidth='1.75'
@@ -733,7 +733,7 @@ const redEyeButtonView = (
     <svg
       ref={icon}
       viewBox='0 0 24 24'
-      className='size-5'
+      className='size-4 sm:size-5'
       fill='none'
       stroke='currentColor'
       strokeWidth='1.75'
@@ -767,7 +767,7 @@ const redEyeStyleView = (
         aria-label={`Red eye style ${i + 1}`}
         aria-pressed={s === style}
         title={`Red eye style ${i + 1}`}
-        className={`flex size-8 cursor-pointer items-center justify-center rounded-full tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${s === style ? 'red-eye-style-on' : 'hover:text-ink'}`}
+        className={`flex size-7 sm:size-8 cursor-pointer items-center justify-center rounded-full tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${s === style ? 'red-eye-style-on' : 'hover:text-ink'}`}
         onClick={() => onPick(s)}
       >
         {i + 1}
@@ -798,7 +798,7 @@ const screen2ButtonView = (
   >
     <svg
       viewBox='0 0 24 24'
-      className={`size-5 ${edge === 'top' ? 'rotate-180' : ''}`}
+      className={`size-4 sm:size-5 ${edge === 'top' ? 'rotate-180' : ''}`}
       fill='none'
       stroke='currentColor'
       strokeWidth='1.75'
@@ -825,7 +825,7 @@ const gearButtonView = (open: boolean, onToggle: () => void) => (
   >
     <svg
       viewBox='0 0 24 24'
-      className='size-5'
+      className='size-4 sm:size-5'
       fill='none'
       stroke='currentColor'
       strokeWidth='1.75'

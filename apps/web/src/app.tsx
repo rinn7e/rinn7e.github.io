@@ -25,7 +25,7 @@ export interface AppProps {
 const sunIconView = () => (
   <svg
     viewBox='0 0 24 24'
-    className='size-5'
+    className='size-4 sm:size-5'
     fill='none'
     stroke='currentColor'
     strokeWidth='1.75'
@@ -40,7 +40,7 @@ const sunIconView = () => (
 const moonIconView = () => (
   <svg
     viewBox='0 0 24 24'
-    className='size-5'
+    className='size-4 sm:size-5'
     fill='none'
     stroke='currentColor'
     strokeWidth='1.75'
@@ -64,7 +64,7 @@ const themeButtonView = (model: Model, dispatch: Dispatcher<Msg>) => {
       type='button'
       aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
       title={toDark ? 'Dark mode' : 'Light mode'}
-      className='corner-button fixed right-4 bottom-4 z-30 flex size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
+      className='corner-button fixed right-4 bottom-4 z-30 flex size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
       onClick={() => dispatch({ _tag: 'ToggleTheme' })}
     >
       {toDark ? moonIconView() : sunIconView()}
@@ -76,7 +76,7 @@ const themeButtonView = (model: Model, dispatch: Dispatcher<Msg>) => {
 const githubIconView = () => (
   <svg
     viewBox='0 0 24 24'
-    className='size-5'
+    className='size-4 sm:size-5'
     fill='currentColor'
     aria-hidden='true'
   >
@@ -93,7 +93,7 @@ const githubButtonView = () => (
     rel='noopener noreferrer'
     aria-label='The source of this website on GitHub'
     title='GitHub'
-    className='corner-button fixed bottom-4 left-4 z-30 flex size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
+    className='corner-button fixed bottom-4 left-4 z-30 flex size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
   >
     {githubIconView()}
   </a>

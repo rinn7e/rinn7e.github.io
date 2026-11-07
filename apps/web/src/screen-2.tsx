@@ -90,12 +90,12 @@ const closeButtonView = (
     aria-label='Close'
     title='Close'
     inert={!settled}
-    className={`pop corner-button fixed ${edge} left-1/2 z-10 flex -translate-x-1/2 size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${settled ? '' : 'pop-hidden'}`}
+    className={`pop corner-button fixed ${edge} left-1/2 z-10 flex -translate-x-1/2 size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${settled ? '' : 'pop-hidden'}`}
     onClick={onClose}
   >
     <svg
       viewBox='0 0 24 24'
-      className='size-5'
+      className='size-4 sm:size-5'
       fill='none'
       stroke='currentColor'
       strokeWidth='1.75'

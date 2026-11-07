@@ -272,7 +272,7 @@ body {
 @media (max-width: 40rem) and (max-height: 64rem) {
   .screen-2 {
     gap: 1rem;
-    padding-block: 4.25rem;
+    padding-block: 3.75rem;
   }
 }
 
@@ -458,7 +458,7 @@ body {
  * (about 185px a side), so the square takes all the height left over */
 @media (max-width: 40rem) and (max-height: 64rem) {
   .screen-2-name {
-    width: min(80vw, max(7rem, 100dvh - 34rem));
+    width: min(80vw, max(7rem, 100dvh - 33rem));
   }
 }
 
