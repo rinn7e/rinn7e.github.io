@@ -15,6 +15,22 @@ export const startDebugOverlay = (): void => {
     'white-space:pre-wrap;pointer-events:none;border-radius:6px'
   document.body.appendChild(box)
 
+  // Flags that turn parts off, to find what costs the most: ?debug&nofield
+  // hides the field of characters, &noclip draws the portrait in plain grey
+  // instead of the photo through the characters
+  const flags = new URLSearchParams(location.search)
+  const off: string[] = []
+  if (flags.has('nofield')) off.push('.backdrop { display: none !important; }')
+  if (flags.has('noclip'))
+    off.push(
+      '.portrait-part, .iris-glow { background: none !important; color: #888 !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; }',
+    )
+  if (off.length > 0) {
+    const style = document.createElement('style')
+    style.textContent = off.join('\n')
+    document.head.appendChild(style)
+  }
+
   const start = performance.now()
   const now = () => Math.round(performance.now() - start)
   const events: string[] = []
@@ -64,6 +80,7 @@ export const startDebugOverlay = (): void => {
   setInterval(() => {
     const t = performance.now()
     const gap = t - lastTick - 100
+    if (gap > 150) log(`STALL ${Math.round(gap)}ms`)
     if (gap > worstGap) {
       worstGap = gap
       worstAt = now()
