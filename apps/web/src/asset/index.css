@@ -12,9 +12,12 @@ body {
 }
 
 /* No zoom on a double tap, so quick taps on a phone (the buttons, the name,
- * an empty spot) never zoom the page; pinching to zoom still works */
+ * an empty spot) never zoom the page; pinching to zoom still works. The page
+ * never scrolls either: everything fits the screen, and what moves past its
+ * edges (the turning square) is cut there. */
 html {
   touch-action: manipulation;
+  overflow: hidden;
 }
 
 /* Behind the portrait: plain white, or in dark mode a dark room with a warm
@@ -259,11 +262,10 @@ html {
   /* Quick clicks on the close button (a double click selects the text
    * nearest) leave the name and the links alone */
   user-select: none;
-  /* A half never shrinks below its text (.screen-2-half), so on a screen
-   * too short for the principles the screen scrolls, rather than the text
-   * running under the close button */
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  /* Nothing scrolls: the square turning at a switch of mode pokes past the
+   * sides of a phone, and a scrollable screen would grow a scrollbar for
+   * it. The sizes below keep the text within the screen instead. */
+  overflow: hidden;
 }
 
 /* On a short screen, closer together; on a short phone screen, closer

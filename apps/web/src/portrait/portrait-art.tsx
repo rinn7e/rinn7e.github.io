@@ -245,6 +245,9 @@ export const PortraitArt = ({
     onOpenNow.current = onOpen
   })
   const clickEye = useCallback(() => {
+    // Not while screen 2 is open or the screens switch: a tap falling
+    // through to an eye as screen 2 closes would open it again afterwards
+    if (holdNow.current) return
     const open = () => onOpenNow.current('principles')
     if (phase.current === 'on' || pausedNow.current) return open()
     if (!onDemand.current && !demandQueued.current) {
@@ -254,9 +257,11 @@ export const PortraitArt = ({
     clickWaiting.current = open
   }, [startDemand])
 
-  // Screen 2 closed: a red eye the mouse turned on goes off now,
-  // if the mouse is no longer over an eye
+  // Screen 2 opening: a click waiting for the red eye is done with. Screen 2
+  // closed: a red eye the mouse turned on goes off now, if the mouse is no
+  // longer over an eye
   useEffect(() => {
+    if (hold) clickWaiting.current = null
     if (hold || !hoverStarted.current || hovering.current !== null) return
     hoverStarted.current = false
     stopDemand()
