@@ -11,6 +11,12 @@ body {
   font-family: var(--font-sans);
 }
 
+/* No zoom on a double tap, so quick taps on a phone (the buttons, the name,
+ * an empty spot) never zoom the page; pinching to zoom still works */
+html {
+  touch-action: manipulation;
+}
+
 /* Behind the portrait: plain white, or in dark mode a dark room with a warm
  * light falling on the face. The room above and below the face grows with
  * the screen height, so the face never fills the whole screen. */
