@@ -3,12 +3,11 @@ import { type Dispatcher } from 'tea-cup-fp'
 
 import { portraitDark, portraitLight } from './portrait/portrait'
 import { PortraitArt } from './portrait/portrait-art'
-import { coverAt } from './portrait/screen-fade'
-import { useScreenTransition } from './portrait/screen-transition'
+import { prefersReducedMotion } from './portrait/screen-fade'
 import { Screen2, type Screen2Mode } from './screen-2'
 import { type ThemeChoice, nextThemeChoice } from './theme'
 import { type Model, type Msg } from './type'
-import { themeOf } from './update'
+import { screen2Open, themeOf } from './update'
 
 // The home page has two screens on one field of characters. Screen 1 is the
 // portrait (PortraitArt); screen 2 shows the links (screen-2.tsx). On both:
@@ -128,16 +127,18 @@ const githubButtonView = (shown: boolean) => (
 // it (see .portrait in index.css). The other photo is loaded up front in
 // root.tsx, so switching is instant.
 export const App = ({ model, dispatch }: AppProps) => {
-  const { t } = useScreenTransition(model.screen2)
+  // Where the switch is: the motion is CSS transitions, and each end comes
+  // back as a message with the number of its switch (as in tea-cup-drawer)
+  const phase = model.screen._tag
+  const open = screen2Open(model.screen)
+  const direction = open ? 'opening' : 'closing'
+  const still = prefersReducedMotion()
+  const switchEnded = () =>
+    dispatch({ _tag: 'SwitchEnded', seq: model.screenSeq })
   // What screen 2 opens on: the principles from an eye, the links
   // from the arrow button
   const [startMode, setStartMode] = useState<Screen2Mode>('links')
   const portrait = themeOf(model) === 'dark' ? portraitDark : portraitLight
-  // The switch has reached its screen: opening or closing may start again
-  const settled = t === (model.screen2 ? 1 : 0)
-  useEffect(() => {
-    if (model.switching && settled) dispatch({ _tag: 'SwitchSettled' })
-  }, [model.switching, settled, dispatch])
   // Any press, a click or a tap on empty space or a button, shows the buttons
   // over the page and restarts the time they stay; it never hides them. Only
   // the name on screen 2, which switches its mode, leaves them as they are.
@@ -192,8 +193,14 @@ export const App = ({ model, dispatch }: AppProps) => {
           setStartMode(mode)
           dispatch({ _tag: 'OpenScreen2' })
         }}
-        hold={model.screen2 || t > 0}
-        fade={coverAt(t)}
+        hold={phase !== 'Screen1'}
+        faceOut={open}
+        direction={direction}
+        still={still}
+        // The face comes back last when closing
+        onFaceFadeEnd={() => {
+          if (phase === 'Closing') switchEnded()
+        }}
         redEyeStyle={model.redEyeStyle}
         onRedEyeStyle={(style) => dispatch({ _tag: 'SetRedEyeStyle', style })}
         overlay={model.overlay}
@@ -201,11 +208,15 @@ export const App = ({ model, dispatch }: AppProps) => {
       {githubButtonView(model.overlay)}
       {themeButtonView(model, dispatch)}
       <Screen2
-        open={model.screen2}
+        phase={phase}
         startMode={startMode}
-        t={t}
+        still={still}
         overlay={model.overlay}
         onClose={() => dispatch({ _tag: 'CloseScreen2' })}
+        // Screen 2 finishes coming in last when opening
+        onFadeEnd={() => {
+          if (phase === 'Opening') switchEnded()
+        }}
       />
     </main>
   )

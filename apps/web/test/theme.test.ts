@@ -36,7 +36,7 @@ describe('theme', () => {
   })
 
   it('keeps the rest of the model', () => {
-    expect(handleCycleTheme(model).screen2).toBe(model.screen2)
+    expect(handleCycleTheme(model).screen).toBe(model.screen)
   })
 
   it('reads a stored choice, and treats anything else as auto', () => {

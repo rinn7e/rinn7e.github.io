@@ -1,4 +1,10 @@
-import { type RefObject, useLayoutEffect, useMemo, useState } from 'react'
+import {
+  type CSSProperties,
+  type RefObject,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import { backdropGrid, faceSpans } from './backdrop'
 import { gridRowsView } from './grid-rows'
@@ -36,13 +42,13 @@ interface Layout {
 
 export const BackdropLayer = ({
   portrait,
-  fill = 0,
+  gapStyle,
 }: {
   portrait: RefObject<HTMLElement | null>
-  // How far the field has filled the gap over the face (0 to 1): as the
-  // face fades out for screen 2, the field fades in where it was,
-  // so screen 2 shares the same field
-  fill?: number
+  // The field over the face: as the face fades out for screen 2, it fades
+  // in where the face was, so screen 2 shares the same field (its opacity
+  // and transition, from portrait-art.tsx)
+  gapStyle: CSSProperties
 }) => {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [probe, setProbe] = useState<HTMLPreElement | null>(null)
@@ -131,12 +137,7 @@ export const BackdropLayer = ({
       <pre
         className='backdrop'
         aria-hidden='true'
-        style={{
-          ...place,
-          opacity: fill,
-          visibility: fill > 0 ? 'visible' : 'hidden',
-          willChange: 'opacity',
-        }}
+        style={{ ...place, ...gapStyle, willChange: 'opacity' }}
       >
         {gap}
       </pre>

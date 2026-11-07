@@ -6,7 +6,8 @@ import {
   useState,
 } from 'react'
 
-import { SCREEN_2_GROW, lineAt, textAt } from './portrait/screen-fade'
+import { SCREEN_2_GROW, fadeTransition } from './portrait/screen-fade'
+import { type ScreenState } from './type'
 
 // The links elsewhere: above the name, and below it
 const UP_LINKS = [
@@ -133,8 +134,8 @@ const sideView = (
   )
 
 // Screen 2: the face fades out, leaving the field of characters
-// around it, then screen 2 fades in on that field, at `t` of the
-// switch (portrait/screen-fade.ts). Its layout is the one of rinn7e.com,
+// around it, then screen 2 fades in on that field, with CSS transitions
+// timed in portrait/screen-fade.ts. Its layout is the one of rinn7e.com,
 // symmetric about its middle point: the name in a square in the middle, a
 // line from the top down to it with links at its foot on the right, and the
 // same turned round below, a line from it down with links at its head on
@@ -144,21 +145,28 @@ const sideView = (
 // while closed it is inert (no focus, no clicks). A component, not a view
 // function, for the focus and the Escape key.
 export const Screen2 = ({
-  open,
+  phase,
   startMode,
-  t,
+  still,
   overlay,
   onClose,
+  onFadeEnd,
 }: {
-  open: boolean
+  // Where the switch is (Model.screen); it fades with CSS transitions
+  // (portrait/screen-fade.ts), or jumps when `still`
+  phase: ScreenState['_tag']
   // What it opens on: the links, or the principles
   startMode: Screen2Mode
-  // Where the switch is: 0 the portrait, 1 screen 2
-  t: number
+  still: boolean
   // Whether the buttons over the page show (Model.overlay)
   overlay: boolean
   onClose: () => void
+  // Its fade has finished (the end of an opening switch)
+  onFadeEnd: () => void
 }) => {
+  // Open while it shows or is on its way; settled once it has fully come in
+  const open = phase === 'Opening' || phase === 'Screen2'
+  const direction = open ? 'opening' : 'closing'
   const close = useRef<HTMLButtonElement>(null)
   // The latest onClose, so a new function on every render does not move the
   // focus again
@@ -171,7 +179,7 @@ export const Screen2 = ({
   // and pops out as soon as it starts to close, like the button of the
   // portrait (.pop in index.css); while hidden it is inert. It sits above
   // the layout of the screen (.screen-2), which covers the whole screen
-  const settled = open && t >= 1
+  const settled = phase === 'Screen2'
 
   // Links or principles: it opens on `startMode`, and the name switches
   // between them. Set while rendering when it opens, as React allows for
@@ -211,10 +219,15 @@ export const Screen2 = ({
 
   // The name and the links grow a little to their size as they come in;
   // the lines do not, so they stay put and only draw themselves
-  const moving = t > 0 && t < 1
+  const moving = phase === 'Opening' || phase === 'Closing'
   const grow = {
-    scale: 1 - SCREEN_2_GROW * (1 - textAt(t)),
+    scale: open ? 1 : 1 - SCREEN_2_GROW,
+    ...fadeTransition('screen', direction, 'scale', still),
     willChange: moving ? 'scale' : undefined,
+  }
+  const line = {
+    scale: `1 ${open ? 1 : 0}`,
+    ...fadeTransition('lines', direction, 'scale', still),
   }
 
   // Open: Escape closes it; once settled, focus moves to its close button,
@@ -253,16 +266,23 @@ export const Screen2 = ({
       aria-modal='true'
       aria-labelledby='screen-2-title'
       inert={!open}
-      className={`screen-2-layer fixed inset-0 z-20 ${open ? 'screen-2-open' : ''} ${open || t > 0 ? '' : 'invisible'}`}
+      className={`screen-2-layer fixed inset-0 z-20 ${open ? 'screen-2-open' : ''} ${phase === 'Screen1' ? 'invisible' : ''}`}
     >
       {closeButtonView(settled && overlay, onClose, close)}
-      <div className='screen-2' style={{ opacity: textAt(t) }}>
+      <div
+        className='screen-2'
+        style={{
+          opacity: open ? 1 : 0,
+          ...fadeTransition('screen', direction, 'opacity', still),
+        }}
+        onTransitionEnd={(e) => {
+          if (e.target === e.currentTarget && e.propertyName === 'opacity')
+            onFadeEnd()
+        }}
+      >
         <div className='screen-2-half'>
           <div className='screen-2-side screen-2-spacer' />
-          <div
-            className='screen-2-line screen-2-line-top'
-            style={{ scale: `1 ${lineAt(t)}` }}
-          />
+          <div className='screen-2-line screen-2-line-top' style={line} />
           <div className='screen-2-side screen-2-links-up' style={grow}>
             <div className={swap}>
               {sideView(mode, UP_LINKS, UP_PRINCIPLES, 'Elsewhere')}
@@ -313,10 +333,7 @@ export const Screen2 = ({
             </div>
             {sizerView(upLines)}
           </div>
-          <div
-            className='screen-2-line screen-2-line-bottom'
-            style={{ scale: `1 ${lineAt(t)}` }}
-          />
+          <div className='screen-2-line screen-2-line-bottom' style={line} />
           <div className='screen-2-side screen-2-spacer' />
         </div>
       </div>

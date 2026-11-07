@@ -28,7 +28,12 @@ import { BandMemo, type BandProps } from './band'
 import { IRISES, OPENINGS, PHOTO_HEIGHT, PHOTO_WIDTH } from './eye-geometry'
 import { gridRowsView } from './grid-rows'
 import { type Frames, PORTRAIT_ROWS, type Portrait } from './portrait'
-import { FACE_SHRINK } from './screen-fade'
+import {
+  type Direction,
+  FACE_SHRINK,
+  fadeLayerStyle,
+  fadeTransition,
+} from './screen-fade'
 
 // The portrait with its subtle life: it breathes, its hair moves in the wind,
 // it blinks now and then, and now and then its eyes turn into a spinning
@@ -86,7 +91,10 @@ export const PortraitArt = ({
   portrait,
   onOpen,
   hold,
-  fade,
+  faceOut,
+  direction,
+  still,
+  onFaceFadeEnd,
   redEyeStyle,
   onRedEyeStyle,
   overlay,
@@ -98,9 +106,14 @@ export const PortraitArt = ({
   // While screen 2 is open (or opening or closing): the red eye
   // stays on, even when the mouse is no longer over an eye
   hold: boolean
-  // How far the face has faded out for screen 2 (0 to 1); the field
-  // around it fills its place
-  fade: number
+  // Whether the face is out for screen 2 (or on its way), the field
+  // around it filling its place; it fades with the switch going this
+  // `direction` (portrait/screen-fade.ts), or jumps when `still`
+  faceOut: boolean
+  direction: Direction
+  still: boolean
+  // The fade of the face has finished (the end of a closing switch)
+  onFaceFadeEnd: () => void
   // The look of the red eye, and a pick from its switch
   redEyeStyle: RedEyeStyle
   onRedEyeStyle: (style: RedEyeStyle) => void
@@ -448,18 +461,27 @@ export const PortraitArt = ({
 
   return (
     <>
-      <BackdropLayer portrait={art} fill={fade} />
+      <BackdropLayer
+        portrait={art}
+        gapStyle={fadeLayerStyle(faceOut, 'face', direction, still)}
+      />
       <pre
         ref={art}
         role='img'
         aria-label='ASCII portrait of Moremi Vannak'
         className='portrait'
         // Its own layer all the time: made at the start of each switch, the
-        // layer of the whole text would be drawn again every time
+        // layer of the whole text would be drawn again every time. The fade
+        // is a CSS transition, run by the browser (portrait/screen-fade.ts).
         style={{
-          opacity: 1 - fade,
-          scale: 1 - FACE_SHRINK * fade,
+          opacity: faceOut ? 0 : 1,
+          scale: faceOut ? 1 - FACE_SHRINK : 1,
+          ...fadeTransition('face', direction, 'opacity, scale', still),
           willChange: 'opacity, scale',
+        }}
+        onTransitionEnd={(e) => {
+          if (e.target === e.currentTarget && e.propertyName === 'opacity')
+            onFaceFadeEnd()
         }}
       >
         {bands.map(({ from, ...band }) => (

@@ -6,25 +6,37 @@ import {
   handleScreen2,
   handleSetRedEyeStyle,
   handleShowOverlay,
-  handleSwitchSettled,
+  handleSwitchEnded,
   init,
 } from '../src/update'
 
 const [model] = init()
 
 describe('screen 2', () => {
-  it('starts closed, opens and closes once each switch has settled', () => {
-    expect(model.screen2).toBe(false)
-    const opened = handleSwitchSettled(handleScreen2(model, true))
-    expect(opened.screen2).toBe(true)
-    expect(handleScreen2(opened, false).screen2).toBe(false)
+  it('starts on the portrait, opens and closes once each switch has ended', () => {
+    expect(model.screen._tag).toBe('Screen1')
+    const opening = handleScreen2(model, true)
+    expect(opening.screen._tag).toBe('Opening')
+    const opened = handleSwitchEnded(opening, opening.screenSeq)
+    expect(opened.screen._tag).toBe('Screen2')
+    const closing = handleScreen2(opened, false)
+    expect(closing.screen._tag).toBe('Closing')
+    expect(handleSwitchEnded(closing, closing.screenSeq).screen._tag).toBe(
+      'Screen1',
+    )
   })
 
   it('ignores open and close while a switch is still running', () => {
     const opening = handleScreen2(model, true)
-    expect(opening.switching).toBe(true)
     expect(handleScreen2(opening, false)).toBe(opening)
     expect(handleScreen2(opening, true)).toBe(opening)
+  })
+
+  it('ignores the end of an older switch, and a second end', () => {
+    const opening = handleScreen2(model, true)
+    expect(handleSwitchEnded(opening, model.screenSeq)).toBe(opening)
+    const opened = handleSwitchEnded(opening, opening.screenSeq)
+    expect(handleSwitchEnded(opened, opening.screenSeq)).toBe(opened)
   })
 })
 

@@ -34,6 +34,8 @@ The one exception is the breathing: it moves the whole portrait up and down by 2
 
 The controls around the art (the buttons in the corner) are not part of the drawing. They animate smoothly at the screen rate with `requestAnimationFrame`, changing only a `transform` on an element with its own layer (`will-change: transform`), so a frame paints nothing; no CSS keyframe animations. A control that appears or goes once (the arrow and close buttons popping in and out) may use a CSS transition of its `scale` and `opacity` only, which the browser runs without painting (or `rotate`, as the square behind the name on screen 2 turns at each switch). A small outline drawn on hover (the name on screen 2) may transition the `stroke-dashoffset` of its SVG: it repaints only that small square, and only while it draws. The frame rate slider and the pause button do not apply to them.
 
+The switch between the screens works the same way, as in tea-cup-drawer: the model holds only its phase (`ScreenState`: `Screen1`, `Opening`, `Screen2`, `Closing`) and a switch number, and each part of the switch (the face, screen 2, its lines) is a CSS transition of `opacity` and `scale` with the timing from `apps/web/src/portrait/screen-fade.ts`. The browser runs them on its own, so a busy page cannot stop them halfway. The switch settles on the `transitionend` of its last part, or on a timeout command if that event never comes, and both messages carry the switch number, so the end of an older switch is ignored. Never drive it from script frame by frame: Safari on a phone can hold back animation frames while taps come in.
+
 ## Data
 
 - Anything read from outside the code (storage, the network) is decoded with an `io-ts` codec; invalid data is treated as missing instead of crashing.
