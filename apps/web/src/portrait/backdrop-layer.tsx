@@ -86,12 +86,9 @@ const drawGrid = (
 
 export const BackdropLayer = ({
   portrait,
-  colorKey,
   gapStyle,
 }: {
   portrait: RefObject<HTMLElement | null>
-  // Changes with the theme, so the field is drawn again in its colour
-  colorKey: string
   // The field over the face: as the face fades out for screen 2, it fades
   // in where the face was, so screen 2 shares the same field (its opacity
   // and transition, from portrait-art.tsx)
@@ -102,6 +99,18 @@ export const BackdropLayer = ({
   const probe = useRef<HTMLPreElement>(null)
   const field = useRef<HTMLCanvasElement>(null)
   const gap = useRef<HTMLCanvasElement>(null)
+  // Counts the switches of theme: the field is drawn again in the colour of
+  // the new one once the class of <html> has changed (the colour comes from
+  // index.css, and the class is set after the render that changes the theme)
+  const [themeTick, setThemeTick] = useState(0)
+  useEffect(() => {
+    const observer = new MutationObserver(() => setThemeTick((n) => n + 1))
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+    return () => observer.disconnect()
+  }, [])
 
   useLayoutEffect(() => {
     const el = probe.current
@@ -182,7 +191,7 @@ export const BackdropLayer = ({
       layout,
       backdropGrid(cols, rows, (x, y) => !hole(x, y)).split('\n'),
     )
-  }, [layout, colorKey])
+  }, [layout, themeTick])
 
   const place = { left: layout?.left ?? 0, top: layout?.top ?? 0 }
   return (

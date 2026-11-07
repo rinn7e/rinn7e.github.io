@@ -463,7 +463,6 @@ export const PortraitArt = ({
     <>
       <BackdropLayer
         portrait={art}
-        colorKey={portrait.photo}
         gapStyle={fadeLayerStyle(faceOut, 'face', direction, still)}
       />
       <pre
