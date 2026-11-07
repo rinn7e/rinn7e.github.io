@@ -1,0 +1,8 @@
+<!-- The final icon: concept a, white R7 on the black name square of screen 2 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#0b0908"/>
+  <g transform="translate(8.02 97.06) scale(0.09058 -0.09058)" fill="#ffffff">
+    <path d="M66 0V730H300Q378 730 435.0 703.0Q492 676 523.5 626.0Q555 576 555 508Q555 437 520.5 381.0Q486 325 427 300L565 0H402L284 276H214V0ZM214 406H300Q350 406 377.5 431.0Q405 456 405 501Q405 548 377.5 574.0Q350 600 300 600H214Z"/>
+    <path transform="translate(600 0)" d="M136 0 408 600H207V480H57V730H570V601L300 0Z"/>
+  </g>
+</svg>
