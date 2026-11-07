@@ -52,6 +52,11 @@ export const startDebugOverlay = (): void => {
     true,
   )
   document.addEventListener(
+    'pointerup',
+    (e) => log(`up ${describe(e.target)}`),
+    true,
+  )
+  document.addEventListener(
     'click',
     (e) =>
       log(
@@ -114,6 +119,72 @@ export const startDebugOverlay = (): void => {
       ? Number(getComputedStyle(face).opacity).toFixed(2)
       : '?'
     return `screen 2 ${open}/${shown}  face ${faceOpacity}  X ${pressable('Close')}  arrow ${pressable('About me')}`
+  }
+
+  // &auto=theme clicks the theme button every 3s, &auto=tap presses empty
+  // space: the same action again and again with no finger, and the time to
+  // the second frame after it (what the page took to answer it)
+  const auto = flags.get('auto')
+  // &auto=switch presses the arrow, then the close button, again and again,
+  // and logs how long each switch took from the press until its button for
+  // the way back can be pressed (a switch is 520ms of animation)
+  if (auto === 'switch') {
+    const pressable = (title: string) => {
+      const b = document.querySelector<HTMLElement>(`button[title="${title}"]`)
+      return b !== null && !b.inert ? b : null
+    }
+    let pressedAt = 0
+    let waitingFor: string | null = null
+    setInterval(() => {
+      const t = performance.now()
+      if (waitingFor !== null) {
+        const back = pressable(waitingFor)
+        if (back === null) return
+        log(
+          `SWITCH to ${waitingFor === 'Close' ? 'screen 2' : 'screen 1'} ${Math.round(t - pressedAt)}ms`,
+        )
+        waitingFor = null
+        return
+      }
+      if (t - pressedAt < 1500) return
+      const arrow = pressable('About me')
+      const close = pressable('Close')
+      const button = arrow ?? close
+      if (button === null) {
+        // The buttons are hidden: a press on empty space shows them, as a
+        // finger would (its click only reveals, see app.tsx)
+        document.body.dispatchEvent(
+          new PointerEvent('pointerup', { bubbles: true }),
+        )
+        document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+        return
+      }
+      pressedAt = t
+      waitingFor = button === arrow ? 'Close' : 'About me'
+      button.click()
+    }, 20)
+  }
+  if (auto === 'theme' || auto === 'tap') {
+    const costs: number[] = []
+    setInterval(() => {
+      const t0 = performance.now()
+      if (auto === 'theme') {
+        document.querySelector<HTMLElement>('button[title$="theme"]')?.click()
+      } else {
+        document.body.dispatchEvent(
+          new PointerEvent('pointerup', { bubbles: true }),
+        )
+      }
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          const cost = Math.round(performance.now() - t0)
+          costs.push(cost)
+          log(
+            `AUTO ${auto} ${cost}ms (avg ${Math.round(costs.reduce((a, b) => a + b, 0) / costs.length)})`,
+          )
+        }),
+      )
+    }, 3000)
   }
 
   setInterval(() => {

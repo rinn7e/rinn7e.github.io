@@ -1,13 +1,13 @@
 import {
   type CSSProperties,
   type RefObject,
+  useEffect,
   useLayoutEffect,
-  useMemo,
+  useRef,
   useState,
 } from 'react'
 
 import { backdropGrid, faceSpans } from './backdrop'
-import { gridRowsView } from './grid-rows'
 import {
   PORTRAIT_COLS,
   PORTRAIT_ROWS,
@@ -19,6 +19,11 @@ import {
 // .backdrop in index.css). It measures the screen and where the portrait sits
 // on it, and leaves the cells over the face blank, with a margin, so the
 // field never shows through it. A component, because it measures the page.
+//
+// The field is drawn on canvases, not written as text: as text it was tens of
+// thousands of characters, and on a phone every change to the page (a button
+// showing, a switch of screen starting) then took about half a second while
+// the field over the face was shown. A canvas is one picture.
 
 // Cells of margin kept clear around the face
 const MARGIN_COLS = 2
@@ -40,31 +45,79 @@ interface Layout {
   face: DOMRect | null
 }
 
+// Draws the rows of a grid on a canvas of `layout`'s size, in the font and
+// colour of `probe` (a .backdrop element, so they come from index.css), each
+// character in its own cell, on the line it would take as text
+const drawGrid = (
+  canvas: HTMLCanvasElement,
+  probe: HTMLElement,
+  layout: Layout,
+  rows: readonly string[],
+): void => {
+  const { cols, cellW, cellH } = layout
+  const dpr = Math.min(devicePixelRatio || 1, 3)
+  const width = cols * cellW
+  const height = rows.length * cellH
+  canvas.width = Math.ceil(width * dpr)
+  canvas.height = Math.ceil(height * dpr)
+  canvas.style.width = `${width}px`
+  canvas.style.height = `${height}px`
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  const style = getComputedStyle(probe)
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  ctx.clearRect(0, 0, width, height)
+  ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+  ctx.fillStyle = style.color
+  ctx.textBaseline = 'alphabetic'
+  // The baseline sits as in a line box: half the leading above the font
+  const m = ctx.measureText('M')
+  const ascent = m.fontBoundingBoxAscent
+  const descent = m.fontBoundingBoxDescent
+  const baseline = (cellH - (ascent + descent)) / 2 + ascent
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      const ch = row[x]
+      if (ch !== undefined && ch !== ' ')
+        ctx.fillText(ch, x * cellW, y * cellH + baseline)
+    }
+  })
+}
+
 export const BackdropLayer = ({
   portrait,
+  colorKey,
   gapStyle,
 }: {
   portrait: RefObject<HTMLElement | null>
+  // Changes with the theme, so the field is drawn again in its colour
+  colorKey: string
   // The field over the face: as the face fades out for screen 2, it fades
   // in where the face was, so screen 2 shares the same field (its opacity
   // and transition, from portrait-art.tsx)
   gapStyle: CSSProperties
 }) => {
   const [layout, setLayout] = useState<Layout | null>(null)
-  const [probe, setProbe] = useState<HTMLPreElement | null>(null)
+  // An empty .backdrop element, only to read the cell size and colour
+  const probe = useRef<HTMLPreElement>(null)
+  const field = useRef<HTMLCanvasElement>(null)
+  const gap = useRef<HTMLCanvasElement>(null)
 
   useLayoutEffect(() => {
-    if (!probe) return
+    const el = probe.current
+    if (!el) return
     const measure = () => {
-      const style = getComputedStyle(probe)
+      const style = getComputedStyle(el)
       // A JetBrains Mono character is 0.6em wide; the computed line height
       // is in pixels
       const cellW = parseFloat(style.fontSize) * 0.6
       const cellH = parseFloat(style.lineHeight)
       // Where the portrait rests: its breathing moves it a few pixels
-      const el = portrait.current
-      const rect = el?.getBoundingClientRect() ?? null
-      const breath = el ? new DOMMatrix(getComputedStyle(el).transform).m42 : 0
+      const art = portrait.current
+      const rect = art?.getBoundingClientRect() ?? null
+      const breath = art
+        ? new DOMMatrix(getComputedStyle(art).transform).m42
+        : 0
       const face = rect
         ? new DOMRect(rect.x, rect.y - breath, rect.width, rect.height)
         : null
@@ -91,10 +144,12 @@ export const BackdropLayer = ({
       observer.disconnect()
       removeEventListener('resize', measure)
     }
-  }, [probe, portrait])
+  }, [portrait])
 
-  const { text, gap } = useMemo(() => {
-    if (!layout) return { text: null, gap: null }
+  // Drawn again only when the layout or the theme changes
+  useEffect(() => {
+    const el = probe.current
+    if (!layout || !el || !field.current || !gap.current) return
     const { cols, rows, cellW, cellH, left, top, face } = layout
     const hole = (x: number, y: number): boolean => {
       if (!face) return false
@@ -114,33 +169,43 @@ export const BackdropLayer = ({
       }
       return false
     }
-    // The rows are built here, once per layout: the portrait renders this
-    // layer on every frame, and the same elements let React skip it
-    return {
-      text: gridRowsView(backdropGrid(cols, rows, hole).split('\n')),
-      // The field over the face only
-      gap: gridRowsView(
-        backdropGrid(cols, rows, (x, y) => !hole(x, y)).split('\n'),
-      ),
-    }
-  }, [layout])
+    drawGrid(
+      field.current,
+      el,
+      layout,
+      backdropGrid(cols, rows, hole).split('\n'),
+    )
+    // The field over the face only
+    drawGrid(
+      gap.current,
+      el,
+      layout,
+      backdropGrid(cols, rows, (x, y) => !hole(x, y)).split('\n'),
+    )
+  }, [layout, colorKey])
 
   const place = { left: layout?.left ?? 0, top: layout?.top ?? 0 }
   return (
     <>
-      <pre ref={setProbe} className='backdrop' aria-hidden='true' style={place}>
-        {text}
-      </pre>
-      {/* Always in the page, on its own layer, hidden while unused: made at
-          the start of each switch, its whole text would be laid out and
-          drawn again every time */}
       <pre
+        ref={probe}
+        className='backdrop'
+        aria-hidden='true'
+        style={{ visibility: 'hidden' }}
+      />
+      <canvas
+        ref={field}
+        className='backdrop'
+        aria-hidden='true'
+        style={place}
+      />
+      {/* Always in the page, on its own layer, hidden while unused */}
+      <canvas
+        ref={gap}
         className='backdrop'
         aria-hidden='true'
         style={{ ...place, ...gapStyle, willChange: 'opacity' }}
-      >
-        {gap}
-      </pre>
+      />
     </>
   )
 }

@@ -143,7 +143,10 @@ export const App = ({ model, dispatch }: AppProps) => {
   // over the page and restarts the time they stay; it never hides them. Only
   // the name on screen 2, which switches its mode, leaves them as they are.
   // A capture listener on the document, as iOS Safari sends no click to a
-  // handler on <main> for a tap on plain text. A tap while they are hidden
+  // handler on <main> for a tap on plain text. On the release of the press,
+  // not its start: content that appears while a finger is down makes iOS
+  // Safari take the tap for a hover, and it then holds back the click and
+  // the timers of the page for up to a second. A tap while they are hidden
   // only shows them: its click does not press the button that has just come
   // up under it. Hidden buttons take no focus, so Tab shows them for the
   // keyboard.
@@ -156,7 +159,7 @@ export const App = ({ model, dispatch }: AppProps) => {
   })
   useEffect(() => {
     const show = () => dispatch({ _tag: 'ShowOverlay' })
-    const onPointerDown = (e: PointerEvent) => {
+    const onPointerUp = (e: PointerEvent) => {
       revealing.current = !overlayNow.current
       const onName =
         e.target instanceof Element &&
@@ -176,11 +179,11 @@ export const App = ({ model, dispatch }: AppProps) => {
       revealing.current = false
       if (e.key === 'Tab') show()
     }
-    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('pointerup', onPointerUp, true)
     document.addEventListener('click', onClick, true)
     document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('pointerup', onPointerUp, true)
       document.removeEventListener('click', onClick, true)
       document.removeEventListener('keydown', onKeyDown)
     }
