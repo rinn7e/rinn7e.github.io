@@ -88,7 +88,7 @@ export const BackdropLayer = ({
   }, [probe, portrait])
 
   const { text, gap } = useMemo(() => {
-    if (!layout) return { text: [], gap: [] }
+    if (!layout) return { text: null, gap: null }
     const { cols, rows, cellW, cellH, left, top, face } = layout
     const hole = (x: number, y: number): boolean => {
       if (!face) return false
@@ -108,10 +108,14 @@ export const BackdropLayer = ({
       }
       return false
     }
+    // The rows are built here, once per layout: the portrait renders this
+    // layer on every frame, and the same elements let React skip it
     return {
-      text: backdropGrid(cols, rows, hole).split('\n'),
+      text: gridRowsView(backdropGrid(cols, rows, hole).split('\n')),
       // The field over the face only
-      gap: backdropGrid(cols, rows, (x, y) => !hole(x, y)).split('\n'),
+      gap: gridRowsView(
+        backdropGrid(cols, rows, (x, y) => !hole(x, y)).split('\n'),
+      ),
     }
   }, [layout])
 
@@ -119,17 +123,23 @@ export const BackdropLayer = ({
   return (
     <>
       <pre ref={setProbe} className='backdrop' aria-hidden='true' style={place}>
-        {gridRowsView(text)}
+        {text}
       </pre>
-      {fill > 0 && (
-        <pre
-          className='backdrop'
-          aria-hidden='true'
-          style={{ ...place, opacity: fill }}
-        >
-          {gridRowsView(gap)}
-        </pre>
-      )}
+      {/* Always in the page, on its own layer, hidden while unused: made at
+          the start of each switch, its whole text would be laid out and
+          drawn again every time */}
+      <pre
+        className='backdrop'
+        aria-hidden='true'
+        style={{
+          ...place,
+          opacity: fill,
+          visibility: fill > 0 ? 'visible' : 'hidden',
+          willChange: 'opacity',
+        }}
+      >
+        {gap}
+      </pre>
     </>
   )
 }

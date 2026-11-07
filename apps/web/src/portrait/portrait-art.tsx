@@ -1,5 +1,4 @@
 import {
-  type CSSProperties,
   type RefObject,
   useCallback,
   useEffect,
@@ -25,6 +24,7 @@ import {
   spinFrameAt,
 } from './animate'
 import { BackdropLayer } from './backdrop-layer'
+import { BandMemo, type BandProps } from './band'
 import { IRISES, OPENINGS, PHOTO_HEIGHT, PHOTO_WIDTH } from './eye-geometry'
 import { gridRowsView } from './grid-rows'
 import { type Frames, PORTRAIT_ROWS, type Portrait } from './portrait'
@@ -445,16 +445,16 @@ export const PortraitArt = ({
         role='img'
         aria-label='ASCII portrait of Moremi Vannak'
         className='portrait'
+        // Its own layer all the time: made at the start of each switch, the
+        // layer of the whole text would be drawn again every time
         style={{
           opacity: 1 - fade,
           scale: 1 - FACE_SHRINK * fade,
-          willChange: fade > 0 && fade < 1 ? 'opacity, scale' : undefined,
+          willChange: 'opacity, scale',
         }}
       >
-        {bands.map((band) => (
-          <span key={band.from} className='portrait-part' style={band.style}>
-            {gridRowsView(band.rows)}
-          </span>
+        {bands.map(({ from, ...band }) => (
+          <BandMemo key={from} {...band} />
         ))}
         {irisGlowView(
           eyeFrames,
@@ -597,10 +597,8 @@ const irisGlowView = (
   )
 }
 
-interface Band {
+interface Band extends BandProps {
   from: number
-  rows: readonly string[]
-  style: CSSProperties
 }
 
 // Rows `from` up to `to` of the still grid, coloured by the slice of the
@@ -613,11 +611,9 @@ const stillBand = (
 ): Band => ({
   from,
   rows: lines.slice(from, to),
-  style: {
-    backgroundImage: `url(${photo})`,
-    backgroundSize: `90em ${GRID_HEIGHT}em`,
-    backgroundPositionY: `${-from * LINE_HEIGHT}em`,
-  },
+  image: photo,
+  size: `90em ${GRID_HEIGHT}em`,
+  positionY: `${-from * LINE_HEIGHT}em`,
 })
 
 // `rows` rows from `from`: frame `frame` of the drawn frames, coloured by its
@@ -635,11 +631,9 @@ const animatedBand = (
     : {
         from,
         rows: frames[frame] ?? [],
-        style: {
-          backgroundImage: `url(${sprite})`,
-          backgroundSize: `90em ${frames.length * rows * LINE_HEIGHT}em`,
-          backgroundPositionY: `${-frame * rows * LINE_HEIGHT}em`,
-        },
+        image: sprite,
+        size: `90em ${frames.length * rows * LINE_HEIGHT}em`,
+        positionY: `${-frame * rows * LINE_HEIGHT}em`,
       }
 
 const CORNER_CONTROL =
