@@ -2,7 +2,7 @@ import { type RedEyeStyle } from './red-eye-style'
 import { type Theme } from './theme'
 
 export interface Model {
-  // Light or dark, switched by the button right of the bottom centre
+  // Light or dark, switched by the button at the middle of the right side
   theme: Theme
   // Screen 2 over the face, opened by a click on an eye or an arrow
   screen2: boolean

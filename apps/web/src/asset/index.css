@@ -89,31 +89,6 @@ body {
   background: #0b0908;
 }
 
-/* The bottom row: the GitHub link and the theme switch either side of the
- * button at the bottom centre (the arrow on the portrait, close on screen
- * 2), a gap apart, mirrored about the middle. --button is the size of a
- * button: size-9, or size-11 from sm. */
-.beside-centre-left,
-.beside-centre-right {
-  --button: 2.25rem;
-  --row-gap: 0.75rem;
-}
-
-@media (min-width: 40rem) {
-  .beside-centre-left,
-  .beside-centre-right {
-    --button: 2.75rem;
-  }
-}
-
-.beside-centre-left {
-  left: calc(50% - var(--button) * 1.5 - var(--row-gap));
-}
-
-.beside-centre-right {
-  left: calc(50% + var(--button) * 0.5 + var(--row-gap));
-}
-
 /* The red eye button while the red eye shows: red and glowing. Its
  * tomoe are spun by src/portrait/portrait-art.tsx. */
 .corner-button.red-eye-button-on {

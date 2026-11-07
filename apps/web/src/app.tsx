@@ -10,8 +10,8 @@ import { type Model, type Msg } from './type'
 
 // The home page has two screens on one field of characters. Screen 1 is the
 // portrait (PortraitArt); screen 2 shows the links (screen-2.tsx). On both,
-// in a row at the bottom centre: the link to the source on GitHub, the
-// button of the screen (the arrow, or close), and the light or dark switch.
+// mirrored at the middle of the sides: the link to the source on GitHub on
+// the left, and the light or dark switch on the right.
 // A click on an eye, once the red eye is on, or on the arrow button at the
 // bottom centre, at once, fades the face out, leaving the field of
 // characters around it, and screen 2 in on that field. The debug controls
@@ -53,10 +53,9 @@ const moonIconView = () => (
 )
 
 // Shows what a press switches to: the moon in light mode, the sun in dark.
-// A control for visitors, so it sits in the bottom row, right of the button
-// of the screen (.beside-centre-right in index.css), apart from the debug
-// controls in the top right corner (PortraitArt), on every screen:
-// above screen 2 too, so a press there switches the theme rather
+// A control for visitors, so it sits at the middle of the right side, apart
+// from the debug controls in the top right corner (PortraitArt), on every
+// screen: above screen 2 too, so a press there switches the theme rather
 // than closing it.
 const themeButtonView = (model: Model, dispatch: Dispatcher<Msg>) => {
   const toDark = model.theme === 'light'
@@ -65,7 +64,7 @@ const themeButtonView = (model: Model, dispatch: Dispatcher<Msg>) => {
       type='button'
       aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
       title={toDark ? 'Dark mode' : 'Light mode'}
-      className='corner-button beside-centre-right fixed bottom-4 z-30 flex size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
+      className='corner-button fixed top-1/2 right-4 z-30 flex -translate-y-1/2 size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
       onClick={() => dispatch({ _tag: 'ToggleTheme' })}
     >
       {toDark ? moonIconView() : sunIconView()}
@@ -86,7 +85,7 @@ const githubIconView = () => (
 )
 
 // The source of this website, on GitHub. A control for visitors like the
-// theme switch, so it mirrors it left of the button of the screen, on every
+// theme switch, so it mirrors it at the middle of the left side, on every
 // screen.
 const githubButtonView = () => (
   <a
@@ -95,7 +94,7 @@ const githubButtonView = () => (
     rel='noopener noreferrer'
     aria-label='The source of this website on GitHub'
     title='GitHub'
-    className='corner-button beside-centre-left fixed bottom-4 z-30 flex size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
+    className='corner-button fixed top-1/2 left-4 z-30 flex -translate-y-1/2 size-9 sm:size-11 cursor-pointer items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-ink-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link'
   >
     {githubIconView()}
   </a>
