@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://github.com/rinn7e/rinn7e.github.io/actions/workflows/deploy.yml"><img src="https://github.com/rinn7e/rinn7e.github.io/actions/workflows/deploy.yml/badge.svg" alt="Deploy"></a>
   <a href="https://rinn7e.com/"><img src="https://img.shields.io/website?url=https%3A%2F%2Frinn7e.com&label=rinn7e.com" alt="rinn7e.com"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/rinn7e/rinn7e.github.io" alt="License: GPL-3.0"></a>
 </p>
 
 Screen 1 is the face; screen 2 shows the links. Both share one field of characters, and the face fades out of it to open screen 2.
@@ -53,3 +54,9 @@ The debug controls (frame rate, pause, blink, red eye and its style) show in the
 GitHub Pages serves the website at [rinn7e.com](https://rinn7e.com/). `.github/workflows/deploy.yml` checks every push and pull request (format, lint, types, tests, build) and deploys every push to `master`. The custom domain is set in the Pages settings of the repository, with "GitHub Actions" as the source.
 
 The old Elm site that lived in this repository is kept in the branch `archive/elm-site` and the tag `elm-site-final`.
+
+## License
+
+The code is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
+
+The portrait and the logo are not covered by it: the photos and the ASCII frames made from them in `apps/web/src/portrait` (the `.jpg` and `.txt` files), and the R7 logo in `apps/web/public`, are copyright Moremi Vannak, all rights reserved. They may not be reused without permission.

@@ -1,6 +1,7 @@
 {
   "name": "@portfolio/design-tokens",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "The colors, fonts and sizes of the website, as a Tailwind v4 @theme",
   "exports": {
     "./tokens.css": "./tokens.css"

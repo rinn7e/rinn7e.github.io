@@ -1,6 +1,7 @@
 {
   "name": "@portfolio/codec",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "Small io-ts helpers: readable decode errors and refined strings",
   "type": "module",
   "exports": {

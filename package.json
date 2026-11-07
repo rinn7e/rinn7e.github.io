@@ -1,6 +1,7 @@
 {
   "name": "rinn7e.github.io",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "The personal website at rinn7e.com",
   "packageManager": "pnpm@11.9.0",
   "engines": {

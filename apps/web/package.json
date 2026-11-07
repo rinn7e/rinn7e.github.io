@@ -1,6 +1,7 @@
 {
   "name": "@portfolio/web",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "The website: the ASCII portrait and screen 2",
   "type": "module",
   "scripts": {
