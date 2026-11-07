@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 
 import './asset/index.css'
+import { startDebugOverlay } from './debug-overlay'
 import { portraitDark, portraitLight } from './portrait/portrait'
 import { AppProgram } from './program'
 import { applyTheme, initialTheme } from './theme'
@@ -15,6 +16,9 @@ for (const { photo, hair, eyes } of [portraitLight, portraitDark]) {
   const sprites = [eyes.style1.sprite, eyes.style2.sprite]
   for (const src of [photo, hair.sprite, ...sprites]) new Image().src = src
 }
+
+// With ?debug in the address, a report over the page (debug-overlay.ts)
+if (new URLSearchParams(location.search).has('debug')) startDebugOverlay()
 
 const container = document.getElementById('root')
 if (container) {
