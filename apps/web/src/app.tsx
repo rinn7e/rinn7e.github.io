@@ -141,7 +141,8 @@ export const App = ({ model, dispatch }: AppProps) => {
   const portrait = themeOf(model) === 'dark' ? portraitDark : portraitLight
   // Any press, a click or a tap on empty space or a button, shows the buttons
   // over the page and restarts the time they stay; it never hides them. Only
-  // the name on screen 2, which switches its mode, leaves them as they are.
+  // the name on screen 2 (a tap switches its mode, a hold spins its square)
+  // leaves them as they are.
   // A capture listener on the document, as iOS Safari sends no click to a
   // handler on <main> for a tap on plain text. On the release of the press,
   // not its start: content that appears while a finger is down makes iOS

@@ -480,6 +480,19 @@ html {
   transition: rotate 560ms cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
+/* Around the square: it spins while the name is held (its rotate is set
+ * frame by frame in src/screen-2.tsx), on its own layer, and settles on the
+ * next quarter turn on release. A long press shows no callout on a phone. */
+.screen-2-name-spin {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.screen-2-name-button {
+  -webkit-touch-callout: none;
+}
+
 /* The name: regular, a little faded, as on rinn7e.com. It is a button
  * that switches the screen between the links and the principles: a small
  * square around the name whose outline draws itself when pointed at. */

@@ -6,7 +6,11 @@ import {
   useState,
 } from 'react'
 
-import { SCREEN_2_GROW, fadeTransition } from './portrait/screen-fade'
+import {
+  SCREEN_2_GROW,
+  fadeTransition,
+  prefersReducedMotion,
+} from './portrait/screen-fade'
 import { type ScreenState } from './type'
 
 // The links elsewhere: above the name, and below it
@@ -61,6 +65,14 @@ type Mode = Screen2Mode
 // Switching, the lists fade out (and shrink a little toward their lines)
 // over SWAP_OUT_MS, then the other mode fades in (.screen-2-swap in index.css)
 const SWAP_OUT_MS = 150
+
+// Holding the square spins it: it starts after HOLD_MS, speeds up over
+// SPIN_RAMP_MS to SPIN_DEG_PER_MS (a turn a second), and on release settles
+// on the next quarter turn, as the turn of a switch does
+const HOLD_MS = 200
+const SPIN_RAMP_MS = 500
+const SPIN_DEG_PER_MS = 0.36
+const SETTLE = 'rotate 560ms cubic-bezier(0.34, 1.4, 0.64, 1)'
 
 const linkView = ({ label, href }: { label: string; href: string }) => (
   <a
@@ -211,6 +223,70 @@ export const Screen2 = ({
       setSwapping(false)
     }, SWAP_OUT_MS)
   }
+
+  // The square spins while the name is held, a mouse button or a finger: a
+  // control like the red eye button, so it moves at the screen rate with
+  // requestAnimationFrame, changing only the rotate of its own layer
+  // (.screen-2-name-spin). A hold is not a tap: its click does not switch
+  // the mode.
+  const spin = useRef<HTMLDivElement>(null)
+  const held = useRef({
+    timer: undefined as ReturnType<typeof setTimeout> | undefined,
+    raf: 0,
+    angle: 0,
+    spun: false,
+  })
+  const stopSpin = () => {
+    const h = held.current
+    clearTimeout(h.timer)
+    h.timer = undefined
+    if (h.raf === 0) return
+    cancelAnimationFrame(h.raf)
+    h.raf = 0
+    const el = spin.current
+    if (!el) return
+    h.angle = Math.ceil(h.angle / 90) * 90
+    el.style.transition = SETTLE
+    el.style.rotate = `${h.angle}deg`
+  }
+  const startHold = () => {
+    const h = held.current
+    stopSpin()
+    h.spun = false
+    if (prefersReducedMotion()) return
+    h.timer = setTimeout(() => {
+      const el = spin.current
+      if (!el) return
+      h.spun = true
+      el.style.transition = 'none'
+      const start = performance.now()
+      let last = start
+      const turn = (now: number) => {
+        const speed =
+          SPIN_DEG_PER_MS * Math.min(1, (now - start) / SPIN_RAMP_MS)
+        h.angle += speed * (now - last)
+        last = now
+        el.style.rotate = `${h.angle}deg`
+        h.raf = requestAnimationFrame(turn)
+      }
+      h.raf = requestAnimationFrame(turn)
+    }, HOLD_MS)
+  }
+  useEffect(
+    () => () => {
+      clearTimeout(held.current.timer)
+      cancelAnimationFrame(held.current.raf)
+    },
+    [],
+  )
+  const tapName = () => {
+    if (held.current.spun) {
+      held.current.spun = false
+      return
+    }
+    switchMode()
+  }
+
   const swap = `screen-2-swap ${swapping ? 'screen-2-swap-out' : ''}`
   const upLines =
     mode === 'links' ? UP_LINKS.map((l) => l.label) : UP_PRINCIPLES
@@ -291,11 +367,12 @@ export const Screen2 = ({
           </div>
         </div>
         <div className='screen-2-name' style={grow}>
-          <div
-            aria-hidden='true'
-            className='screen-2-name-turn'
-            style={{ rotate: `${90 * turns}deg` }}
-          />
+          <div ref={spin} aria-hidden='true' className='screen-2-name-spin'>
+            <div
+              className='screen-2-name-turn'
+              style={{ rotate: `${90 * turns}deg` }}
+            />
+          </div>
           <h2 id='screen-2-title' className='contents'>
             <button
               type='button'
@@ -306,7 +383,12 @@ export const Screen2 = ({
               inert={!settled}
               title={mode === 'links' ? 'My principles' : 'My links'}
               className='screen-2-name-button'
-              onClick={switchMode}
+              onClick={tapName}
+              onPointerDown={startHold}
+              onPointerUp={stopSpin}
+              onPointerCancel={stopSpin}
+              onPointerLeave={stopSpin}
+              onContextMenu={(e) => e.preventDefault()}
             >
               {'Moremi\nVannak'}
               {/* Its outline, drawn when pointed at: two strokes, mirrored
