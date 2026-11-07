@@ -409,6 +409,12 @@ body {
   }
 }
 
+/* The links, few and short, spaced out more than the long text: airy, and
+ * easier to tap */
+.screen-2-side .screen-2-link {
+  line-height: 2;
+}
+
 /* Only as wide as its text, so the space beside it is not a link */
 .screen-2-link {
   width: max-content;
