@@ -1,0 +1,8 @@
+{
+  "name": "@portfolio/design-tokens",
+  "private": true,
+  "description": "The colors, fonts and sizes of the website, as a Tailwind v4 @theme",
+  "exports": {
+    "./tokens.css": "./tokens.css"
+  }
+}

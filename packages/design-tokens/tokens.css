@@ -1,0 +1,31 @@
+/* The look of the website. Import it after Tailwind:
+ *
+ *   @import 'tailwindcss';
+ *   @import '@portfolio/design-tokens/tokens.css';
+ *
+ * Each token becomes a utility: --color-ink -> text-ink, bg-ink, ...
+ * Placeholder values: the real look is being designed. */
+
+@theme {
+  --color-page: #ffffff;
+  --color-panel: #f4f4f5;
+  --color-line: #e4e4e7;
+  --color-ink: #18181b;
+  --color-ink-muted: #52525b;
+  --color-link: #1d4ed8;
+
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+}
+
+/* Dark mode is the .dark class on <html>. The app sets it from the visitor's
+ * choice, else from the OS setting (apps/web/src/theme.ts), and maps the
+ * Tailwind dark: variant to it with @custom-variant. */
+:root.dark {
+  --color-page: #18181b;
+  --color-panel: #27272a;
+  --color-line: #3f3f46;
+  --color-ink: #f4f4f5;
+  --color-ink-muted: #a1a1aa;
+  --color-link: #93c5fd;
+}

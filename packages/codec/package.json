@@ -1,0 +1,21 @@
+{
+  "name": "@portfolio/codec",
+  "private": true,
+  "description": "Small io-ts helpers: readable decode errors and refined strings",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "fp-ts": "catalog:",
+    "io-ts": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

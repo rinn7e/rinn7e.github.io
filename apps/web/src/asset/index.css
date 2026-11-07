@@ -1,0 +1,502 @@
+@import 'tailwindcss';
+@import '@portfolio/design-tokens/tokens.css';
+
+/* Dark mode is the .dark class on <html> (src/theme.ts), so the button can
+ * override the OS setting */
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Behind the portrait: plain white, or in dark mode a dark room with a warm
+ * light falling on the face. The room above and below the face grows with
+ * the screen height, so the face never fills the whole screen. */
+.portrait-room {
+  --room-pad-y: clamp(3rem, 18dvh, 16rem);
+  /* The character size of the portrait, shared by the backdrop so both use
+   * the same grid (see .portrait) */
+  --cell-font: min(
+    calc((100vw - 2rem) / 90),
+    calc((100dvh - 2 * var(--room-pad-y)) / 138.43)
+  );
+  padding-block: var(--room-pad-y);
+  background: #ffffff;
+}
+
+.dark .portrait-room {
+  background: radial-gradient(
+    ellipse 60% 55% at 50% 45%,
+    #2b2420 0%,
+    #17130f 55%,
+    #0b0908 100%
+  );
+}
+
+/* The ASCII portrait: 150 columns x 127 rows of JetBrains Mono. A character
+ * is 0.6em wide and a line 1.09em tall, so the grid is 90em x 138.43em, the
+ * same shape as the photo behind it. The font size fits the grid inside the
+ * screen on any phone or desktop, less the padding of <main> (2rem across,
+ * --room-pad-y above and below). The controls float in the corner and
+ * take no room. It is an image made of text, so the rem minimum for text in
+ * doc/code-convention.md does not apply. */
+.portrait {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 800;
+  font-size: var(--cell-font);
+  line-height: 1.09;
+  letter-spacing: 0;
+  width: 90em;
+  white-space: pre;
+  overflow: hidden;
+  /* A picture, not text to copy: quick clicks on the buttons near it (a
+   * double click selects the text nearest) leave it alone */
+  user-select: none;
+  /* Its breathing is set frame by frame (src/portrait/portrait-art.tsx), at
+   * the frame rate of the slider */
+}
+
+/* A part of the portrait (the hair rows, the rest of the face). Each
+ * character shows the photo through it; which slice of which image is set
+ * inline. */
+.portrait-part {
+  display: block;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The buttons in the corner: filled with the colour of the room around them, so
+ * the backdrop never shows through */
+.corner-button {
+  background: #ffffff;
+  /* Pressed quickly several times, a button selects nothing */
+  user-select: none;
+}
+
+.dark .corner-button {
+  background: #0b0908;
+}
+
+/* The red eye button while the red eye shows: red and glowing. Its
+ * tomoe are spun by src/portrait/portrait-art.tsx. */
+.corner-button.red-eye-button-on {
+  border-color: #e0221e;
+  color: #e0221e;
+  box-shadow:
+    0 0 6px rgb(224 34 30 / 0.55),
+    0 0 18px rgb(224 34 30 / 0.35);
+}
+
+.dark .corner-button.red-eye-button-on {
+  border-color: #ff4034;
+  color: #ff4034;
+  box-shadow:
+    0 0 8px rgb(255 64 52 / 0.6),
+    0 0 22px rgb(255 64 52 / 0.4);
+}
+
+/* The style of the red eye in use, on its switch */
+.red-eye-style-on {
+  background: #e0221e;
+  color: #ffffff;
+}
+
+.dark .red-eye-style-on {
+  background: #ff4034;
+  color: #0b0908;
+}
+
+/* The spinning icon on its own compositor layer, so each turn moves the
+ * drawn icon instead of painting the button (and what lies under it) again */
+.red-eye-button-on svg {
+  will-change: transform;
+}
+
+/* Above the backdrop */
+.portrait {
+  position: relative;
+  z-index: 1;
+}
+
+/* An invisible area over an eye: the mouse over it turns the red eye on
+ * (src/portrait/portrait-art.tsx) */
+.eye-zone {
+  position: absolute;
+}
+
+/* A red light on the eye under the mouse, while its red eye shows: the
+ * characters of the eye rows again, over the drawing, coloured by a ring of
+ * red around the iris (the gradient is set in src/portrait/portrait-art.tsx)
+ * and cut to the open eye, so only the characters between the lids light
+ * up. It fades in and out once, with an opacity transition on its own
+ * layer. In light mode it is a faint tint, so the red eye under it stays
+ * clear; in the dark room it adds light. */
+.iris-glow {
+  --iris-glow: rgb(255 40 28 / 0.35);
+  --iris-glow-soft: rgb(255 52 32 / 0.15);
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  will-change: opacity;
+}
+
+.dark .iris-glow {
+  --iris-glow: rgb(255 72 44);
+  --iris-glow-soft: rgb(255 56 32 / 0.6);
+  mix-blend-mode: screen;
+}
+
+.iris-glow.iris-glow-on {
+  opacity: 1;
+}
+
+/* A button of a screen (the arrows on the portrait, the close buttons of the
+ * screen 2) popping in when its screen has fully arrived and out when
+ * it starts to leave: it grows from small with a little spring and fades
+ * in, and shrinks and fades out faster. Only its scale and opacity change,
+ * once, so the browser just moves the drawn button. Hidden, it takes no
+ * clicks. */
+.pop {
+  transition:
+    opacity 220ms ease-out,
+    scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s,
+    color 150ms,
+    border-color 150ms;
+}
+
+.pop.pop-hidden {
+  opacity: 0;
+  scale: 0.5;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease-in,
+    scale 160ms ease-in,
+    visibility 0s 160ms;
+}
+
+/* The debug controls going with the portrait: a plain fade, nothing moves */
+.fade {
+  transition:
+    opacity 200ms ease-out,
+    visibility 0s;
+}
+
+.fade.fade-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease-in,
+    visibility 0s 160ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop,
+  .pop.pop-hidden,
+  .fade,
+  .fade.fade-hidden,
+  .screen-2-swap,
+  .screen-2-swap.screen-2-swap-out {
+    transition: none;
+  }
+}
+
+/* Screen 2 (src/screen-2.tsx), on the field of characters,
+ * which fills the place of the face as it fades out. While closed it takes
+ * no clicks. The layout of rinn7e.com, symmetric about its middle point: the
+ * name in a black square in the middle; above it a
+ * line down from the top, its links at its foot on the right; below it the
+ * same turned round, a line down to the bottom, its links at its head on
+ * the left. On a wide screen the two sides of each line are equal, so the
+ * line runs down the middle; on a narrow one the empty side goes and each
+ * line moves with its links as one group in the middle, as on rinn7e.com.
+ * The lines stop short of the edges, clear of the close button at the
+ * bottom centre. */
+.screen-2 {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding-block: 5rem;
+  /* The font of rinn7e.com: its Chenla covers only Khmer, so Latin text
+   * there is in the system font, as here */
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  /* Quick clicks on the close button (a double click selects the text
+   * nearest) leave the name and the links alone */
+  user-select: none;
+}
+
+.screen-2-half {
+  display: flex;
+  flex: 1 1 0;
+  justify-content: center;
+  gap: 2.5rem;
+  width: 100%;
+  min-height: 0;
+}
+
+.screen-2-side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* On a narrow screen a side of long lines (the principles) wraps them
+   * within 70% of the screen, so its line stays near the middle and close
+   * to its text, rather than at the edge of the screen */
+  max-width: min(70vw, calc(100vw - 2rem - 2.5rem - 1px));
+}
+
+/* The empty side of a line: only on a wide screen, where both sides share
+ * the width and keep the line in the middle */
+.screen-2-spacer {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .screen-2-side {
+    flex: 1 1 0;
+  }
+
+  .screen-2-spacer {
+    display: flex;
+  }
+}
+
+.screen-2-line {
+  width: 1px;
+  flex-shrink: 0;
+  background: var(--color-ink-muted);
+  opacity: 0.45;
+}
+
+/* The lines grow out of the edges of the screen toward the name, and shrink
+ * back to them (their scale is set from the time of the switch) */
+.screen-2-line-top {
+  transform-origin: top;
+}
+
+.screen-2-line-bottom {
+  transform-origin: bottom;
+}
+
+/* Above, the links sit at the foot of the line, on its right; below, at
+ * its head, on its left */
+.screen-2-links-up {
+  justify-content: flex-end;
+  align-items: flex-start;
+  /* Growing in, they stay at the foot of the line */
+  transform-origin: left bottom;
+}
+
+.screen-2-links-down {
+  justify-content: flex-start;
+  align-items: flex-end;
+  text-align: right;
+  /* Growing in, they stay at the head of the line */
+  transform-origin: right top;
+}
+
+/* The other group of links, unseen and flat: it only widens this group to
+ * the width of the wider one (src/screen-2.tsx) */
+.screen-2-sizer {
+  display: flex;
+  flex-direction: column;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+/* What one side shows (links or principles), switching with the name: it
+ * fades out fast, shrinking a little toward its line, and the other mode
+ * fades in, slowing as it arrives (src/screen-2.tsx). Only its
+ * opacity and scale change, once. */
+.screen-2-swap {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  transform-origin: inherit;
+  transition:
+    opacity 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.screen-2-swap.screen-2-swap-out {
+  opacity: 0;
+  scale: 0.96;
+  transition:
+    opacity 150ms ease-in,
+    scale 150ms ease-in;
+}
+
+/* The principles: long lines, so smaller on a narrow screen, where they
+ * would wrap more and outgrow their half of the screen */
+.screen-2-side p {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+@media (min-width: 40rem) {
+  .screen-2-side p {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+}
+
+/* Only as wide as its text, so the space beside it is not a link */
+.screen-2-link {
+  width: max-content;
+  max-width: 100%;
+  color: var(--color-ink);
+  text-decoration-line: none;
+  text-decoration-color: #e0221e;
+  text-underline-offset: 0.25em;
+}
+
+.screen-2-link:hover,
+.screen-2-link:focus-visible {
+  text-decoration-line: underline;
+}
+
+.screen-2-link:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+.screen-2-name {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: min(300px, 80vw);
+  aspect-ratio: 1;
+  color: #ffffff;
+  font-size: 1.625rem;
+  line-height: 1.3;
+  text-align: center;
+  white-space: pre-line;
+}
+
+/* The square behind the name, turned a quarter turn clockwise at each
+ * switch of the mode (its rotate is set in src/screen-2.tsx),
+ * settling with a little spring; the name stays upright */
+.screen-2-name-turn {
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  transition: rotate 560ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* The name: regular, a little faded, as on rinn7e.com. It is a button
+ * that switches the screen between the links and the principles: a small
+ * square around the name whose outline draws itself when pointed at. */
+.screen-2-name-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 43%;
+  aspect-ratio: 1;
+  color: inherit;
+  font: inherit;
+  font-weight: 400;
+  white-space: pre-line;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+/* The outline: two strokes, mirrored through the middle, that grow from
+ * opposite corners round the square until they meet, as drawn on the
+ * design canvas; leaving, they run back. Each path is one unit long
+ * (pathLength), so its dash offset goes from 1 (hidden) to 0 (drawn). */
+.screen-2-name-outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.screen-2-name-outline path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.8;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 220ms ease-in;
+}
+
+.screen-2-name-button:hover .screen-2-name-outline path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-2-name-outline path,
+  .screen-2-name-button:hover .screen-2-name-outline path,
+  .screen-2-name-turn {
+    transition: none;
+  }
+}
+
+.screen-2-name-button:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+/* In the dark room a black square is a hole: the red of the eyes
+ * there, the name white */
+.dark .screen-2-name-turn {
+  background: #c41d19;
+}
+
+.dark .screen-2-link {
+  text-decoration-color: #ff4034;
+}
+
+.screen-2-layer:not(.screen-2-open) {
+  pointer-events: none;
+}
+
+/* The faint ASCII field behind the portrait (src/portrait/backdrop.ts). Very
+ * light, so it fills the empty screen without competing with the face. */
+.backdrop {
+  position: fixed;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  /* The same character size as the portrait; the layer is shifted so its
+   * cells line up with the portrait cells (src/portrait/backdrop-layer.tsx) */
+  font-size: var(--cell-font);
+  font-weight: 800;
+  line-height: 1.09;
+  white-space: pre;
+  color: #e4e4e4;
+}
+
+.dark .backdrop {
+  color: #2e2e2e;
+}

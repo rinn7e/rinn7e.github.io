@@ -1,0 +1,34 @@
+{
+  "name": "rinn7e.github.io",
+  "private": true,
+  "description": "The personal website at rinn7e.com",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @portfolio/web dev",
+    "build": "pnpm -r run build",
+    "check": "pnpm -r --if-present run check",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r --if-present run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@trivago/prettier-plugin-sort-imports": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-import": "catalog:",
+    "eslint-plugin-react-dom": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-react-refresh": "catalog:",
+    "eslint-plugin-react-x": "catalog:",
+    "eslint-plugin-unused-imports": "catalog:",
+    "globals": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

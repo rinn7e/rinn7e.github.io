@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+
+# Temporary / scratch files
+scratch/
+tmp/
+*.log
+
+# Vite and compiler caches
+.vite/
+.eslintcache
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+._*
+
+# IDEs and editors
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.sw?
+
+# Local environment files
+.env.local
+.env.*.local
