@@ -134,19 +134,26 @@ export const App = ({ model, dispatch }: AppProps) => {
   const [startMode, setStartMode] = useState<Screen2Mode>('links')
   const portrait = themeOf(model) === 'dark' ? portraitDark : portraitLight
   // Any press, a click or a tap on empty space or a button, shows the buttons
-  // over the page and restarts the time they stay; it never hides them. A
-  // capture listener on the document, as iOS Safari sends no click to a
+  // over the page and restarts the time they stay; it never hides them. Only
+  // the name on screen 2, which switches its mode, leaves them as they are.
+  // A capture listener on the document, as iOS Safari sends no click to a
   // handler on <main> for a tap on plain text. Hidden buttons take no focus,
   // so Tab shows them for the keyboard.
   useEffect(() => {
     const show = () => dispatch({ _tag: 'ShowOverlay' })
+    const onPointerDown = (e: PointerEvent) => {
+      const onName =
+        e.target instanceof Element &&
+        e.target.closest('.screen-2-name-button') !== null
+      if (!onName) show()
+    }
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab') show()
     }
-    document.addEventListener('pointerdown', show, true)
+    document.addEventListener('pointerdown', onPointerDown, true)
     document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.removeEventListener('pointerdown', show, true)
+      document.removeEventListener('pointerdown', onPointerDown, true)
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [dispatch])
