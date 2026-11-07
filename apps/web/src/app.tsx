@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { type Dispatcher } from 'tea-cup-fp'
 
 import { portraitDark, portraitLight } from './portrait/portrait'
@@ -133,27 +133,54 @@ export const App = ({ model, dispatch }: AppProps) => {
   // from the arrow button
   const [startMode, setStartMode] = useState<Screen2Mode>('links')
   const portrait = themeOf(model) === 'dark' ? portraitDark : portraitLight
+  // The switch has reached its screen: opening or closing may start again
+  const settled = t === (model.screen2 ? 1 : 0)
+  useEffect(() => {
+    if (model.switching && settled) dispatch({ _tag: 'SwitchSettled' })
+  }, [model.switching, settled, dispatch])
   // Any press, a click or a tap on empty space or a button, shows the buttons
   // over the page and restarts the time they stay; it never hides them. Only
   // the name on screen 2, which switches its mode, leaves them as they are.
   // A capture listener on the document, as iOS Safari sends no click to a
-  // handler on <main> for a tap on plain text. Hidden buttons take no focus,
-  // so Tab shows them for the keyboard.
+  // handler on <main> for a tap on plain text. A tap while they are hidden
+  // only shows them: its click does not press the button that has just come
+  // up under it. Hidden buttons take no focus, so Tab shows them for the
+  // keyboard.
+  // Refs, not locals of the effect: `dispatch` is new on every render, so the
+  // listeners are added again after each update, the reveal's own included
+  const overlayNow = useRef(model.overlay)
+  const revealing = useRef(false)
+  useEffect(() => {
+    overlayNow.current = model.overlay
+  })
   useEffect(() => {
     const show = () => dispatch({ _tag: 'ShowOverlay' })
     const onPointerDown = (e: PointerEvent) => {
+      revealing.current = !overlayNow.current
       const onName =
         e.target instanceof Element &&
         e.target.closest('.screen-2-name-button') !== null
       if (!onName) show()
     }
+    const onClick = (e: MouseEvent) => {
+      const onButton =
+        e.target instanceof Element && e.target.closest('.pop') !== null
+      if (revealing.current && onButton) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+      revealing.current = false
+    }
     const onKeyDown = (e: KeyboardEvent) => {
+      revealing.current = false
       if (e.key === 'Tab') show()
     }
     document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('click', onClick, true)
     document.addEventListener('keydown', onKeyDown)
     return () => {
       document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('click', onClick, true)
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [dispatch])

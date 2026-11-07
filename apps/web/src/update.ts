@@ -35,6 +35,7 @@ export const init = (): [Model, Cmd<Msg>] => [
     themeChoice: loadThemeChoice(),
     osTheme: osTheme(),
     screen2: false,
+    switching: false,
     redEyeStyle: initialRedEyeStyle(),
     // The buttons over the page start hidden, so the face shows alone
     overlay: false,
@@ -94,9 +95,16 @@ export const handleSetRedEyeStyle = (
 ): Model => ({ ...model, redEyeStyle: style })
 
 // Opens or closes screen 2
-export const handleScreen2 = (model: Model, open: boolean): Model => ({
+// Ignored while a switch is still running, or when it is already so
+export const handleScreen2 = (model: Model, open: boolean): Model =>
+  model.switching || model.screen2 === open
+    ? model
+    : { ...model, screen2: open, switching: true }
+
+// The switch has fully finished
+export const handleSwitchSettled = (model: Model): Model => ({
   ...model,
-  screen2: open,
+  switching: false,
 })
 
 // Shows the buttons over the page, with a new timer for their hide
@@ -128,14 +136,15 @@ export const update = (msg: Msg, model: Model): [Model, Cmd<Msg>] => {
       return [model, Cmd.none()]
     // A switch of screen shows the buttons over the page, so the button of
     // the new screen is seen as it arrives
-    case 'OpenScreen2': {
-      const next = handleShowOverlay(handleScreen2(model, true))
-      return [next, hideOverlayCmd(next.overlayTimer)]
-    }
+    case 'OpenScreen2':
     case 'CloseScreen2': {
-      const next = handleShowOverlay(handleScreen2(model, false))
+      const switched = handleScreen2(model, msg._tag === 'OpenScreen2')
+      if (switched === model) return [model, Cmd.none()]
+      const next = handleShowOverlay(switched)
       return [next, hideOverlayCmd(next.overlayTimer)]
     }
+    case 'SwitchSettled':
+      return [handleSwitchSettled(model), Cmd.none()]
     case 'SetRedEyeStyle':
       return [handleSetRedEyeStyle(model, msg.style), redEyeStyleCmd(msg.style)]
     case 'ShowOverlay': {

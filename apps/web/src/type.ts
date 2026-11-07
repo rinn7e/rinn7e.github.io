@@ -8,6 +8,9 @@ export interface Model {
   osTheme: Theme
   // Screen 2 over the face, opened by a click on an eye or an arrow
   screen2: boolean
+  // While the screens are switching: opening or closing screen 2 waits until
+  // the switch has fully finished, so a fast tap never turns it halfway
+  switching: boolean
   // The look of the red eye, picked with the switch by its button
   redEyeStyle: RedEyeStyle
   // Whether the buttons over the page show (GitHub, theme, the arrow and
@@ -25,6 +28,7 @@ export type Msg =
   | { _tag: 'NoOp' }
   | { _tag: 'OpenScreen2' }
   | { _tag: 'CloseScreen2' }
+  | { _tag: 'SwitchSettled' }
   | { _tag: 'SetRedEyeStyle'; style: RedEyeStyle }
   | { _tag: 'ShowOverlay' }
   | { _tag: 'HideOverlay'; timer: number }

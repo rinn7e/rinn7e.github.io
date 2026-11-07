@@ -320,7 +320,11 @@ export const PortraitArt = ({
     }
   }, [demand])
 
-  // The frame clock: samples the motion once per frame at the chosen rate
+  // The frame clock: samples the motion once per frame at the chosen rate.
+  // It stops while screen 2 is open or the screens are switching (`hold`):
+  // the face is fading or hidden, and drawing new frames into it then only
+  // costs a phone the frames of the switch. Its clock stops too, so the face
+  // goes on from where it was.
   useEffect(() => {
     const still = prefersReducedMotion()
     const frameMs = 1000 / fps
@@ -329,11 +333,11 @@ export const PortraitArt = ({
     let raf = 0
     const tick = (real: number) => {
       raf = requestAnimationFrame(tick)
-      if (lastReal !== null && !pausedNow.current)
-        clock.current += real - lastReal
+      const stopped = pausedNow.current || holdNow.current
+      if (lastReal !== null && !stopped) clock.current += real - lastReal
       lastReal = real
       const now = clock.current
-      if (pausedNow.current || now - lastFrame < frameMs - 1) return
+      if (stopped || now - lastFrame < frameMs - 1) return
       lastFrame = now
       const t = now / 1000
       if (!still) {

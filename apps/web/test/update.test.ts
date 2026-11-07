@@ -6,17 +6,25 @@ import {
   handleScreen2,
   handleSetRedEyeStyle,
   handleShowOverlay,
+  handleSwitchSettled,
   init,
 } from '../src/update'
 
 const [model] = init()
 
 describe('screen 2', () => {
-  it('starts closed, opens and closes', () => {
+  it('starts closed, opens and closes once each switch has settled', () => {
     expect(model.screen2).toBe(false)
-    const opened = handleScreen2(model, true)
+    const opened = handleSwitchSettled(handleScreen2(model, true))
     expect(opened.screen2).toBe(true)
     expect(handleScreen2(opened, false).screen2).toBe(false)
+  })
+
+  it('ignores open and close while a switch is still running', () => {
+    const opening = handleScreen2(model, true)
+    expect(opening.switching).toBe(true)
+    expect(handleScreen2(opening, false)).toBe(opening)
+    expect(handleScreen2(opening, true)).toBe(opening)
   })
 })
 
