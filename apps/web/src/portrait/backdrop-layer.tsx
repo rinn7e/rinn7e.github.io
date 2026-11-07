@@ -1,6 +1,7 @@
 import { type RefObject, useLayoutEffect, useMemo, useState } from 'react'
 
 import { backdropGrid, faceSpans } from './backdrop'
+import { gridRowsView } from './grid-rows'
 import {
   PORTRAIT_COLS,
   PORTRAIT_ROWS,
@@ -87,7 +88,7 @@ export const BackdropLayer = ({
   }, [probe, portrait])
 
   const { text, gap } = useMemo(() => {
-    if (!layout) return { text: '', gap: '' }
+    if (!layout) return { text: [], gap: [] }
     const { cols, rows, cellW, cellH, left, top, face } = layout
     const hole = (x: number, y: number): boolean => {
       if (!face) return false
@@ -108,9 +109,9 @@ export const BackdropLayer = ({
       return false
     }
     return {
-      text: backdropGrid(cols, rows, hole),
+      text: backdropGrid(cols, rows, hole).split('\n'),
       // The field over the face only
-      gap: backdropGrid(cols, rows, (x, y) => !hole(x, y)),
+      gap: backdropGrid(cols, rows, (x, y) => !hole(x, y)).split('\n'),
     }
   }, [layout])
 
@@ -118,7 +119,7 @@ export const BackdropLayer = ({
   return (
     <>
       <pre ref={setProbe} className='backdrop' aria-hidden='true' style={place}>
-        {text}
+        {gridRowsView(text)}
       </pre>
       {fill > 0 && (
         <pre
@@ -126,7 +127,7 @@ export const BackdropLayer = ({
           aria-hidden='true'
           style={{ ...place, opacity: fill }}
         >
-          {gap}
+          {gridRowsView(gap)}
         </pre>
       )}
     </>

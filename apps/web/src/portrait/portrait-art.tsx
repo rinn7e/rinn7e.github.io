@@ -26,6 +26,7 @@ import {
 } from './animate'
 import { BackdropLayer } from './backdrop-layer'
 import { IRISES, OPENINGS, PHOTO_HEIGHT, PHOTO_WIDTH } from './eye-geometry'
+import { gridRowsView } from './grid-rows'
 import { type Frames, PORTRAIT_ROWS, type Portrait } from './portrait'
 import { FACE_SHRINK } from './screen-fade'
 
@@ -449,7 +450,7 @@ export const PortraitArt = ({
       >
         {bands.map((band) => (
           <span key={band.from} className='portrait-part' style={band.style}>
-            {band.text}
+            {gridRowsView(band.rows)}
           </span>
         ))}
         {irisGlowView(
@@ -587,14 +588,16 @@ const irisGlowView = (
         clipPath: `polygon(${lids.join(', ')})`,
       }}
     >
-      {(frames[frame] ?? []).map((row) => row.slice(fromCol, toCol)).join('\n')}
+      {gridRowsView(
+        (frames[frame] ?? []).map((row) => row.slice(fromCol, toCol)),
+      )}
     </span>
   )
 }
 
 interface Band {
   from: number
-  text: string
+  rows: readonly string[]
   style: CSSProperties
 }
 
@@ -607,7 +610,7 @@ const stillBand = (
   photo: string,
 ): Band => ({
   from,
-  text: lines.slice(from, to).join('\n'),
+  rows: lines.slice(from, to),
   style: {
     backgroundImage: `url(${photo})`,
     backgroundSize: `90em ${GRID_HEIGHT}em`,
@@ -629,7 +632,7 @@ const animatedBand = (
     ? stillBand(lines, from, from + rows, photo)
     : {
         from,
-        text: (frames[frame] ?? []).join('\n'),
+        rows: frames[frame] ?? [],
         style: {
           backgroundImage: `url(${sprite})`,
           backgroundSize: `90em ${frames.length * rows * LINE_HEIGHT}em`,

@@ -58,6 +58,14 @@ body {
    * the frame rate of the slider */
 }
 
+/* A row of an ASCII grid (src/portrait/grid-rows.tsx): a block exactly one
+ * line tall, the line-height of .portrait and .backdrop, as Safari rounds
+ * the height of a line of text down to whole pixels */
+.grid-row {
+  display: block;
+  height: 1.09em;
+}
+
 /* A part of the portrait (the hair rows, the rest of the face). Each
  * character shows the photo through it; which slice of which image is set
  * inline. */
@@ -245,15 +253,37 @@ body {
   /* Quick clicks on the close button (a double click selects the text
    * nearest) leave the name and the links alone */
   user-select: none;
+  /* A half never shrinks below its text (.screen-2-half), so on a screen
+   * too short for the principles the screen scrolls, rather than the text
+   * running under the close buttons */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
+/* On a short screen, closer together; on a short phone screen, closer
+ * still, just clear of the close buttons */
+@media (max-height: 64rem) {
+  .screen-2 {
+    gap: 1.5rem;
+    padding-block: 4.5rem;
+  }
+}
+
+@media (max-width: 40rem) and (max-height: 64rem) {
+  .screen-2 {
+    gap: 1rem;
+    padding-block: 4.25rem;
+  }
+}
+
+/* The two halves share the height equally, so the name stays in the
+ * middle, but never shrink below their text */
 .screen-2-half {
   display: flex;
   flex: 1 1 0;
   justify-content: center;
   gap: 2.5rem;
   width: 100%;
-  min-height: 0;
 }
 
 .screen-2-side {
@@ -355,10 +385,25 @@ body {
   line-height: 1.45;
 }
 
+@media (max-width: 40rem) and (max-height: 64rem) {
+  .screen-2-side p {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+}
+
 @media (min-width: 40rem) {
   .screen-2-side p {
     font-size: 1rem;
     line-height: 1.5;
+  }
+}
+
+/* A short wide screen (a laptop): a little smaller, to fit its half */
+@media (min-width: 40rem) and (max-height: 64rem) {
+  .screen-2-side p {
+    font-size: 0.875rem;
+    line-height: 1.4;
   }
 }
 
@@ -388,13 +433,22 @@ body {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: min(300px, 80vw);
+  /* Small on a short screen, so the principles above and below it have
+   * room to read comfortably */
+  width: min(300px, 80vw, max(7rem, 100dvh - 37.5rem));
   aspect-ratio: 1;
   color: #ffffff;
   font-size: 1.625rem;
   line-height: 1.3;
   text-align: center;
   white-space: pre-line;
+}
+
+/* The name, smaller in the smaller square of a short phone screen */
+@media (max-width: 40rem) and (max-height: 64rem) {
+  .screen-2-name {
+    font-size: 1.25rem;
+  }
 }
 
 /* The square behind the name, turned a quarter turn clockwise at each
@@ -415,7 +469,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Never narrower than the name, in a small square */
   width: 43%;
+  min-width: 4.5em;
   aspect-ratio: 1;
   color: inherit;
   font: inherit;
@@ -447,9 +503,12 @@ body {
   transition: stroke-dashoffset 220ms ease-in;
 }
 
-.screen-2-name-button:hover .screen-2-name-outline path {
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+/* Only with a mouse: a tap on a phone would leave it drawn */
+@media (hover: hover) {
+  .screen-2-name-button:hover .screen-2-name-outline path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

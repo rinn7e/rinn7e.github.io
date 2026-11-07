@@ -216,7 +216,24 @@ export const Screen2 = ({
     willChange: moving ? 'scale' : undefined,
   }
 
-  // Open: Escape closes it; once settled, focus moves to its close button
+  // Open: Escape closes it; once settled, focus moves to its close button,
+  // when it was opened from the keyboard. After a tap or a click it stays
+  // put, as Safari draws a focus ring on a focus moved by script even then.
+  const keyboard = useRef(false)
+  useEffect(() => {
+    const onKeyDown = () => {
+      keyboard.current = true
+    }
+    const onPointerDown = () => {
+      keyboard.current = false
+    }
+    document.addEventListener('keydown', onKeyDown, true)
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, true)
+      document.removeEventListener('pointerdown', onPointerDown, true)
+    }
+  }, [])
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -226,7 +243,7 @@ export const Screen2 = ({
     return () => document.removeEventListener('keydown', onKey)
   }, [open])
   useEffect(() => {
-    if (settled) close.current?.focus()
+    if (settled && keyboard.current) close.current?.focus()
   }, [settled])
 
   return (
