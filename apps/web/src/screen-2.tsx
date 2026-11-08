@@ -381,7 +381,6 @@ export const Screen2 = ({
               // was, so a second click on the eye while the screen opens
               // would switch the mode
               inert={!settled}
-              title={mode === 'links' ? 'My principles' : 'My links'}
               className='screen-2-name-button'
               onClick={tapName}
               onPointerDown={startHold}
