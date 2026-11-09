@@ -493,7 +493,7 @@ html {
   -webkit-touch-callout: none;
 }
 
-/* The name: regular, a little faded, as on rinn7e.com. It is a button
+/* The name: light, a little faded. It is a button
  * that switches the screen between the links and the principles: a small
  * square around the name whose outline draws itself when pointed at. */
 .screen-2-name-button {
@@ -507,7 +507,7 @@ html {
   font: inherit;
   /* In proportion to the square: 26px in the 300px square */
   font-size: 8.667cqi;
-  font-weight: 400;
+  font-weight: 300;
   white-space: pre-line;
   cursor: pointer;
   opacity: 0.85;
