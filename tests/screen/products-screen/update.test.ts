@@ -112,16 +112,45 @@ describe('products screen update', () => {
       expect(afterLate).toEqual(second)
     })
 
-    it('fades the panel out, then closes it and brings its card back', () => {
+    it('flies the card back to its place in the grid, then closes', () => {
       const [model] = init(O.some('damn-center'))
       const [closing] = update(
         { _tag: 'CloseProduct', id: 'damn-center', isAnimated: true },
         model,
       )
       expect(phasesOf(closing)).toEqual(['Closing'])
-      const [closed] = update({ _tag: 'CloseDone', seq: closing.seq }, closing)
+      const [returning] = update(
+        {
+          _tag: 'CloseMeasured',
+          seq: closing.seq,
+          flight: O.some({ from: to, to: from }),
+        },
+        closing,
+      )
+      expect(returning.openedList[0]?.phase).toEqual({
+        _tag: 'Returning',
+        from: to,
+        to: from,
+      })
+      const [closed] = update(
+        { _tag: 'CloseDone', seq: returning.seq },
+        returning,
+      )
       expect(closed.openedList).toEqual([])
       expect(closed.returnedList).toEqual(['damn-center'])
+    })
+
+    it('fades the card out when it has no place in the grid', () => {
+      const [model] = init(O.some('damn-center'))
+      const [closing] = update(
+        { _tag: 'CloseProduct', id: 'damn-center', isAnimated: true },
+        model,
+      )
+      const [fading] = update(
+        { _tag: 'CloseMeasured', seq: closing.seq, flight: O.none },
+        closing,
+      )
+      expect(phasesOf(fading)).toEqual(['FadingOut'])
     })
   })
 

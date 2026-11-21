@@ -31,7 +31,9 @@ import {
   type OpenedProduct,
   type Props,
   PropsEq,
+  RETURN_MS,
   SPIN_MS,
+  gridCardDomId,
   panelCardDomId,
 } from './type'
 
@@ -56,8 +58,9 @@ const ProductsScreen = ({ model, dispatch }: Props) => (
               'p-[0.5rem] lg:p-[0.75rem]',
               // Away in the popup: the cell keeps its room
               O.isSome(openedAs(model.openedList, product)) ? 'invisible' : '',
+              // A card back from the popup shows at once, not dealt again
               RA.elem(S.Eq)(product.id)(model.returnedList)
-                ? 'card-return'
+                ? ''
                 : model.isFirstShow
                   ? 'deal-in'
                   : '',
@@ -131,6 +134,7 @@ const columnCardView = ({
 }) => (
   <button
     type='button'
+    id={gridCardDomId(product.id)}
     aria-label={`Open ${product.name}`}
     className='block w-full rounded-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100'
     onClick={(event) => {
@@ -176,8 +180,20 @@ const flightStyleOf = (phase: OpenPhase): React.CSSProperties => {
         transition: `transform ${SPIN_MS}ms cubic-bezier(0.25, 0.9, 0.25, 1)`,
       }
     case 'Shown':
-      return {}
     case 'Closing':
+      return {}
+    case 'Returning': {
+      // Back to its place in the grid, spinning the other way
+      const dx = phase.to.left - phase.from.left
+      const dy = phase.to.top - phase.from.top
+      const scale = phase.to.width / phase.from.width
+      return {
+        transformOrigin: 'top left',
+        transform: `perspective(900px) translate(${dx}px, ${dy}px) scale(${scale}) rotateY(-360deg)`,
+        transition: `transform ${RETURN_MS}ms cubic-bezier(0.5, 0, 0.3, 1)`,
+      }
+    }
+    case 'FadingOut':
       return {
         opacity: 0,
         transform: 'scale(0.85)',
@@ -198,6 +214,8 @@ const revealClassOf = (phase: OpenPhase, delayClass: string): string => {
     case 'Shown':
       return `opacity-100 transition-opacity duration-[300ms] ease-out ${delayClass}`
     case 'Closing':
+    case 'Returning':
+    case 'FadingOut':
       return 'opacity-0 transition-opacity duration-[200ms] ease-in'
   }
 }
@@ -206,7 +224,7 @@ const roundButtonClass =
   'flex size-[2.25rem] items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-700 transition-colors hover:border-zinc-500 hover:text-zinc-950 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-400 dark:hover:text-zinc-50'
 
 // The backdrop and the white of the popup fade in with the flight of the
-// card, and out when it closes; the card itself is not faded with them
+// card, and out while it flies back; the card itself is not faded with them
 const popupLayerClassOf = (phase: OpenPhase): string => {
   switch (phase._tag) {
     case 'Measuring':
@@ -216,9 +234,16 @@ const popupLayerClassOf = (phase: OpenPhase): string => {
     case 'Shown':
       return 'opacity-100 transition-opacity duration-[300ms] ease-out'
     case 'Closing':
+    case 'Returning':
+    case 'FadingOut':
       return 'opacity-0 transition-opacity duration-[260ms] ease-in'
   }
 }
+
+const isClosingPhase = (phase: OpenPhase): boolean =>
+  phase._tag === 'Closing' ||
+  phase._tag === 'Returning' ||
+  phase._tag === 'FadingOut'
 
 const closeMsgOf = (product: Product): Msg => ({
   _tag: 'CloseProduct',
@@ -244,7 +269,12 @@ const productPopupView = ({
 }) => (
   <div
     data-popup-open='true'
-    className='fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-[0.75rem] lg:items-center lg:p-[2rem]'
+    className={[
+      'fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-[0.75rem] lg:items-center lg:p-[2rem]',
+      // While it closes, clicks go through to the page, so another card
+      // opens at once
+      isClosingPhase(opened.phase) ? 'pointer-events-none' : '',
+    ].join(' ')}
   >
     <div
       aria-hidden='true'

@@ -23,13 +23,24 @@ export type CardRect = {
 // 2. `Flying`: the card is drawn back at `from`, with no transition.
 // 3. `Spinning`: the card moves to its place while it spins.
 // 4. `Shown`: the screenshots and the text fade in.
-// 5. `Closing`: the panel fades out, then the product closes.
+// 5. `Closing`: the panel starts to fade out, and the card is measured on
+//    the panel (`from`) and at its place in the grid (`to`).
+// 6. `Returning`: the card flies and spins back to its place in the grid,
+//    then the product closes.
+// 7. `FadingOut`: the card is not found in the grid (filtered out), so it
+//    fades out with the panel instead, then the product closes.
 export type OpenPhase =
   | { readonly _tag: 'Measuring'; readonly from: CardRect }
   | { readonly _tag: 'Flying'; readonly from: CardRect; readonly to: CardRect }
   | { readonly _tag: 'Spinning' }
   | { readonly _tag: 'Shown' }
   | { readonly _tag: 'Closing' }
+  | {
+      readonly _tag: 'Returning'
+      readonly from: CardRect
+      readonly to: CardRect
+    }
+  | { readonly _tag: 'FadingOut' }
 
 // A product opened in place, with the screenshot its slideshow shows
 export type OpenedProduct = {
@@ -82,6 +93,14 @@ export type Msg =
       readonly id: string
       readonly isAnimated: boolean
     }
+  | {
+      readonly _tag: 'CloseMeasured'
+      readonly seq: number
+      readonly flight: Option<{
+        readonly from: CardRect
+        readonly to: CardRect
+      }>
+    }
   | { readonly _tag: 'CloseDone'; readonly seq: number }
   | {
       readonly _tag: 'ShowSlide'
@@ -102,7 +121,10 @@ export const OpenPhaseEq: EqClass.Eq<OpenPhase> = {
   equals: (x, y) => {
     if (x._tag === 'Measuring' && y._tag === 'Measuring') {
       return CardRectEq.equals(x.from, y.from)
-    } else if (x._tag === 'Flying' && y._tag === 'Flying') {
+    } else if (
+      (x._tag === 'Flying' && y._tag === 'Flying') ||
+      (x._tag === 'Returning' && y._tag === 'Returning')
+    ) {
       return CardRectEq.equals(x.from, y.from) && CardRectEq.equals(x.to, y.to)
     } else {
       return x._tag === y._tag
@@ -136,9 +158,15 @@ export const PropsEq: EqClass.Eq<Props> = {
   equals: (x, y) => ModelEq.equals(x.model, y.model),
 }
 
-// The DOM id of the card on the panel, measured when it lands
+// The DOM id of the card on the panel, measured when it lands and when it
+// leaves
 export const panelCardDomId = (id: string): string => `product-card-${id}`
 
-// How long the card spins into place, and how long the panel fades out
+// The DOM id of the card in the grid, measured when the card flies back
+export const gridCardDomId = (id: string): string => `grid-card-${id}`
+
+// How long the card spins into place, how long it flies back, and how long
+// the panel fades out
 export const SPIN_MS = 750
+export const RETURN_MS = 560
 export const CLOSE_MS = 260

@@ -245,8 +245,8 @@ export const productList: readonly Product[] = [
     logo: monogramLogo('IO'),
     color: '#b44fa8',
     slideList: slidesOf('image-overlay', [
-      'A design floating at half opacity over a page in the browser, started from the terminal',
       'The options of the command',
+      'A design floating at half opacity over a page in the browser, started from the terminal',
       'A design composed over a screenshot, where the differences show as a ghost image',
     ]),
     isPixelArt: false,

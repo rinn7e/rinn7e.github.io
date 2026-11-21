@@ -14,7 +14,9 @@ import {
   type Msg,
   type OpenPhase,
   type OpenedProduct,
+  RETURN_MS,
   SPIN_MS,
+  gridCardDomId,
   panelCardDomId,
 } from './type'
 
@@ -55,6 +57,8 @@ export const update = (msg: Msg, model: Model): [Model, Cmd<Msg>] => {
       return [withPhaseOf(msg.seq, shown)(model), Cmd.none()]
     case 'CloseProduct':
       return closeProductHandler(msg.id, msg.isAnimated)(model)
+    case 'CloseMeasured':
+      return closeMeasuredHandler(msg.seq, msg.flight)(model)
     case 'CloseDone':
       return closeDoneHandler(msg.seq)(model)
     case 'ShowSlide':
@@ -111,17 +115,36 @@ export const openProductHandler =
     }
   }
 
+// Where the element of `domId` is on the page, if it is there
+const rectOf = (domId: string): Option<CardRect> =>
+  pipe(
+    O.fromNullable(document.getElementById(domId)),
+    O.map((element) => {
+      const rect = element.getBoundingClientRect()
+      return { left: rect.left, top: rect.top, width: rect.width }
+    }),
+  )
+
 const measureCardCmd = (id: string, seq: number): Cmd<Msg> =>
   afterNextPaintCmd(
-    (): Option<CardRect> =>
-      pipe(
-        O.fromNullable(document.getElementById(panelCardDomId(id))),
-        O.map((element) => {
-          const rect = element.getBoundingClientRect()
-          return { left: rect.left, top: rect.top, width: rect.width }
-        }),
-      ),
+    (): Option<CardRect> => rectOf(panelCardDomId(id)),
     (to): Msg => ({ _tag: 'CardMeasured', seq, to: O.flatten(to) }),
+  )
+
+// Where the card is on the panel, and where its place in the grid is
+const measureReturnCmd = (id: string, seq: number): Cmd<Msg> =>
+  afterNextPaintCmd(
+    () =>
+      pipe(
+        O.Do,
+        O.apS('from', rectOf(panelCardDomId(id))),
+        O.apS('to', rectOf(gridCardDomId(id))),
+      ),
+    (flight): Msg => ({
+      _tag: 'CloseMeasured',
+      seq,
+      flight: O.flatten(flight),
+    }),
   )
 
 // The product of an open or close still going on, by its `seq`
@@ -185,9 +208,10 @@ export const cardPlacedHandler =
       ),
     )
 
-// Closes the products for which `isClosed` holds: animated, they fade out
-// first, as one close with its own `seq`; otherwise (reduced motion) they
-// close at once
+// Closes the products for which `isClosed` holds: animated, as one close
+// with its own `seq`, the panel fades out while the card flies back to its
+// place in the grid (measured first); otherwise (reduced motion) they close
+// at once
 const closeWhere =
   (isClosed: (opened: OpenedProduct) => boolean, isAnimated: boolean) =>
   (model: Model): [Model, Cmd<Msg>] => {
@@ -210,7 +234,12 @@ const closeWhere =
             ),
             seq,
           },
-          delayCmd<Msg>(CLOSE_MS, { _tag: 'CloseDone', seq }),
+          Cmd.batch(
+            pipe(
+              closedList,
+              RA.map((opened) => measureReturnCmd(opened.id, seq)),
+            ),
+          ),
         ]
       } else {
         return [
@@ -232,7 +261,38 @@ const closeWhere =
 export const closeProductHandler = (id: string, isAnimated: boolean) =>
   closeWhere((opened) => opened.id === id, isAnimated)
 
-// The products of the close `seq` have faded out: their cards come back
+// The card's place in the grid is known: it flies back there. A card that
+// is not in the grid (filtered out) fades out with the panel instead.
+export const closeMeasuredHandler =
+  (
+    seq: number,
+    flight: Option<{ readonly from: CardRect; readonly to: CardRect }>,
+  ) =>
+  (model: Model): [Model, Cmd<Msg>] =>
+    pipe(
+      openedOf(seq, model),
+      O.fold(
+        (): [Model, Cmd<Msg>] => [model, Cmd.none()],
+        (opened): [Model, Cmd<Msg>] => {
+          if (opened.phase._tag !== 'Closing') {
+            return [model, Cmd.none()]
+          } else if (O.isSome(flight)) {
+            return [
+              withPhaseOf(seq, { _tag: 'Returning', ...flight.value })(model),
+              delayCmd<Msg>(RETURN_MS, { _tag: 'CloseDone', seq }),
+            ]
+          } else {
+            return [
+              withPhaseOf(seq, { _tag: 'FadingOut' })(model),
+              delayCmd<Msg>(CLOSE_MS, { _tag: 'CloseDone', seq }),
+            ]
+          }
+        },
+      ),
+    )
+
+// The cards of the close `seq` are back in the grid (or faded out): the
+// products close
 export const closeDoneHandler =
   (seq: number) =>
   (model: Model): [Model, Cmd<Msg>] => {

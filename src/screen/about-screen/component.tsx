@@ -53,7 +53,7 @@ const contactView = ({
     <a
       {...newTabProps}
       href={href}
-      className='flex w-full flex-col items-center gap-[0.5rem] rounded-[0.875rem] border border-zinc-200 px-[1rem] py-[1.5rem] text-center transition-colors hover:border-blue-600 dark:border-zinc-800 dark:hover:border-blue-400'
+      className='flex w-full flex-col items-center gap-[0.5rem] rounded-[0.875rem] border border-zinc-200 bg-white px-[1rem] py-[1.5rem] text-center transition-colors hover:border-blue-600 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-blue-400'
     >
       {icon}
       <span className='flex items-center gap-[0.25rem] font-semibold'>
