@@ -1,5 +1,11 @@
 import { Cmd } from 'tea-cup-fp'
 
+import {
+  ABOUT_TITLE,
+  HANDLE,
+  PRIVACY_TITLE,
+  PRODUCTS_TITLE,
+} from '@/common/seo'
 import { type Destination, type NavigationMsg } from '@/common/type/destination'
 import { cmdSucceed, scrollToTopCmd } from '@/common/util'
 import * as ProductsScreen from '@/screen/products-screen'
@@ -11,17 +17,17 @@ import {
   currentScreenModelOfMove,
 } from '@/type'
 
-const SITE_NAME = 'rinn7e'
-
 // The title of the browser tab for each screen
 const titleOf = (destination: Destination): string => {
   switch (destination.screen._tag) {
     case 'ProductsScreen':
-      return `${SITE_NAME}: open-source work`
+      return PRODUCTS_TITLE
     case 'AboutScreen':
-      return `About - ${SITE_NAME}`
+      return ABOUT_TITLE
+    case 'PrivacyScreen':
+      return PRIVACY_TITLE
     case 'NotFoundScreen':
-      return `Not found - ${SITE_NAME}`
+      return `Not found - ${HANDLE}`
   }
 }
 
@@ -63,6 +69,8 @@ const freshScreenModelOf = (
     }
     case 'AboutScreen':
       return [{ _tag: 'AboutScreenModel' }, Cmd.none()]
+    case 'PrivacyScreen':
+      return [{ _tag: 'PrivacyScreenModel' }, Cmd.none()]
     case 'NotFoundScreen':
       return [{ _tag: 'NotFoundScreenModel' }, Cmd.none()]
   }

@@ -10,6 +10,7 @@ import { pageBackdropView } from '@/component/page-backdrop'
 import { type FlipControl, profileHeaderView } from '@/component/profile-header'
 import { aboutScreenView } from '@/screen/about-screen/component'
 import { notFoundScreenView } from '@/screen/not-found-screen/component'
+import { privacyScreenView } from '@/screen/privacy-screen/component'
 import { ProductsScreenMemo } from '@/screen/products-screen/component'
 import { type Model, type Msg, currentScreenOf } from '@/type'
 
@@ -75,6 +76,8 @@ const screenView = ({ model, dispatch }: RootProps) => {
       )
     case 'AboutScreenModel':
       return aboutScreenView()
+    case 'PrivacyScreenModel':
+      return privacyScreenView()
     case 'NotFoundScreenModel':
       return notFoundScreenView()
   }

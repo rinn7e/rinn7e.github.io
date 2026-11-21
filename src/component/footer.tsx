@@ -1,4 +1,4 @@
-import { aboutDestination } from '@/common/type/destination'
+import { aboutDestination, privacyDestination } from '@/common/type/destination'
 import { newTabProps } from '@/common/util'
 
 import { Link } from './link'
@@ -36,6 +36,9 @@ export const footerView = () => (
       >
         Source of this site
       </a>
+      <Link destination={privacyDestination()} className={footerLinkClass}>
+        Privacy
+      </Link>
     </nav>
     <p>All the work here is open source.</p>
   </footer>

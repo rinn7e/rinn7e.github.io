@@ -8,6 +8,7 @@ import {
   destinationOfScreen,
   notFoundScreen,
   parseDestination,
+  privacyScreen,
   productsScreen,
   toUrlString,
 } from '@/common/type/destination'
@@ -49,6 +50,11 @@ describe('parseDestination', () => {
     expect(parsePath('/about/')).toEqual(destinationOfScreen(aboutScreen()))
   })
 
+  it('reads the Privacy page with or without a trailing slash', () => {
+    expect(parsePath('/privacy')).toEqual(destinationOfScreen(privacyScreen()))
+    expect(parsePath('/privacy/')).toEqual(destinationOfScreen(privacyScreen()))
+  })
+
   it('reads any other path as not found', () => {
     expect(parsePath('/resume')).toEqual(destinationOfScreen(notFoundScreen()))
   })
@@ -59,7 +65,7 @@ describe('toUrlString', () => {
     expect(toUrlString(destinationOfScreen(productsScreen()))).toBe('/')
   })
 
-  it('round-trips every product and the About page', () => {
+  it('round-trips every product and the About and Privacy pages', () => {
     const destinationList = [
       ...productList.map((product) =>
         destinationOfScreen(productsScreen(O.some(product.id))),
@@ -72,6 +78,7 @@ describe('toUrlString', () => {
         productsScreen(O.some('ninja-adventure-indigo'), O.some('Game')),
       ),
       destinationOfScreen(aboutScreen()),
+      destinationOfScreen(privacyScreen()),
     ]
     destinationList.forEach((destination) => {
       expect(parsePath(toUrlString(destination))).toEqual(destination)

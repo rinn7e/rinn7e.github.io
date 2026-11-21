@@ -1,5 +1,8 @@
+import * as Ord from 'fp-ts/Ord'
 import * as RA from 'fp-ts/ReadonlyArray'
+import * as B from 'fp-ts/boolean'
 import { pipe } from 'fp-ts/function'
+import * as S from 'fp-ts/string'
 
 // The products shown on the landing page: open source, public repositories
 // of github.com/rinn7e. Libraries are left out on purpose.
@@ -51,6 +54,8 @@ export type Product = {
   // Pixel art keeps its hard edges when scaled
   readonly isPixelArt: boolean
   readonly linkList: readonly ProductLink[]
+  // When its repository was created on GitHub (ISO 8601, UTC), for the order
+  readonly createdAt: string
 }
 
 const sourceLink = (repository: string): ProductLink => ({
@@ -77,9 +82,10 @@ const slidesOf = (
     })),
   )
 
-export const productList: readonly Product[] = [
+const unorderedProductList: readonly Product[] = [
   {
     id: 'damn-center',
+    createdAt: '2026-06-08T01:39:07Z',
     name: 'Damn Center',
     cardName: 'Damn Center',
     cardTagline: 'Center any website',
@@ -109,6 +115,7 @@ export const productList: readonly Product[] = [
   },
   {
     id: 'claude-desktop-theme-tuner',
+    createdAt: '2026-10-24T02:36:37Z',
     name: 'Claude Desktop Theme Tuner',
     cardName: 'Theme Tuner',
     cardTagline: 'Theme the Claude app',
@@ -133,6 +140,7 @@ export const productList: readonly Product[] = [
   },
   {
     id: 'tea-ecosystem',
+    createdAt: '2026-11-13T03:33:11Z',
     name: 'TEA Ecosystem',
     cardName: 'TEA Ecosystem',
     cardTagline: 'TEA in every language',
@@ -158,6 +166,7 @@ export const productList: readonly Product[] = [
   },
   {
     id: 'realworld-conduit',
+    createdAt: '2026-05-17T08:58:23Z',
     name: 'RealWorld Conduit',
     cardName: 'Conduit',
     cardTagline: 'Full-stack RealWorld',
@@ -183,6 +192,7 @@ export const productList: readonly Product[] = [
   },
   {
     id: 'ninja-adventure-indigo',
+    createdAt: '2026-09-29T08:36:19Z',
     name: 'Ninja Adventure',
     cardName: 'Ninja Adventure',
     cardTagline: 'A Scala 3 browser game',
@@ -210,6 +220,7 @@ export const productList: readonly Product[] = [
   },
   {
     id: 'indigo-game-starter-template',
+    createdAt: '2026-09-29T05:31:21Z',
     name: 'Indigo Game Starter',
     cardName: 'Indigo Starter',
     cardTagline: 'Indigo game template',
@@ -235,6 +246,7 @@ export const productList: readonly Product[] = [
   },
   {
     id: 'image-overlay',
+    createdAt: '2026-08-11T06:29:23Z',
     name: 'Image Overlay',
     cardName: 'Image Overlay',
     cardTagline: 'Overlay for macOS',
@@ -254,6 +266,7 @@ export const productList: readonly Product[] = [
   },
   {
     id: 'universal-theme-tuner',
+    createdAt: '2026-10-18T03:49:52Z',
     name: 'Universal Theme Tuner',
     cardName: 'Universal Tuner',
     cardTagline: 'Themes for your tools',
@@ -273,3 +286,22 @@ export const productList: readonly Product[] = [
     linkList: [sourceLink('universal-theme-tuner')],
   },
 ]
+
+// The products with a logo of their own come first, then the ones shown
+// with a monogram; in each group, the newest repository first
+const hasLogoFirstOrd: Ord.Ord<Product> = pipe(
+  B.Ord,
+  Ord.reverse,
+  Ord.contramap((product: Product) => product.logo._tag === 'ImageLogo'),
+)
+
+const newestFirstOrd: Ord.Ord<Product> = pipe(
+  S.Ord,
+  Ord.reverse,
+  Ord.contramap((product: Product) => product.createdAt),
+)
+
+export const productList: readonly Product[] = pipe(
+  unorderedProductList,
+  RA.sortBy([hasLogoFirstOrd, newestFirstOrd]),
+)

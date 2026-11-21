@@ -1,13 +1,65 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
+import { type Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
-// A static site with path routing (/, /about), served at the root of
-// rinn7e.com: asset paths are absolute, so a deep link finds them
+import { htmlOfPage, seoPageList, sitemapXml } from './src/common/seo'
+
+// What search engines read (`src/common/seo.ts`), written into the HTML:
+// in the dev server, the first page; in a build, once the bundle has its
+// asset links, a copy of the app for each page at its path (GitHub Pages
+// serves `about/index.html` for `/about`), a `404.html` copy left out of
+// search, and the sitemap.
+const seoPlugin = (): Plugin => {
+  let isBuild = false
+  return {
+    name: 'rinn7e-seo',
+    // After the HTML plugin of Vite, which writes `index.html` into the bundle
+    enforce: 'post',
+    configResolved(config) {
+      isBuild = config.command === 'build'
+    },
+    transformIndexHtml(html) {
+      const [firstPage] = seoPageList
+      return isBuild || firstPage === undefined
+        ? html
+        : htmlOfPage(html, firstPage)
+    },
+    generateBundle(_options, bundle) {
+      const index = bundle['index.html']
+      const [firstPage] = seoPageList
+      if (firstPage === undefined || index?.type !== 'asset') {
+        return
+      }
+      const built = String(index.source)
+      index.source = htmlOfPage(built, firstPage)
+      seoPageList.slice(1).forEach((page) => {
+        this.emitFile({
+          type: 'asset',
+          fileName: `${page.path.replace(/^\//, '')}index.html`,
+          source: htmlOfPage(built, page),
+        })
+      })
+      this.emitFile({
+        type: 'asset',
+        fileName: '404.html',
+        source: htmlOfPage(built, firstPage, false),
+      })
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sitemap.xml',
+        source: sitemapXml(),
+      })
+    },
+  }
+}
+
+// A static site with path routing (/, /about, /privacy), served at the root
+// of rinn7e.com: asset paths are absolute, so a deep link finds them
 export default defineConfig({
   base: '/',
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), seoPlugin()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

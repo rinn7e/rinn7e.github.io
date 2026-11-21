@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/rinn7e/rinn7e.github.io" alt="License: GPL-3.0"></a>
 </p>
 
-[rinn7e.com](https://rinn7e.com/) is laid out like a profile page: my photo, the counts of the products, a short bio, highlights for the product categories (each filters the grid) and two tabs, Products and About. The Open-source work tab is a grid of square cards, one per project, that tilt under the pointer. A click opens a popup: the card flies into it with a spin while a slideshow of its screenshots, a short description and its links (the live app, the browser stores, the code) fade in. The About tab links my LinkedIn and my GitHub.
+[rinn7e.com](https://rinn7e.com/) is laid out like a profile page: my photo, the counts of the products, highlights for the product categories (each filters the grid) and two tabs, Products and About, with a Privacy page in the footer. The Open-source work tab is a grid of portrait playing cards, one per project, that tilt under the pointer. A click opens a popup: the card flies into it with a spin while a slideshow of its screenshots, a short description and its links (the live app, the browser stores, the code) fade in. The About tab links my LinkedIn and my GitHub.
 
 ## Screenshot
 
@@ -49,7 +49,7 @@ pnpm run check && pnpm run lint && pnpm run format:check && pnpm test
 
 ## Deploy
 
-GitHub Pages serves `dist/` at [rinn7e.com](https://rinn7e.com/). `.github/workflows/deploy.yml` checks, builds and deploys every push to `master`. The custom domain is set in the Pages settings of the repository, with "GitHub Actions" as the source. The build copies `index.html` to `about/index.html` and `404.html`, so a link straight to `/about` loads the app.
+GitHub Pages serves `dist/` at [rinn7e.com](https://rinn7e.com/). `.github/workflows/deploy.yml` checks, builds and deploys every push to `master`. The custom domain is set in the Pages settings of the repository, with "GitHub Actions" as the source. The build writes a copy of the app with its own title, description and canonical URL at `about/index.html` and `privacy/index.html`, a `404.html` left out of search, and `sitemap.xml`, so a link straight to `/about` loads the app and search engines see every page (see "Search engines" in `doc/code-convention.md`).
 
 The other GitHub Pages projects of `rinn7e` (such as `/claude-desktop-theme-tuner/`) are served under this domain by their own repositories, so no route of this site may use their names.
 

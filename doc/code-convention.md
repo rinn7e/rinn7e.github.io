@@ -20,7 +20,7 @@ src/screen/<name>-screen/      one folder per screen
 tests/                         mirrors src/
 ```
 
-File and folder names are singular and in kebab-case. A screen with its own state has `type.ts` (`Model`, `Msg`, `Props`, `PropsEq`), `update.ts` (`init`, `update`), `component.tsx` (only the memo component is exported) and `index.ts`, which re-exports `type` and `update`, never `component`. A screen with no state (`about-screen`, `not-found-screen`) is only a view helper.
+File and folder names are singular and in kebab-case. A screen with its own state has `type.ts` (`Model`, `Msg`, `Props`, `PropsEq`), `update.ts` (`init`, `update`), `component.tsx` (only the memo component is exported) and `index.ts`, which re-exports `type` and `update`, never `component`. A screen with no state (`about-screen`, `privacy-screen`, `not-found-screen`) is only a view helper.
 
 ## Views
 
@@ -32,11 +32,19 @@ File and folder names are singular and in kebab-case. A screen with its own stat
 
 The app owns where it is; the URL only follows.
 
-1. A `Destination` is a `Screen` with its params (`ProductsScreen` with the `product` opened and the `category` filtered to, `AboutScreen`). It is never stored: `destinationOf(model)` reads it from the screen model.
+1. A `Destination` is a `Screen` with its params (`ProductsScreen` with the `product` opened and the `category` filtered to, `AboutScreen`, `PrivacyScreen`). It is never stored: `destinationOf(model)` reads it from the screen model.
 2. Every move is a `NavigationMsg` (`Navigate` from a click, `UrlChanged` from the browser back and forward), handled by `navigationMsgHandler`. Links in the app use `Link`, a real anchor that navigates in the app on a plain left click.
-3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?product=damn-center`, `/about`).
+3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?product=damn-center`, `/about`, `/privacy`).
 4. The URL is written after every step by `withUrl`, the one wrapper around the root `update`: a change of destination pushes an entry, the same destination writes nothing, and `UrlChanged` already has its entry. The boot replaces the URL when it was another spelling of its destination (`/about/`).
 5. A param of a screen (the product opened) lives in the model of that screen only; opening or closing a product is a message of the screen, and the URL follows. The screenshot shown is not in the URL.
+
+## Search engines
+
+`src/common/seo.ts` holds what search engines and link previews read: the title and description of each page (`seoPageList`), the social card (`public/og.png`, 1200x630, a render of the top of the products page) and the structured data (schema.org JSON-LD: the person, the site and the products, built from `productList`). `index.html` has placeholders (`%SEO_TITLE%` and the like). In the dev server the plugin of `vite.config.ts` fills them in for the first page; in a build it writes a copy of the app for each page at its path (`about/index.html`, `privacy/index.html`, which GitHub Pages serves for `/about` and `/privacy`), a `404.html` copy with `noindex`, and `sitemap.xml`. `public/robots.txt` points to the sitemap. A new page goes into `seoPageList`, and the app sets the same title as it moves (`titleOf` in `src/handler/navigation-handler.ts`).
+
+## The privacy page
+
+The Privacy page (`/privacy`) lists every party that sees a visit and everything the site keeps in the browser. Today that is GitHub Pages, which serves the site, and nothing else: no analytics, no cookies, no storage, no asset from another host. It is only true while it matches the code and the hosting, so a commit that adds a request to another host, an asset from a CDN, an embed, an analytics tool or anything kept in the browser changes the page too.
 
 ## Debug panel
 

@@ -18,11 +18,16 @@ export type AboutScreen = {
   readonly _tag: 'AboutScreen'
 }
 
+export type PrivacyScreen = {
+  readonly _tag: 'PrivacyScreen'
+}
+
 export type NotFoundScreen = {
   readonly _tag: 'NotFoundScreen'
 }
 
-export type Screen = ProductsScreen | AboutScreen | NotFoundScreen
+export type Screen =
+  ProductsScreen | AboutScreen | PrivacyScreen | NotFoundScreen
 
 export const ProductsScreenEq: EqClass.Eq<ProductsScreen> = EqClass.struct({
   _tag: S.Eq,
@@ -31,6 +36,10 @@ export const ProductsScreenEq: EqClass.Eq<ProductsScreen> = EqClass.struct({
 })
 
 export const AboutScreenEq: EqClass.Eq<AboutScreen> = EqClass.struct({
+  _tag: S.Eq,
+})
+
+export const PrivacyScreenEq: EqClass.Eq<PrivacyScreen> = EqClass.struct({
   _tag: S.Eq,
 })
 
@@ -44,6 +53,8 @@ export const ScreenEq: EqClass.Eq<Screen> = {
       return ProductsScreenEq.equals(x, y)
     } else if (x._tag === 'AboutScreen' && y._tag === 'AboutScreen') {
       return AboutScreenEq.equals(x, y)
+    } else if (x._tag === 'PrivacyScreen' && y._tag === 'PrivacyScreen') {
+      return PrivacyScreenEq.equals(x, y)
     } else if (x._tag === 'NotFoundScreen' && y._tag === 'NotFoundScreen') {
       return NotFoundScreenEq.equals(x, y)
     } else {
@@ -75,6 +86,7 @@ export const productsScreen = (
   category,
 })
 export const aboutScreen = (): Screen => ({ _tag: 'AboutScreen' })
+export const privacyScreen = (): Screen => ({ _tag: 'PrivacyScreen' })
 export const notFoundScreen = (): Screen => ({ _tag: 'NotFoundScreen' })
 
 export const defaultDestination = (): Destination =>
@@ -82,6 +94,9 @@ export const defaultDestination = (): Destination =>
 
 export const aboutDestination = (): Destination =>
   destinationOfScreen(aboutScreen())
+
+export const privacyDestination = (): Destination =>
+  destinationOfScreen(privacyScreen())
 
 // Every move of the app goes through `navigationMsgHandler`. `UrlChanged`
 // is the browser's back or forward, the only move that comes from the URL

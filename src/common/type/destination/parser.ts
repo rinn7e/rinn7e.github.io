@@ -22,6 +22,7 @@ import {
   type Screen,
   aboutScreen,
   notFoundScreen,
+  privacyScreen,
   productsScreen,
 } from './type'
 
@@ -78,6 +79,7 @@ const categoryToParam = (category: ProductCategory): CategoryParam => {
 
 const productsMatch = query(productsParams).and(end)
 const aboutMatch = lit('about').and(end)
+const privacyMatch = lit('privacy').and(end)
 
 const anyStrings = new Match<object>(
   new Parser((r) => O.some([{}, new Route([], r.query)])),
@@ -102,11 +104,12 @@ const screenParser: Parser<Screen> = zero<Screen>()
     ),
   )
   .alt(aboutMatch.parser.map(() => aboutScreen()))
+  .alt(privacyMatch.parser.map(() => privacyScreen()))
   .alt(anyStrings.parser.map(() => notFoundScreen()))
 
 // `href`: a full URL (the page's `location.href`). A trailing slash reads
 // the same as none (`/about/` is `/about`), since GitHub Pages serves the
-// About page from `about/index.html`.
+// About and Privacy pages from `about/index.html` and `privacy/index.html`.
 export const parseDestination = (href: string): Destination => {
   const url = new URL(href)
   const pathname =
@@ -133,6 +136,8 @@ export const toUrlString = (destination: Destination): string => {
       })
     case 'AboutScreen':
       return format(aboutMatch.formatter, {})
+    case 'PrivacyScreen':
+      return format(privacyMatch.formatter, {})
     case 'NotFoundScreen':
       return '/404'
   }

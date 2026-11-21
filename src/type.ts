@@ -14,6 +14,7 @@ export type ScreenModel =
       readonly model: ProductsScreen.Model
     }
   | { readonly _tag: 'AboutScreenModel' }
+  | { readonly _tag: 'PrivacyScreenModel' }
   | { readonly _tag: 'NotFoundScreenModel' }
 
 // The screen shown (`Model.screenModel`). Owned: read it anywhere as a
@@ -79,6 +80,8 @@ export const currentScreenOf = (screenModel: ScreenModel): Screen => {
       }
     case 'AboutScreenModel':
       return { _tag: 'AboutScreen' }
+    case 'PrivacyScreenModel':
+      return { _tag: 'PrivacyScreen' }
     case 'NotFoundScreenModel':
       return { _tag: 'NotFoundScreen' }
   }
