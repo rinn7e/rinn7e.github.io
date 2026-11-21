@@ -55,7 +55,7 @@ export const privacyScreenView = () => (
         <h1 className='text-[1.5rem] leading-[1.25] font-semibold'>Privacy</h1>
         <p className='text-[0.9375rem] leading-[1.6] text-balance text-zinc-600 dark:text-zinc-400'>
           This site is a list of open-source projects. It does not know who you
-          are, and it keeps nothing about you.
+          are, and it keeps nothing about you; it only counts visits, in total.
         </p>
       </section>
 
@@ -77,9 +77,26 @@ export const privacyScreenView = () => (
             ),
           })}
           {rowView({
+            label: 'Analytics',
+            children: (
+              <>
+                Cloudflare Web Analytics counts visits: the page, the referring
+                site, the country, the browser and the kind of device. It sets
+                no cookie, does not fingerprint you and does not follow you
+                across sites, and the counts are only ever seen in total, under
+                the{' '}
+                {externalLinkView({
+                  href: 'https://www.cloudflare.com/privacypolicy/',
+                  label: 'Cloudflare privacy policy',
+                })}
+                .
+              </>
+            ),
+          })}
+          {rowView({
             label: 'Your browser',
             children:
-              'Nothing is kept in your browser: no cookies, no local storage. The pictures, the icons and the text all come from the site itself, and the fonts are the ones of your device.',
+              'Nothing is kept in your browser: no cookies, no local storage. The pictures, the icons and the text all come from the site itself, the fonts are the ones of your device, and the one script from elsewhere is the counter of Cloudflare above.',
           })}
           {rowView({
             label: 'Links out',
@@ -92,8 +109,8 @@ export const privacyScreenView = () => (
       <section className='flex flex-col gap-[0.75rem]'>
         {sectionTitleView('What it does not do')}
         <p className='text-center text-[0.875rem] leading-[1.6] text-balance text-zinc-600 dark:text-zinc-400'>
-          No analytics, no cookies, no accounts, no forms, no ads and no
-          third-party trackers. Nothing is collected, sold or shared.
+          No cookies, no accounts, no forms, no ads and no third-party trackers.
+          Nothing about you is collected, sold or shared.
         </p>
       </section>
 

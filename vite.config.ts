@@ -55,11 +55,37 @@ const seoPlugin = (): Plugin => {
   }
 }
 
+// Cloudflare Web Analytics, in the built site only, so a visit to the dev
+// server is never counted. No cookies and no personal data, so no consent
+// banner. The token is public (it ships in every page), and `spa` counts
+// each move of the app as a page view. It is the token of the `rinn7e.com`
+// site in Web Analytics, set to "Enable with JS Snippet installation": the
+// traffic goes straight to GitHub Pages, so Cloudflare cannot inject it.
+// The Privacy page names it (see "The privacy page" in the code convention).
+const cloudflareWebAnalytics = (): Plugin => ({
+  name: 'cloudflare-web-analytics',
+  apply: 'build',
+  transformIndexHtml: () => [
+    {
+      tag: 'script',
+      attrs: {
+        defer: true,
+        src: 'https://static.cloudflareinsights.com/beacon.min.js',
+        'data-cf-beacon': JSON.stringify({
+          token: '4aa2721b854f435d8dbd10a769b10b78',
+          spa: true,
+        }),
+      },
+      injectTo: 'body',
+    },
+  ],
+})
+
 // A static site with path routing (/, /about, /privacy), served at the root
 // of rinn7e.com: asset paths are absolute, so a deep link finds them
 export default defineConfig({
   base: '/',
-  plugins: [react(), tailwindcss(), seoPlugin()],
+  plugins: [react(), tailwindcss(), cloudflareWebAnalytics(), seoPlugin()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

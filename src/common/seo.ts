@@ -49,7 +49,7 @@ export const seoPageList: readonly SeoPage[] = [
   {
     path: '/privacy/',
     title: PRIVACY_TITLE,
-    description: `How ${HANDLE}.com treats your privacy: no analytics, no cookies, and nothing kept about you.`,
+    description: `How ${HANDLE}.com treats your privacy: no cookies, nothing kept about you, and visits counted only in total.`,
   },
 ]
 

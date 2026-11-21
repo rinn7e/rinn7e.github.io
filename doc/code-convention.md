@@ -44,7 +44,7 @@ The app owns where it is; the URL only follows.
 
 ## The privacy page
 
-The Privacy page (`/privacy`) lists every party that sees a visit and everything the site keeps in the browser. Today that is GitHub Pages, which serves the site, and nothing else: no analytics, no cookies, no storage, no asset from another host. It is only true while it matches the code and the hosting, so a commit that adds a request to another host, an asset from a CDN, an embed, an analytics tool or anything kept in the browser changes the page too.
+The Privacy page (`/privacy`) lists every party that sees a visit and everything the site keeps in the browser. Today that is GitHub Pages, which serves the site, and Cloudflare Web Analytics (its beacon is added to the built pages by `cloudflareWebAnalytics` in `vite.config.ts`, with the token of the `rinn7e.com` site, set to "Enable with JS Snippet installation"), and nothing else: no cookies, no storage, no other asset from another host. A change of what Web Analytics collects, or a new tool turned on in the Cloudflare dashboard, changes the page too. It is only true while it matches the code and the hosting, so a commit that adds a request to another host, an asset from a CDN, an embed, an analytics tool or anything kept in the browser changes the page too.
 
 ## Debug panel
 
