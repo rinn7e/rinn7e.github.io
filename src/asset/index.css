@@ -1,8 +1,41 @@
 @import 'tailwindcss';
 
 @layer base {
+  /* Every size of the site is in rem. On a desktop the base is 80%, so the
+     whole page is drawn at 80% (the size the browser zoom of 80% showed);
+     a phone keeps the full size, so its text stays easy to read. */
   html {
     color-scheme: light dark;
+    font-size: 100%;
+  }
+
+  @media (min-width: 64rem) {
+    html {
+      font-size: 80%;
+    }
+  }
+
+  /* Every clickable element shows the hand (Tailwind v4 leaves buttons on
+     the arrow); a disabled one says it cannot be used */
+  a[href],
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  select:not(:disabled),
+  summary,
+  label[for],
+  label:has(input) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  /* A product popup is open: the page under it does not scroll */
+  body:has([data-popup-open='true']) {
+    overflow: hidden;
   }
 
   body {
@@ -14,5 +47,136 @@
       sans-serif;
     line-height: 1.55;
     @apply bg-white dark:bg-zinc-950;
+  }
+}
+
+/* Motion: each one plays once, on `opacity` and `transform` only, and none
+   plays under reduced motion. Nothing waits for these: the open and close of
+   a product are phases of the model instead. */
+
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes card-return {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer components {
+  /* The cards come in on the first load: a short fade up, one quickly after
+     the other (`--deal-index`) */
+  .deal-in {
+    animation: deal-in 360ms cubic-bezier(0.25, 1, 0.5, 1) both;
+    animation-delay: calc(var(--deal-index, 0) * 35ms);
+  }
+
+  .card-return {
+    animation: card-return 220ms ease-out both;
+  }
+
+  /* The card behaves like a real object in the hand: a small tilt toward
+     the pointer with a flat perspective, a soft sheen and light, and a
+     shadow that shifts as if lit from above. It follows the pointer through
+     `--card-rx`, `--card-ry` (the tilt), `--card-mx`, `--card-my` (the
+     pointer, in percent), `--card-nx`, `--card-ny` (the pointer from the
+     centre, -1 to 1) and `--card-hover` (0 or 1), set by `ProductCardMemo`
+     on the box around the card. Gradients and one small shadow: no blur. */
+  .card-tilt {
+    transform: perspective(1000px) rotateX(var(--card-rx, 0deg))
+      rotateY(calc(var(--card-ry, 0deg) + var(--card-flip, 0deg)));
+    transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  [data-tracking='true'] > .card-tilt {
+    transition: transform 180ms ease-out;
+  }
+
+  /* Turned over to its back (the debug panel): the turn itself plays as the
+     transition of the tilt, slower, so the card is seen turning */
+  [data-flipped='true'] > .card-tilt {
+    --card-flip: 180deg;
+    transition: transform 800ms cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+
+  /* The shadow under the card, its only edge on the white page: it falls
+     away from the side that tilts up, a few pixels at most */
+  .card-edge {
+    box-shadow: calc(var(--card-nx, 0) * -3px)
+      calc(3px + var(--card-ny, 0) * -2px) 8px
+      rgb(0 0 0 / calc(0.14 + var(--card-hover, 0) * 0.06));
+    transition: box-shadow 300ms ease-out;
+  }
+
+  /* The silver foil of the face, under the logo: a light metal gradient
+     that shifts as the card turns, a fine brushed grain, and a bright band
+     that sweeps across with the pointer. Only on hover: at rest the face is
+     plain white. */
+  .card-silver {
+    background:
+      linear-gradient(
+        115deg,
+        transparent calc(var(--card-mx, 50%) - 28%),
+        rgb(255 255 255 / 0.95) var(--card-mx, 50%),
+        transparent calc(var(--card-mx, 50%) + 28%)
+      ),
+      linear-gradient(
+        115deg,
+        #fdfdfe 0%,
+        #e2e5e9 30%,
+        #f8f9fa 50%,
+        #d3d7dc 72%,
+        #f4f5f7 100%
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgb(0 0 0 / 0.03) 0 1px,
+        transparent 1px 3px
+      );
+    background-size:
+      100% 100%,
+      240% 240%,
+      auto;
+    background-position:
+      0 0,
+      var(--card-mx, 50%) var(--card-my, 50%),
+      0 0;
+    opacity: calc(var(--card-hover, 0) * 0.85);
+    transition: opacity 300ms ease-out;
+  }
+
+  /* A light gloss over the whole card, logo included: a soft highlight
+     where the pointer is, kept faint so the logo never washes out */
+  .card-gloss {
+    background: radial-gradient(
+      farthest-corner circle at var(--card-mx, 50%) var(--card-my, 50%),
+      rgb(255 255 255 / 0.28) 0%,
+      rgb(255 255 255 / 0) 40%
+    );
+    opacity: var(--card-hover, 0);
+    transition: opacity 300ms ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deal-in,
+    .card-return,
+    .card-tilt {
+      transform: none;
+      transition: none;
+    }
   }
 }

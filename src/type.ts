@@ -1,9 +1,12 @@
+import * as O from 'fp-ts/Option'
+
 import { type Brand } from '@/common/type/brand-wrapper'
 import { type NavigationMsg, type Screen } from '@/common/type/destination'
+import type * as DebugPanel from '@/component/debug-panel'
 import type * as ProductsScreen from '@/screen/products-screen'
 
 // The screen shown, as its model. Its tag and its own fields (the products
-// category) are the destination's screen (`currentScreenOf`): a
+// product opened) are the destination's screen (`currentScreenOf`): a
 // `currentScreen` field next to it would say the same thing twice.
 export type ScreenModel =
   | {
@@ -45,6 +48,7 @@ export const sameScreenWith =
 
 export type Model = {
   readonly screenModel: CurrentScreenModel
+  readonly debugPanel: DebugPanel.Model
 }
 
 export type Msg =
@@ -54,13 +58,25 @@ export type Msg =
       readonly _tag: 'ProductsScreenMsg'
       readonly subMsg: ProductsScreen.Msg
     }
+  | { readonly _tag: 'DebugPanelMsg'; readonly subMsg: DebugPanel.Msg }
+
+// The product open when there is exactly one: a param of the destination.
+// Several open at once (from the debug panel) are not spelled in the URL.
+const onlyOpenedOf = (model: ProductsScreen.Model): O.Option<string> =>
+  model.openedList.length === 1
+    ? O.fromNullable(model.openedList[0]?.id)
+    : O.none
 
 // The screen shown (the destination's `screen`, `destinationOf`), read from
 // the fields of its model that hold the screen's params
 export const currentScreenOf = (screenModel: ScreenModel): Screen => {
   switch (screenModel._tag) {
     case 'ProductsScreenModel':
-      return { _tag: 'ProductsScreen', category: screenModel.model.category }
+      return {
+        _tag: 'ProductsScreen',
+        product: onlyOpenedOf(screenModel.model),
+        category: screenModel.model.category,
+      }
     case 'AboutScreenModel':
       return { _tag: 'AboutScreen' }
     case 'NotFoundScreenModel':

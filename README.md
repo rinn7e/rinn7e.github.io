@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/rinn7e/rinn7e.github.io" alt="License: GPL-3.0"></a>
 </p>
 
-[rinn7e.com](https://rinn7e.com/) shows each product with a screenshot, a short description and its links (the live app, the browser stores, the code), with a filter by category. The About page links my LinkedIn, my GitHub and my casual personal site, [me.rinn7e.com](https://me.rinn7e.com/) (its code is in [`rinn7e/me`](https://github.com/rinn7e/me)).
+[rinn7e.com](https://rinn7e.com/) is laid out like a profile page: my photo, the counts of the products, a short bio, highlights for the product categories (each filters the grid) and two tabs, Products and About. The Open-source work tab is a grid of square cards, one per project, that tilt under the pointer. A click opens a popup: the card flies into it with a spin while a slideshow of its screenshots, a short description and its links (the live app, the browser stores, the code) fade in. The About tab links my LinkedIn and my GitHub.
 
 ## Screenshot
 
@@ -21,8 +21,9 @@
 
 ## Add a product
 
-1. Put a screenshot in `public/shot/` (WebP, at most 1200 px wide).
-2. Add an entry to `productList` in `src/common/data/product.ts`: its name, kind, description, categories, image and links.
+1. Put its screenshots in `public/shot/<product id>/` as `1.webp`, `2.webp` and so on (at most 1200 px wide).
+2. Put its logo in `public/logo/`, or give it a monogram if it has no logo of its own.
+3. Add an entry to `productList` in `src/common/data/product.ts`: its id, name, kind, description, categories, logo, color, screenshots and links.
 
 Only public repositories go here, and no libraries.
 

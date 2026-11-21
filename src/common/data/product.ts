@@ -1,3 +1,6 @@
+import * as RA from 'fp-ts/ReadonlyArray'
+import { pipe } from 'fp-ts/function'
+
 // The products shown on the landing page: open source, public repositories
 // of github.com/rinn7e. Libraries are left out on purpose.
 
@@ -18,16 +21,33 @@ export type ProductLink =
   | { readonly _tag: 'PlayLink'; readonly url: string }
   | { readonly _tag: 'SourceLink'; readonly url: string }
 
+// The logo of a product, or a monogram for a product that has none of its own
+export type ProductLogo =
+  | { readonly _tag: 'ImageLogo'; readonly src: string }
+  | { readonly _tag: 'MonogramLogo'; readonly letters: string }
+
+// One screenshot of the slideshow, in `public/shot/<product id>/`
+export type ProductSlide = {
+  readonly src: string
+  readonly alt: string
+}
+
 export type Product = {
+  // Spelled in the URL (`/?product=<id>`)
   readonly id: string
   readonly name: string
+  // The name printed on its card, short enough for the width of the card
+  readonly cardName: string
+  // A few words at the bottom of its card on what it is
+  readonly cardTagline: string
   // A short label of what it is, shown under the name
   readonly kind: string
   readonly description: string
   readonly categoryList: readonly ProductCategory[]
-  // A screenshot in `public/shot/`, shown whole inside a 16:10 frame
-  readonly image: string
-  readonly imageAlt: string
+  readonly logo: ProductLogo
+  // The color of its card, behind the logo
+  readonly color: string
+  readonly slideList: readonly ProductSlide[]
   // Pixel art keeps its hard edges when scaled
   readonly isPixelArt: boolean
   readonly linkList: readonly ProductLink[]
@@ -38,17 +58,42 @@ const sourceLink = (repository: string): ProductLink => ({
   url: `https://github.com/rinn7e/${repository}`,
 })
 
+const imageLogo = (src: string): ProductLogo => ({ _tag: 'ImageLogo', src })
+
+const monogramLogo = (letters: string): ProductLogo => ({
+  _tag: 'MonogramLogo',
+  letters,
+})
+
+const slidesOf = (
+  id: string,
+  altList: readonly string[],
+): readonly ProductSlide[] =>
+  pipe(
+    altList,
+    RA.mapWithIndex((index, alt) => ({
+      src: `shot/${id}/${index + 1}.webp`,
+      alt,
+    })),
+  )
+
 export const productList: readonly Product[] = [
   {
     id: 'damn-center',
     name: 'Damn Center',
+    cardName: 'Damn Center',
+    cardTagline: 'Center any website',
     kind: 'Browser extension',
     description:
       'Center any website on a widescreen or ultrawide monitor, with per-site padding, rulers, themes and patterns.',
     categoryList: ['BrowserExtension'],
-    image: 'shot/damn-center.webp',
-    imageAlt:
+    logo: imageLogo('logo/damn-center.png'),
+    color: '#2a9d8f',
+    slideList: slidesOf('damn-center', [
       'The Damn Center popup next to a website centered on a wide screen',
+      'The popup with its padding, side and theme settings',
+      'A match for one site, with its own padding',
+    ]),
     isPixelArt: false,
     linkList: [
       {
@@ -65,13 +110,17 @@ export const productList: readonly Product[] = [
   {
     id: 'claude-desktop-theme-tuner',
     name: 'Claude Desktop Theme Tuner',
+    cardName: 'Theme Tuner',
+    cardTagline: 'Theme the Claude app',
     kind: 'Web app and plugin',
     description:
       'Pick, tune and copy a color theme for the Claude desktop app, with a live preview in light and dark mode.',
     categoryList: ['WebApp', 'DeveloperTool'],
-    image: 'shot/theme-tuner.webp',
-    imageAlt:
+    logo: imageLogo('logo/claude-desktop-theme-tuner.svg'),
+    color: '#6d5bd0',
+    slideList: slidesOf('claude-desktop-theme-tuner', [
       'The theme tuner with its presets and knobs, and a live preview of the app in both modes',
+    ]),
     isPixelArt: false,
     linkList: [
       {
@@ -85,12 +134,18 @@ export const productList: readonly Product[] = [
   {
     id: 'tea-ecosystem',
     name: 'TEA Ecosystem',
+    cardName: 'TEA Ecosystem',
+    cardTagline: 'TEA in every language',
     kind: 'Website',
     description:
       'A catalog of The Elm Architecture in every language and framework, each one graded against Elm.',
     categoryList: ['WebApp'],
-    image: 'shot/tea-ecosystem.webp',
-    imageAlt: 'The TEA Ecosystem catalog with its language icons and entries',
+    logo: imageLogo('logo/tea-ecosystem.svg'),
+    color: '#1f7fd1',
+    slideList: slidesOf('tea-ecosystem', [
+      'The catalog with its language icons and entries',
+      'The rubric: what counts as The Elm Architecture',
+    ]),
     isPixelArt: false,
     linkList: [
       {
@@ -104,12 +159,18 @@ export const productList: readonly Product[] = [
   {
     id: 'realworld-conduit',
     name: 'RealWorld Conduit',
+    cardName: 'Conduit',
+    cardTagline: 'Full-stack RealWorld',
     kind: 'Full-stack app',
     description:
       'A type-safe RealWorld app: a Haskell Servant backend, React frontends on react-tea-cup and an admin dashboard.',
     categoryList: ['WebApp'],
-    image: 'shot/conduit.webp',
-    imageAlt: 'The Conduit home page with its global feed and popular tags',
+    logo: imageLogo('logo/realworld-conduit.svg'),
+    color: '#3f9d4c',
+    slideList: slidesOf('realworld-conduit', [
+      'The Conduit home page with its global feed and popular tags',
+      'An article page',
+    ]),
     isPixelArt: false,
     linkList: [
       {
@@ -123,12 +184,21 @@ export const productList: readonly Product[] = [
   {
     id: 'ninja-adventure-indigo',
     name: 'Ninja Adventure',
+    cardName: 'Ninja Adventure',
+    cardTagline: 'A Scala 3 browser game',
     kind: 'Browser game',
     description:
       'Ninja Adventure rewritten in Scala 3 with the Indigo engine, to show how a real game works in TEA style.',
     categoryList: ['Game'],
-    image: 'shot/ninja.webp',
-    imageAlt: 'The village of Ninja Adventure, with the player and followers',
+    logo: monogramLogo('NA'),
+    color: '#6a8f3a',
+    slideList: slidesOf('ninja-adventure-indigo', [
+      'The forest path, with the player and followers',
+      'The swamp in the rain',
+      'Talking to a villager',
+      'The dungeon and its monsters',
+      'The north village',
+    ]),
     isPixelArt: true,
     linkList: [
       {
@@ -141,12 +211,19 @@ export const productList: readonly Product[] = [
   {
     id: 'indigo-game-starter-template',
     name: 'Indigo Game Starter',
+    cardName: 'Indigo Starter',
+    cardTagline: 'Indigo game template',
     kind: 'Game template',
     description:
       'A starter template for Indigo games in Scala 3, shaped like a TEA app, with Slime Quest, a small RPG, to build on.',
     categoryList: ['Game', 'DeveloperTool'],
-    image: 'shot/slime-quest.webp',
-    imageAlt: 'The world map of Slime Quest, with a quest to talk to the elder',
+    logo: monogramLogo('IG'),
+    color: '#4f46b8',
+    slideList: slidesOf('indigo-game-starter-template', [
+      'The title screen of Slime Quest',
+      'The world map, with a quest to talk to the elder',
+      'A turn-based battle with a slime',
+    ]),
     isPixelArt: true,
     linkList: [
       {
@@ -159,26 +236,39 @@ export const productList: readonly Product[] = [
   {
     id: 'image-overlay',
     name: 'Image Overlay',
+    cardName: 'Image Overlay',
+    cardTagline: 'Overlay for macOS',
     kind: 'macOS command line tool',
     description:
       'Float a semi-transparent image over every window, to line up a design with the page you built.',
     categoryList: ['DeveloperTool'],
-    image: 'shot/image-overlay.webp',
-    imageAlt:
+    logo: monogramLogo('IO'),
+    color: '#b44fa8',
+    slideList: slidesOf('image-overlay', [
       'A design floating at half opacity over a page in the browser, started from the terminal',
+      'The options of the command',
+      'A design composed over a screenshot, where the differences show as a ghost image',
+    ]),
     isPixelArt: false,
     linkList: [sourceLink('image-overlay')],
   },
   {
     id: 'universal-theme-tuner',
     name: 'Universal Theme Tuner',
+    cardName: 'Universal Tuner',
+    cardTagline: 'Themes for your tools',
     kind: 'Themes and extension',
     description:
       'Solarized themes for VS Code with a live tuning panel, and Solarize, an extension that recolors websites.',
     categoryList: ['DeveloperTool', 'BrowserExtension'],
-    image: 'shot/universal-theme-tuner.webp',
-    imageAlt:
+    logo: monogramLogo('UT'),
+    color: '#b58900',
+    slideList: slidesOf('universal-theme-tuner', [
       'The VS Code Theme Tuner panel with the surface, text and syntax colors',
+      'The Claude desktop app in Solarized Light',
+      'The Solarize popup',
+      'A website recolored by Solarize',
+    ]),
     isPixelArt: false,
     linkList: [sourceLink('universal-theme-tuner')],
   },

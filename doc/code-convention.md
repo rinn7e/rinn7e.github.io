@@ -15,7 +15,7 @@ src/util/                      destinationOf and the URL adapter
 src/common/type/destination/   Destination, Screen, NavigationMsg, the URL parser
 src/common/data/product.ts     the products shown
 src/common/util/               commands for side effects
-src/component/                 shared views: header, footer, link, icons
+src/component/                 shared views: profile header, footer, link, icons, the debug panel
 src/screen/<name>-screen/      one folder per screen
 tests/                         mirrors src/
 ```
@@ -32,11 +32,15 @@ File and folder names are singular and in kebab-case. A screen with its own stat
 
 The app owns where it is; the URL only follows.
 
-1. A `Destination` is a `Screen` with its params (`ProductsScreen` with its `category`, `AboutScreen`). It is never stored: `destinationOf(model)` reads it from the screen model.
+1. A `Destination` is a `Screen` with its params (`ProductsScreen` with the `product` opened and the `category` filtered to, `AboutScreen`). It is never stored: `destinationOf(model)` reads it from the screen model.
 2. Every move is a `NavigationMsg` (`Navigate` from a click, `UrlChanged` from the browser back and forward), handled by `navigationMsgHandler`. Links in the app use `Link`, a real anchor that navigates in the app on a plain left click.
-3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?category=developer-tools`, `/about`).
+3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?product=damn-center`, `/about`).
 4. The URL is written after every step by `withUrl`, the one wrapper around the root `update`: a change of destination pushes an entry, the same destination writes nothing, and `UrlChanged` already has its entry. The boot replaces the URL when it was another spelling of its destination (`/about/`).
-5. A param of a screen (the category) lives in the model of that screen only; picking it is a message of the screen, and the URL follows.
+5. A param of a screen (the product opened) lives in the model of that screen only; opening or closing a product is a message of the screen, and the URL follows. The screenshot shown is not in the URL.
+
+## Debug panel
+
+`src/component/debug-panel/` is a small panel in the bottom right corner for checking the site (turn every card over to its back, and back again). It shows only in development and on a local server (`IS_DEBUG_PANEL_ENABLED` in `src/common/env.ts`), never on `rinn7e.com`. Its asks to act on a screen are intercepted by the app root, which passes them to the screen.
 
 ## Owned values
 
@@ -53,10 +57,12 @@ The app owns where it is; the URL only follows.
 
 1. Tailwind classes only, mobile first: unprefixed classes are the phone, `lg:` is the desktop. No `sm:`, `md:` or `max-*` breakpoints.
 2. No margin classes: spacing is padding on the parent, or `gap`.
-3. Explicit sizes in brackets (`px-[16px]`, `gap-[24px]`), font sizes in `rem` (`text-[0.875rem]`).
+3. Explicit sizes in brackets, in `rem` (`px-[1rem]`, `gap-[1.5rem]`, `text-[0.875rem]`), so the whole page follows the root font size: 100% on a phone, 80% on a desktop (`src/asset/index.css`). Only hairlines stay in `px` (`border-[1px]`, the 1px grid gap).
 4. Every hover and focus color has its `dark:` counterpart.
-5. The layout is mirror-symmetric around the centre axis: the header is a `1fr auto 1fr` grid with the logo in the middle, headings and rows of chips and cards are centred, and an incomplete last row of cards is centred too. Long text stays left-aligned inside a centred column.
-6. Keep the GPU cost low: no `backdrop-filter` or blur, no large shadows, no looping animation. Plain borders and solid backgrounds.
+5. Every clickable element shows the hand cursor, and a disabled one `not-allowed`: one base rule in `src/asset/index.css` covers links, buttons, `[role='button']`, `summary`, `label[for]` and `select`; any other element that takes a click gets `cursor-pointer`.
+6. The layout is a profile page: up to 1457px of content in 20px side padding, a 680px profile header (150px avatar, counts, bio, two buttons, highlights, tabs), then a grid of square cards, six a row at most. These sizes are at the full root size; a desktop draws them at 80%. The product opened shows in a popup over the page (closed by its button, Escape or a click on the backdrop; the page under it does not scroll), its slideshow across the whole popup with its card over the bottom right corner, and its text under it. Its card leaves the grid while it is open, and the grid keeps the room.
+7. Motion animates only `opacity` and `transform`, plays once and stops under reduced motion. An animation the next step waits for (the card flying into the popup, the popup closing) is phases of the model (`OpenPhase`), with a `seq` that drops late messages; a one-off entrance nothing waits for (the cards fading in on the first screen a visitor sees; a switch of tab or category shows them at once) is a CSS animation in `src/asset/index.css`. The tilt and shine of a card under the pointer are presentation only, CSS variables set on the card.
+8. Keep the GPU cost low: no `backdrop-filter` or blur, no large shadows, no looping animation. Plain borders and solid backgrounds.
 
 ## Tests
 

@@ -29,16 +29,34 @@ describe('urlWriteOf', () => {
     )
   })
 
-  it('pushes the URL of a category picked in place', () => {
+  it('pushes the URL of a product opened in place, and of its close', () => {
     const model = bootOn('/')
+    const openMsg: Msg = {
+      _tag: 'ProductsScreenMsg',
+      subMsg: { _tag: 'OpenProduct', id: 'damn-center', from: O.none },
+    }
+    const [openedModel] = update(openMsg, model)
+    expect(urlWriteOf(openMsg, model, openedModel)).toEqual(
+      O.some({ _tag: 'PushUrl', url: '/?product=damn-center' }),
+    )
+    const closeMsg: Msg = {
+      _tag: 'ProductsScreenMsg',
+      subMsg: { _tag: 'CloseProduct', id: 'damn-center', isAnimated: false },
+    }
+    const [closedModel] = update(closeMsg, openedModel)
+    expect(urlWriteOf(closeMsg, openedModel, closedModel)).toEqual(
+      O.some({ _tag: 'PushUrl', url: '/' }),
+    )
+  })
+
+  it('writes nothing for a screenshot shown', () => {
+    const model = bootOn('/?product=damn-center')
     const msg: Msg = {
       _tag: 'ProductsScreenMsg',
-      subMsg: { _tag: 'SelectCategory', category: O.some('Game') },
+      subMsg: { _tag: 'ShowSlide', id: 'damn-center', index: 1 },
     }
     const [updatedModel] = update(msg, model)
-    expect(urlWriteOf(msg, model, updatedModel)).toEqual(
-      O.some({ _tag: 'PushUrl', url: '/?category=games' }),
-    )
+    expect(urlWriteOf(msg, model, updatedModel)).toEqual(O.none)
   })
 
   it('writes nothing for a move to the destination shown', () => {
@@ -72,7 +90,7 @@ describe('bootUrlOf', () => {
     ).toEqual(O.some('/about'))
     expect(
       bootUrlOf(
-        locationOf('https://rinn7e.com/?category=nonsense'),
+        locationOf('https://rinn7e.com/?product=nonsense'),
         destinationOfScreen(productsScreen()),
       ),
     ).toEqual(O.some('/'))

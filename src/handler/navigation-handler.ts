@@ -17,7 +17,7 @@ const SITE_NAME = 'rinn7e'
 const titleOf = (destination: Destination): string => {
   switch (destination.screen._tag) {
     case 'ProductsScreen':
-      return `${SITE_NAME}: open source products`
+      return `${SITE_NAME}: open-source work`
     case 'AboutScreen':
       return `About - ${SITE_NAME}`
     case 'NotFoundScreen':
@@ -35,8 +35,9 @@ const setTitleCmd = (destination: Destination): Cmd<Msg> =>
 // Review: called only by `navigateHandler` and the boot.
 export const initScreenModel = (
   destination: Destination,
+  isFirstShow: boolean,
 ): [CurrentScreenModel, Cmd<Msg>] => {
-  const [screenModel, screenCmd] = freshScreenModelOf(destination)
+  const [screenModel, screenCmd] = freshScreenModelOf(destination, isFirstShow)
   return [
     currentScreenModelOfMove(screenModel),
     Cmd.batch([screenCmd, setTitleCmd(destination)]),
@@ -45,11 +46,16 @@ export const initScreenModel = (
 
 const freshScreenModelOf = (
   destination: Destination,
+  isFirstShow: boolean,
 ): [ScreenModel, Cmd<Msg>] => {
   const { screen } = destination
   switch (screen._tag) {
     case 'ProductsScreen': {
-      const [model, cmd] = ProductsScreen.init(screen.category)
+      const [model, cmd] = ProductsScreen.init(
+        screen.product,
+        screen.category,
+        isFirstShow,
+      )
       return [
         { _tag: 'ProductsScreenModel', model },
         cmd.map((subMsg): Msg => ({ _tag: 'ProductsScreenMsg', subMsg })),
@@ -68,7 +74,7 @@ const freshScreenModelOf = (
 export const navigateHandler =
   (destination: Destination, isInternal: boolean) =>
   (model: Model): [Model, Cmd<Msg>] => {
-    const [screenModel, screenCmd] = initScreenModel(destination)
+    const [screenModel, screenCmd] = initScreenModel(destination, false)
     const updatedModel: Model = { ...model, screenModel }
     if (isInternal) {
       return [updatedModel, Cmd.batch([screenCmd, scrollToTopCmd()])]

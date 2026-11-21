@@ -7,7 +7,10 @@ import { type ProductCategory } from '@/common/data/product'
 
 export type ProductsScreen = {
   readonly _tag: 'ProductsScreen'
-  // The category filter, none for every product
+  // The id of the product opened in place, none when every product shows
+  // as its card
+  readonly product: Option<string>
+  // The category the cards are filtered to, none for every product
   readonly category: Option<ProductCategory>
 }
 
@@ -23,6 +26,7 @@ export type Screen = ProductsScreen | AboutScreen | NotFoundScreen
 
 export const ProductsScreenEq: EqClass.Eq<ProductsScreen> = EqClass.struct({
   _tag: S.Eq,
+  product: O.getEq(S.Eq),
   category: O.getEq(S.Eq),
 })
 
@@ -63,8 +67,13 @@ export const destinationOfScreen = (screen: Screen): Destination => ({
 })
 
 export const productsScreen = (
+  product: Option<string> = O.none,
   category: Option<ProductCategory> = O.none,
-): Screen => ({ _tag: 'ProductsScreen', category })
+): Screen => ({
+  _tag: 'ProductsScreen',
+  product,
+  category,
+})
 export const aboutScreen = (): Screen => ({ _tag: 'AboutScreen' })
 export const notFoundScreen = (): Screen => ({ _tag: 'NotFoundScreen' })
 

@@ -23,7 +23,7 @@ export type UrlWrite =
   | { readonly _tag: 'ReplaceUrl'; readonly url: string }
 
 // How the browser's history follows a step: every change of destination
-// pushes an entry (a move, or a category picked in place), so the browser's
+// pushes an entry (a move, or a product opened or closed in place), so the browser's
 // back returns to the destination before. The same destination writes
 // nothing. The browser's own move (`UrlChanged`) already has its entry and
 // writes nothing.
@@ -48,7 +48,7 @@ export const bootDestinationOf = (location: Location): Destination =>
   parseDestination(location.href)
 
 // The URL the boot's entry is corrected to when the page's URL is another
-// spelling of its destination (`/about/`, an unknown category). A page that
+// spelling of its destination (`/about/`, an unknown product). A page that
 // is not found keeps the URL it was opened with.
 export const bootUrlOf = (
   location: Location,

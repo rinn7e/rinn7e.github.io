@@ -27,3 +27,6 @@ tmp/
 # Local environment files
 .env.local
 .env.*.local
+
+# Screen recordings dropped in for reference
+*.mov

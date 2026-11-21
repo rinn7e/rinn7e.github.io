@@ -11,9 +11,11 @@ import {
   zero,
 } from '@rinn7e/fp-ts-routing'
 import * as O from 'fp-ts/Option'
+import * as RA from 'fp-ts/ReadonlyArray'
+import { pipe } from 'fp-ts/function'
 import * as t from 'io-ts'
 
-import { type ProductCategory } from '@/common/data/product'
+import { type ProductCategory, productList } from '@/common/data/product'
 
 import {
   type Destination,
@@ -29,6 +31,10 @@ import {
 // Parser
 // ------------------------------------------------------------------
 
+// Unknown query keys are dropped, and an id or category that is not known
+// reads as every product instead of a page that is not found
+const productsParams = t.partial({ product: t.string, category: t.string })
+
 const categoryParam = t.union([
   t.literal('web-apps'),
   t.literal('browser-extensions'),
@@ -37,18 +43,6 @@ const categoryParam = t.union([
 ])
 
 type CategoryParam = t.TypeOf<typeof categoryParam>
-
-// Unknown query keys and values are dropped, so `?category=nonsense` reads as
-// every product instead of a page that is not found
-const productsParams = t.partial({ category: t.string })
-
-const productsMatch = query(productsParams).and(end)
-const aboutMatch = lit('about').and(end)
-
-const anyStrings = new Match<object>(
-  new Parser((r) => O.some([{}, new Route([], r.query)])),
-  new Formatter((r) => r),
-)
 
 const categoryFromParam = (
   param: string | undefined,
@@ -82,10 +76,29 @@ const categoryToParam = (category: ProductCategory): CategoryParam => {
   }
 }
 
+const productsMatch = query(productsParams).and(end)
+const aboutMatch = lit('about').and(end)
+
+const anyStrings = new Match<object>(
+  new Parser((r) => O.some([{}, new Route([], r.query)])),
+  new Formatter((r) => r),
+)
+
+const productFromParam = (param: string | undefined): O.Option<string> =>
+  pipe(
+    O.fromNullable(param),
+    O.filter((id) =>
+      pipe(
+        productList,
+        RA.exists((product) => product.id === id),
+      ),
+    ),
+  )
+
 const screenParser: Parser<Screen> = zero<Screen>()
   .alt(
-    productsMatch.parser.map(({ category }) =>
-      productsScreen(categoryFromParam(category)),
+    productsMatch.parser.map(({ product, category }) =>
+      productsScreen(productFromParam(product), categoryFromParam(category)),
     ),
   )
   .alt(aboutMatch.parser.map(() => aboutScreen()))
@@ -115,9 +128,8 @@ export const toUrlString = (destination: Destination): string => {
   switch (screen._tag) {
     case 'ProductsScreen':
       return format(productsMatch.formatter, {
-        category: O.isSome(screen.category)
-          ? categoryToParam(screen.category.value)
-          : undefined,
+        category: pipe(screen.category, O.map(categoryToParam), O.toUndefined),
+        product: O.toUndefined(screen.product),
       })
     case 'AboutScreen':
       return format(aboutMatch.formatter, {})

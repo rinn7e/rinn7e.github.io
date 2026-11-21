@@ -1,6 +1,7 @@
 import * as O from 'fp-ts/Option'
 import { describe, expect, it } from 'vitest'
 
+import { productList } from '@/common/data/product'
 import {
   type Destination,
   aboutScreen,
@@ -19,14 +20,26 @@ describe('parseDestination', () => {
     expect(parsePath('/')).toEqual(destinationOfScreen(productsScreen()))
   })
 
-  it('reads a category of the products', () => {
+  it('reads the product opened', () => {
+    expect(parsePath('/?product=damn-center')).toEqual(
+      destinationOfScreen(productsScreen(O.some('damn-center'))),
+    )
+  })
+
+  it('reads the category of a highlight', () => {
     expect(parsePath('/?category=games')).toEqual(
-      destinationOfScreen(productsScreen(O.some('Game'))),
+      destinationOfScreen(productsScreen(O.none, O.some('Game'))),
     )
   })
 
   it('reads an unknown category as every product', () => {
     expect(parsePath('/?category=nonsense')).toEqual(
+      destinationOfScreen(productsScreen()),
+    )
+  })
+
+  it('reads an unknown product as every product', () => {
+    expect(parsePath('/?product=nonsense')).toEqual(
       destinationOfScreen(productsScreen()),
     )
   })
@@ -46,12 +59,18 @@ describe('toUrlString', () => {
     expect(toUrlString(destinationOfScreen(productsScreen()))).toBe('/')
   })
 
-  it('round-trips every category and the About page', () => {
+  it('round-trips every product and the About page', () => {
     const destinationList = [
-      destinationOfScreen(productsScreen(O.some('WebApp'))),
-      destinationOfScreen(productsScreen(O.some('BrowserExtension'))),
-      destinationOfScreen(productsScreen(O.some('Game'))),
-      destinationOfScreen(productsScreen(O.some('DeveloperTool'))),
+      ...productList.map((product) =>
+        destinationOfScreen(productsScreen(O.some(product.id))),
+      ),
+      destinationOfScreen(productsScreen(O.none, O.some('WebApp'))),
+      destinationOfScreen(productsScreen(O.none, O.some('BrowserExtension'))),
+      destinationOfScreen(productsScreen(O.none, O.some('Game'))),
+      destinationOfScreen(productsScreen(O.none, O.some('DeveloperTool'))),
+      destinationOfScreen(
+        productsScreen(O.some('ninja-adventure-indigo'), O.some('Game')),
+      ),
       destinationOfScreen(aboutScreen()),
     ]
     destinationList.forEach((destination) => {
@@ -61,7 +80,15 @@ describe('toUrlString', () => {
 
   it('spells a category with its full name', () => {
     expect(
-      toUrlString(destinationOfScreen(productsScreen(O.some('DeveloperTool')))),
+      toUrlString(
+        destinationOfScreen(productsScreen(O.none, O.some('DeveloperTool'))),
+      ),
     ).toBe('/?category=developer-tools')
+  })
+
+  it('spells the product opened with its id', () => {
+    expect(
+      toUrlString(destinationOfScreen(productsScreen(O.some('image-overlay')))),
+    ).toBe('/?product=image-overlay')
   })
 })
