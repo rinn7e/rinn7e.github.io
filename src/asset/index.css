@@ -107,53 +107,40 @@
     transition: box-shadow 300ms ease-out;
   }
 
-  /* The silver foil of the face, under the logo: a light metal gradient
-     that shifts as the card turns, a fine brushed grain, and a bright band
-     that sweeps across with the pointer. Only on hover: at rest the face is
-     plain white. */
-  .card-silver {
-    background:
-      linear-gradient(
-        115deg,
-        transparent calc(var(--card-mx, 50%) - 28%),
-        rgb(255 255 255 / 0.95) var(--card-mx, 50%),
-        transparent calc(var(--card-mx, 50%) + 28%)
-      ),
-      linear-gradient(
-        115deg,
-        #fdfdfe 0%,
-        #e2e5e9 30%,
-        #f8f9fa 50%,
-        #d3d7dc 72%,
-        #f4f5f7 100%
-      ),
-      repeating-linear-gradient(
-        90deg,
-        rgb(0 0 0 / 0.03) 0 1px,
-        transparent 1px 3px
-      );
-    background-size:
-      100% 100%,
-      240% 240%,
-      auto;
-    background-position:
-      0 0,
-      var(--card-mx, 50%) var(--card-my, 50%),
-      0 0;
-    opacity: calc(var(--card-hover, 0) * 0.85);
-    transition: opacity 300ms ease-out;
-  }
-
-  /* A light gloss over the whole card, logo included: a soft highlight
-     where the pointer is, kept faint so the logo never washes out */
-  .card-gloss {
-    background: radial-gradient(
-      farthest-corner circle at var(--card-mx, 50%) var(--card-my, 50%),
-      rgb(255 255 255 / 0.28) 0%,
-      rgb(255 255 255 / 0) 40%
+  /* Sunlight on a white playing card, held under a sky with the sun high
+     above and a little in front, the card at a slight tilt. The paper stays
+     white; only the light changes. The glare of the sun is a broad warm
+     patch near the top of the card, a little dimmer paper away from it, and
+     it drifts only a short way, against the tilt, easing after the pointer
+     as a real card turns in the hand. The glare is a layer twice the size
+     of the card that moves by `transform`, which eases on its own. The side
+     turned away from the sun gets a faint shade. Only on hover. */
+  .card-shade {
+    background: linear-gradient(
+      180deg,
+      transparent 40%,
+      rgb(20 24 30 / calc(0.012 + clamp(0, var(--card-ny, 0), 1) * 0.025)) 100%
     );
     opacity: var(--card-hover, 0);
-    transition: opacity 300ms ease-out;
+    transition: opacity 500ms ease-out;
+  }
+
+  .card-glare {
+    background: radial-gradient(
+      ellipse 42% 30% at 50% 36%,
+      rgb(255 247 222 / 0.6) 0%,
+      rgb(255 247 222 / 0.2) 40%,
+      rgb(24 28 36 / 0.008) 70%,
+      rgb(24 28 36 / 0.035) 100%
+    );
+    transform: translate(
+      calc(var(--card-nx, 0) * -7%),
+      calc(var(--card-ny, 0) * -5%)
+    );
+    opacity: var(--card-hover, 0);
+    transition:
+      transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 500ms ease-out;
   }
 
   @media (prefers-reduced-motion: reduce) {

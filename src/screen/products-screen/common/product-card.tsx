@@ -66,9 +66,9 @@ const releasePointer = (event: React.PointerEvent<HTMLDivElement>) => {
   )
 }
 
-// A square holo card: its front is only the logo of the product on white,
-// under a foil and a glare that follow the pointer; its back is white
-// with a black pattern, seen while the card spins.
+// A playing card: its front is the logo of the product on white paper, lit
+// by the sun as it tilts under the pointer; its back is the word rinn7e in
+// diagonal rows, seen while the card spins.
 // The pointer is tracked on the outer box, which never tilts: tracked on the
 // card itself, an edge would tilt away from under the pointer, end the hover
 // and flatten the card again, so only its middle would respond. The CSS
@@ -86,16 +86,16 @@ const ProductCard = ({ product, size, isFlipped }: ProductCardProps) => (
         style={{ '--card-color': product.color }}
         className='card-edge absolute inset-0 overflow-hidden rounded-[4.5cqw] bg-white [backface-visibility:hidden]'
       >
-        {/* The silver foil is the face behind the print, as on a foil card:
-            the frame, the corners and the logo stay crisp on top of it */}
-        <div className='card-silver pointer-events-none absolute inset-0' />
         {cardFrameView()}
         {cardTitleView({ product })}
         {cardTaglineView({ product })}
         <div className='absolute inset-x-[30cqw] inset-y-[36cqw] flex items-center justify-center'>
           {logoView({ product })}
         </div>
-        <div className='card-gloss pointer-events-none absolute inset-0' />
+        {/* Sunlight on the paper, over the print as on a real card: a
+            shade on the side turned away, and the glare of the sun */}
+        <div className='card-shade pointer-events-none absolute inset-0' />
+        <div className='card-glare pointer-events-none absolute inset-[-50%]' />
       </div>
       {/* Back */}
       <div className='card-edge absolute inset-0 [transform:rotateY(180deg)] overflow-hidden rounded-[4.5cqw] bg-white [backface-visibility:hidden]'>
