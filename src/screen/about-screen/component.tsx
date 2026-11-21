@@ -1,12 +1,14 @@
 import { ArrowUpRight } from 'lucide-react'
-import React from 'react'
+import React, { memo } from 'react'
 
 import { newTabProps } from '@/common/util'
 import { GithubIcon, LinkedinIcon } from '@/component/icon'
 
-// No model: the About screen has nothing to change, so it is a view helper.
+import { type Props, PropsEq } from './type'
+
+// Static for now: its model is empty (`type.ts`), so the memo draws it once.
 // It sits under the profile, so it has no title of its own.
-export const aboutScreenView = () => (
+const AboutScreen = (_props: Props) => (
   <div className='flex flex-col items-center pt-[2rem] pb-[6rem] lg:pt-[2.5rem]'>
     <div className='flex max-w-[36rem] flex-col gap-[1rem] text-left text-[0.9375rem] leading-[1.65]'>
       {/* The bio of github.com/rinn7e, as written there */}
@@ -60,3 +62,5 @@ const contactView = ({
     </a>
   </li>
 )
+
+export const AboutScreenMemo = memo(AboutScreen, PropsEq.equals)

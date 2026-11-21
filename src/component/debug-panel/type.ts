@@ -23,7 +23,8 @@ export type Props = {
   readonly dispatch: Dispatcher<Msg>
 }
 
-// `dispatch` is left out: tea-cup gives a stable one
+// `dispatch` is left out: the one the app passes sends the same message
+// whatever the model
 export const PropsEq: EqClass.Eq<Props> = {
   equals: (x, y) =>
     ModelEq.equals(x.model, y.model) &&

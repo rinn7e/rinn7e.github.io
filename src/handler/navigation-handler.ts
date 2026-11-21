@@ -8,6 +8,8 @@ import {
 } from '@/common/seo'
 import { type Destination, type NavigationMsg } from '@/common/type/destination'
 import { cmdSucceed, scrollToTopCmd } from '@/common/util'
+import * as AboutScreen from '@/screen/about-screen'
+import * as PrivacyScreen from '@/screen/privacy-screen'
 import * as ProductsScreen from '@/screen/products-screen'
 import {
   type CurrentScreenModel,
@@ -68,9 +70,15 @@ const freshScreenModelOf = (
       ]
     }
     case 'AboutScreen':
-      return [{ _tag: 'AboutScreenModel' }, Cmd.none()]
+      return [
+        { _tag: 'AboutScreenModel', model: AboutScreen.init() },
+        Cmd.none(),
+      ]
     case 'PrivacyScreen':
-      return [{ _tag: 'PrivacyScreenModel' }, Cmd.none()]
+      return [
+        { _tag: 'PrivacyScreenModel', model: PrivacyScreen.init() },
+        Cmd.none(),
+      ]
     case 'NotFoundScreen':
       return [{ _tag: 'NotFoundScreenModel' }, Cmd.none()]
   }

@@ -9,24 +9,38 @@ src/root.tsx                   mounts the program
 src/program.tsx                the ProgramWithNav, with withUrl around update
 src/type.ts                    the root Model and Msg, the screen model
 src/update.ts                  init (the boot) and the root update
-src/view.tsx                   the root view: header, screen, footer
+src/view.tsx                   the root view: backdrop, header, screen, footer
 src/handler/                   the navigation (every move of the app)
 src/util/                      destinationOf and the URL adapter
 src/common/type/destination/   Destination, Screen, NavigationMsg, the URL parser
 src/common/data/product.ts     the products shown
-src/common/util/               commands for side effects
-src/component/                 shared views: profile header, footer, link, icons, the debug panel
+src/common/util/               commands for side effects, small helpers
+src/common/seo.ts              what search engines and link previews read
+src/component/                 shared views: the profile header (a component with its own `Msg`,
+                               no state: the app decides what Flip does),
+                               the footer, the backdrop, link, icons, the debug panel
 src/screen/<name>-screen/      one folder per screen
+src/screen/products-screen/
+  product-grid/                the grid of cards: its props and their Eq, the memo
+  common/product-card/         the card, shared by the grid and the popup: the memo, its
+                               front, its back, the pointer, its DOM ids
+  product-popup/               the popup, a TEA component of the screen: its phases and
+                               slideshow, its view split into the panel, the slideshow,
+                               the links and the styles of each phase
 tests/                         mirrors src/
 ```
 
-File and folder names are singular and in kebab-case. A screen with its own state has `type.ts` (`Model`, `Msg`, `Props`, `PropsEq`), `update.ts` (`init`, `update`), `component.tsx` (only the memo component is exported) and `index.ts`, which re-exports `type` and `update`, never `component`. A screen with no state (`about-screen`, `privacy-screen`, `not-found-screen`) is only a view helper.
+File and folder names are singular and in kebab-case. A screen with its own state has `type.ts` (`Model`, `Msg`, `Props`, `PropsEq`), `update.ts` (`init`, `update`), `component.tsx` (only the memo component is exported) and `index.ts`, which re-exports `type` and `update`, never `component`. Every screen has these files, also one with no state yet (`about-screen`, `privacy-screen`): its `Model` is empty and its `Msg` is a `NoOp`, so a feature on it starts from its own folder. Its `ScreenModel` variant carries the model, and the root `update` hands each screen message to the `update` of its screen. `not-found-screen` is the one screen kept as a lone `component.tsx`: a static message for any address the app does not know.
+
+A part of a screen with state of its own is a TEA component under it, with the same files (`product-popup/`): it talks only to its parent, which opens it (`init`) and hands it its messages. The popup's `update` answers `none` once it has closed, and the screen then puts its card back in the grid.
 
 ## Views
 
-1. A dumb view (no hooks, no state) is a camelCase view helper called inline: `headerView({ screen })`, `productCardView({ product })`.
+1. A dumb view (no hooks, no state) is a camelCase view helper called inline: `slideshowView({ product, slideIndex, dispatch })`, `cardBackView({ product })`.
 2. PascalCase JSX only for memo components (`ProductsScreenMemo`, with its `PropsEq`) or components that need hooks (`Link`).
-3. No emoji as icons: `lucide-react`, or the brand marks of `src/component/icon.tsx`.
+3. Memo where a draw costs something, so a message of the app does not draw the whole page again: every screen but Not Found (a lone view helper), the profile header, the grid, the popup, each card, the footer and the backdrop are `XxxMemo` with a `PropsEq` (or a plain `memo` with no props, as the footer and the backdrop). A `PropsEq` leaves `dispatch` out, so the `dispatch` passed must send the same message whatever the model (the header asks `ToggleFlipAll`, and the app reads the side of the cards when the ask arrives).
+4. Pass a memo component the value it draws from, not the raw input: the header gets its `HeaderScreen` (the tab, and with the cards their category and side), not the screen, so opening a product does not draw it again; the grid gets the category, the card away in the popup, the side of the cards and whether they are dealt, so a step of the popup's animation or a new screenshot does not draw the grid.
+5. No emoji as icons: `lucide-react`, or the brand marks of `src/component/icon.tsx`.
 
 ## Navigation and the URL
 
@@ -68,8 +82,8 @@ The Privacy page (`/privacy`) lists every party that sees a visit and everything
 3. Explicit sizes in brackets, in `rem` (`px-[1rem]`, `gap-[1.5rem]`, `text-[0.875rem]`), so the whole page follows the root font size: 100% on a phone, 80% on a desktop (`src/asset/index.css`). Only hairlines stay in `px` (`border-[1px]`, the 1px grid gap).
 4. Every hover and focus color has its `dark:` counterpart.
 5. Every clickable element shows the hand cursor, and a disabled one `not-allowed`: one base rule in `src/asset/index.css` covers links, buttons, `[role='button']`, `summary`, `label[for]` and `select`; any other element that takes a click gets `cursor-pointer`.
-6. The layout is a profile page: up to 1457px of content in 20px side padding, a 680px profile header (150px avatar, counts, bio, two buttons, highlights, tabs), then a grid of square cards, six a row at most. These sizes are at the full root size; a desktop draws them at 80%. The product opened shows in a popup over the page (closed by its button, Escape or a click on the backdrop; the page under it does not scroll), its slideshow across the whole popup with its card over the bottom right corner, and its text under it. Its card leaves the grid while it is open, and the grid keeps the room.
-7. Motion animates only `opacity` and `transform`, plays once and stops under reduced motion. An animation the next step waits for (the card flying into the popup, the popup closing) is phases of the model (`OpenPhase`), with a `seq` that drops late messages; a one-off entrance nothing waits for (the cards fading in on the first screen a visitor sees; a switch of tab or category shows them at once) is a CSS animation in `src/asset/index.css`. The tilt and shine of a card under the pointer are presentation only, CSS variables set on the card.
+6. The layout is a profile page: up to 1457px of content in 20px side padding, a 680px profile header (150px avatar, counts, two buttons, highlights, tabs), then a grid of portrait playing cards, six a row at most. These sizes are at the full root size; a desktop draws them at 80%. The product opened shows in a popup over the page (closed by its button, Escape, a click on its card or a click on the backdrop; the page under it does not scroll), its slideshow across the whole popup with its card over the bottom right corner, and its text under it. Its card leaves the grid while it is open, and the grid keeps the room.
+7. Motion animates only `opacity` and `transform`, plays once and stops under reduced motion. An animation the next step waits for (the card flying into the popup, the popup closing) is phases of the model (`OpenPhase` of `product-popup/type.ts`), with a `seq` per open that drops late messages of an earlier popup, and each phase taking only the messages of its own step; a one-off entrance nothing waits for (the cards fading in on the first screen a visitor sees; a switch of tab or category shows them at once) is a CSS animation in `src/asset/index.css`. The tilt and shine of a card under the pointer are presentation only, CSS variables set on the card.
 8. Keep the GPU cost low: no `backdrop-filter` or blur, no large shadows, no looping animation. Plain borders and solid backgrounds.
 
 ## Tests

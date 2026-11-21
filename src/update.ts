@@ -4,10 +4,13 @@ import { Cmd } from 'tea-cup-fp'
 
 import { replaceUrlCmd, updateAndCmd } from '@/common/util'
 import * as DebugPanel from '@/component/debug-panel'
+import type * as ProfileHeader from '@/component/profile-header'
 import {
   initScreenModel,
   navigationMsgHandler,
 } from '@/handler/navigation-handler'
+import * as AboutScreen from '@/screen/about-screen'
+import * as PrivacyScreen from '@/screen/privacy-screen'
 import * as ProductsScreen from '@/screen/products-screen'
 import { type Model, type Msg, sameScreenWith } from '@/type'
 import { bootDestinationOf, bootUrlOf } from '@/util'
@@ -39,6 +42,79 @@ export const update = (msg: Msg, model: Model): [Model, Cmd<Msg>] => {
       return productsScreenMsgHandler(msg.subMsg, model)
     case 'DebugPanelMsg':
       return debugPanelMsgHandler(msg.subMsg, model)
+    case 'AboutScreenMsg':
+      return aboutScreenMsgHandler(msg.subMsg, model)
+    case 'PrivacyScreenMsg':
+      return privacyScreenMsgHandler(msg.subMsg, model)
+    case 'ProfileHeaderMsg':
+      return profileHeaderMsgHandler(msg.subMsg, model)
+  }
+}
+
+// A message of the About screen changes its model in place, only while it
+// is the screen shown
+const aboutScreenMsgHandler = (
+  subMsg: AboutScreen.Msg,
+  model: Model,
+): [Model, Cmd<Msg>] => {
+  const { screenModel } = model
+  if (screenModel._tag === 'AboutScreenModel') {
+    const [screen, screenCmd] = AboutScreen.update(subMsg, screenModel.model)
+    return [
+      {
+        ...model,
+        screenModel: sameScreenWith(screenModel)({
+          _tag: 'AboutScreenModel',
+          model: screen,
+        }),
+      },
+      screenCmd.map((m): Msg => ({ _tag: 'AboutScreenMsg', subMsg: m })),
+    ]
+  } else {
+    return [model, Cmd.none()]
+  }
+}
+
+// A message of the Privacy screen changes its model in place, only while it
+// is the screen shown
+const privacyScreenMsgHandler = (
+  subMsg: PrivacyScreen.Msg,
+  model: Model,
+): [Model, Cmd<Msg>] => {
+  const { screenModel } = model
+  if (screenModel._tag === 'PrivacyScreenModel') {
+    const [screen, screenCmd] = PrivacyScreen.update(subMsg, screenModel.model)
+    return [
+      {
+        ...model,
+        screenModel: sameScreenWith(screenModel)({
+          _tag: 'PrivacyScreenModel',
+          model: screen,
+        }),
+      },
+      screenCmd.map((m): Msg => ({ _tag: 'PrivacyScreenMsg', subMsg: m })),
+    ]
+  } else {
+    return [model, Cmd.none()]
+  }
+}
+
+// The asks of the header. Flip turns the cards to the side they are not on
+// now, read from the model when the ask arrives (the header holds no side).
+const profileHeaderMsgHandler = (
+  subMsg: ProfileHeader.Msg,
+  model: Model,
+): [Model, Cmd<Msg>] => {
+  switch (subMsg._tag) {
+    case 'ToggleFlipAll': {
+      const { screenModel } = model
+      return screenModel._tag === 'ProductsScreenModel'
+        ? productsScreenMsgHandler(
+            { _tag: screenModel.model.isFlipped ? 'UnflipAll' : 'FlipAll' },
+            model,
+          )
+        : [model, Cmd.none()]
+    }
   }
 }
 

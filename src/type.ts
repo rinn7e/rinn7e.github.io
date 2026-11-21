@@ -1,8 +1,12 @@
 import * as O from 'fp-ts/Option'
+import { pipe } from 'fp-ts/function'
 
 import { type Brand } from '@/common/type/brand-wrapper'
 import { type NavigationMsg, type Screen } from '@/common/type/destination'
 import type * as DebugPanel from '@/component/debug-panel'
+import type * as ProfileHeader from '@/component/profile-header'
+import type * as AboutScreen from '@/screen/about-screen'
+import type * as PrivacyScreen from '@/screen/privacy-screen'
 import type * as ProductsScreen from '@/screen/products-screen'
 
 // The screen shown, as its model. Its tag and its own fields (the products
@@ -13,8 +17,11 @@ export type ScreenModel =
       readonly _tag: 'ProductsScreenModel'
       readonly model: ProductsScreen.Model
     }
-  | { readonly _tag: 'AboutScreenModel' }
-  | { readonly _tag: 'PrivacyScreenModel' }
+  | { readonly _tag: 'AboutScreenModel'; readonly model: AboutScreen.Model }
+  | {
+      readonly _tag: 'PrivacyScreenModel'
+      readonly model: PrivacyScreen.Model
+    }
   | { readonly _tag: 'NotFoundScreenModel' }
 
 // The screen shown (`Model.screenModel`). Owned: read it anywhere as a
@@ -60,13 +67,19 @@ export type Msg =
       readonly subMsg: ProductsScreen.Msg
     }
   | { readonly _tag: 'DebugPanelMsg'; readonly subMsg: DebugPanel.Msg }
+  | { readonly _tag: 'AboutScreenMsg'; readonly subMsg: AboutScreen.Msg }
+  | { readonly _tag: 'PrivacyScreenMsg'; readonly subMsg: PrivacyScreen.Msg }
+  | {
+      readonly _tag: 'ProfileHeaderMsg'
+      readonly subMsg: ProfileHeader.Msg
+    }
 
-// The product open when there is exactly one: a param of the destination.
-// Several open at once (from the debug panel) are not spelled in the URL.
-const onlyOpenedOf = (model: ProductsScreen.Model): O.Option<string> =>
-  model.openedList.length === 1
-    ? O.fromNullable(model.openedList[0]?.id)
-    : O.none
+// The product of the popup, while one is open: a param of the destination
+const openedProductOf = (model: ProductsScreen.Model): O.Option<string> =>
+  pipe(
+    model.popup,
+    O.map((popup) => popup.id),
+  )
 
 // The screen shown (the destination's `screen`, `destinationOf`), read from
 // the fields of its model that hold the screen's params
@@ -75,7 +88,7 @@ export const currentScreenOf = (screenModel: ScreenModel): Screen => {
     case 'ProductsScreenModel':
       return {
         _tag: 'ProductsScreen',
-        product: onlyOpenedOf(screenModel.model),
+        product: openedProductOf(screenModel.model),
         category: screenModel.model.category,
       }
     case 'AboutScreenModel':

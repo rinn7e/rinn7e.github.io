@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { aboutDestination, privacyDestination } from '@/common/type/destination'
 import { newTabProps } from '@/common/util'
 
@@ -5,8 +7,9 @@ import { Link } from './link'
 
 const footerLinkClass = 'hover:underline'
 
-// A quiet row of small links at the bottom of the page
-export const footerView = () => (
+// A quiet row of small links at the bottom of the page. A memo with no
+// props: it never draws again.
+const Footer = () => (
   <footer className='flex w-full flex-col items-center gap-[0.75rem] px-[1rem] pt-[1.5rem] pb-[2.5rem] text-center text-[0.75rem] leading-[1rem] text-[#6a717a] dark:text-zinc-400'>
     <nav
       aria-label='Footer'
@@ -43,3 +46,5 @@ export const footerView = () => (
     <p>All the work here is open source.</p>
   </footer>
 )
+
+export const FooterMemo = memo(Footer)

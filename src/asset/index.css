@@ -154,7 +154,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .deal-in,
+    .deal-in {
+      animation: none;
+    }
+
     .card-tilt {
       transform: none;
       transition: none;

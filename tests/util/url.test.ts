@@ -41,7 +41,10 @@ describe('urlWriteOf', () => {
     )
     const closeMsg: Msg = {
       _tag: 'ProductsScreenMsg',
-      subMsg: { _tag: 'CloseProduct', id: 'damn-center', isAnimated: false },
+      subMsg: {
+        _tag: 'ProductPopupMsg',
+        subMsg: { _tag: 'Close', isAnimated: false },
+      },
     }
     const [closedModel] = update(closeMsg, openedModel)
     expect(urlWriteOf(closeMsg, openedModel, closedModel)).toEqual(
@@ -53,7 +56,10 @@ describe('urlWriteOf', () => {
     const model = bootOn('/?product=damn-center')
     const msg: Msg = {
       _tag: 'ProductsScreenMsg',
-      subMsg: { _tag: 'ShowSlide', id: 'damn-center', index: 1 },
+      subMsg: {
+        _tag: 'ProductPopupMsg',
+        subMsg: { _tag: 'ShowSlide', index: 1 },
+      },
     }
     const [updatedModel] = update(msg, model)
     expect(urlWriteOf(msg, model, updatedModel)).toEqual(O.none)

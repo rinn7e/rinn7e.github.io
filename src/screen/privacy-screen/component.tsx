@@ -1,10 +1,12 @@
 import { ArrowUpRight } from 'lucide-react'
-import React from 'react'
+import React, { memo } from 'react'
 
 import { newTabProps } from '@/common/util'
 
-// No model: the Privacy screen has nothing to change, so it is a view
-// helper. It lists every party that sees a visit and everything the site
+import { type Props, PropsEq } from './type'
+
+// Static for now: its model is empty (`type.ts`), so the memo draws it
+// once. It lists every party that sees a visit and everything the site
 // keeps in the browser, so it changes in the same commit as the code or the
 // hosting (see "The privacy page" in `doc/code-convention.md`).
 
@@ -48,7 +50,7 @@ const sectionTitleView = (title: string) => (
   </h2>
 )
 
-export const privacyScreenView = () => (
+const PrivacyScreen = (_props: Props) => (
   <div className='flex flex-col items-center pt-[2rem] pb-[6rem] lg:pt-[2.5rem]'>
     <div className='flex w-full max-w-[40rem] flex-col gap-[2rem]'>
       <section className='flex flex-col items-center gap-[0.5rem] text-center'>
@@ -129,3 +131,5 @@ export const privacyScreenView = () => (
     </div>
   </div>
 )
+
+export const PrivacyScreenMemo = memo(PrivacyScreen, PropsEq.equals)
