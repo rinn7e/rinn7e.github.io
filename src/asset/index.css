@@ -91,6 +91,16 @@
     transition: transform 180ms ease-out;
   }
 
+  /* A card in flight is not tracked: a tilt or light left from a hover
+     goes back to rest at once, over the values set inline */
+  [data-tracked='false'] {
+    --card-rx: 0deg !important;
+    --card-ry: 0deg !important;
+    --card-nx: 0 !important;
+    --card-ny: 0 !important;
+    --card-hover: 0 !important;
+  }
+
   /* Turned over to its back (the debug panel): the turn itself plays as the
      transition of the tilt, slower, so the card is seen turning */
   [data-flipped='true'] > .card-tilt {

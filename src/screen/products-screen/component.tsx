@@ -152,6 +152,7 @@ const columnCardView = ({
       product={product}
       size='ColumnCard'
       isFlipped={isFlipped}
+      isTracked
     />
   </button>
 )
@@ -338,11 +339,24 @@ const productPanelView = ({
           style={flightStyleOf(opened.phase)}
           className='[transform-style:preserve-3d]'
         >
-          <ProductCardMemo
-            product={product}
-            size='PanelCard'
-            isFlipped={isFlipped}
-          />
+          {/* A click on the card puts it back in the grid */}
+          <button
+            type='button'
+            aria-label={`Close ${product.name}`}
+            className={[
+              'block rounded-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100',
+              // In flight, the card takes no pointer at all
+              opened.phase._tag === 'Shown' ? '' : 'pointer-events-none',
+            ].join(' ')}
+            onClick={() => dispatch(closeMsgOf(product))}
+          >
+            <ProductCardMemo
+              product={product}
+              size='PanelCard'
+              isFlipped={isFlipped}
+              isTracked={opened.phase._tag === 'Shown'}
+            />
+          </button>
         </div>
       </div>
     </div>

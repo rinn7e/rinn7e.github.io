@@ -14,12 +14,6 @@ export const aboutScreenView = () => (
         Enthusiastic Functional Programmer, specialized in Haskell,
         Typescript(fp-ts), Purescript, and Elm.
       </p>
-      <p>
-        The open-source work here is what I build in my own time: browser
-        extensions, web apps, games and developer tools. Each one links to its
-        code on GitHub.
-      </p>
-      <p>My work history is on LinkedIn.</p>
     </div>
     <ul className='grid w-full max-w-[22rem] grid-cols-1 gap-[1rem] pt-[2.5rem] lg:max-w-[32rem] lg:grid-cols-2'>
       {contactView({

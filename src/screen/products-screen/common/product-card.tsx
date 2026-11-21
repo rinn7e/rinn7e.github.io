@@ -14,12 +14,16 @@ export type ProductCardProps = {
   readonly size: ProductCardSize
   // Turned over to show its back (from the debug panel)
   readonly isFlipped: boolean
+  // Tilts and catches the light under the pointer; off while the card flies,
+  // so the hover never fights the flight
+  readonly isTracked: boolean
 }
 
 const ProductCardPropsEq = (x: ProductCardProps, y: ProductCardProps) =>
   x.product.id === y.product.id &&
   x.size === y.size &&
-  x.isFlipped === y.isFlipped
+  x.isFlipped === y.isFlipped &&
+  x.isTracked === y.isTracked
 
 // A card is portrait, 5:7 like a playing card. A column card fills the
 // width of its grid cell; a panel card has a fixed width. Every size inside is in `cqw` (a share of the card width), so one
@@ -61,9 +65,15 @@ const trackPointer = (event: React.PointerEvent<HTMLDivElement>) => {
 const releasePointer = (event: React.PointerEvent<HTMLDivElement>) => {
   const element = event.currentTarget
   element.dataset.tracking = 'false'
-  ;['--card-rx', '--card-ry', '--card-mx', '--card-my', '--card-hover'].forEach(
-    (name) => element.style.removeProperty(name),
-  )
+  ;[
+    '--card-rx',
+    '--card-ry',
+    '--card-mx',
+    '--card-my',
+    '--card-nx',
+    '--card-ny',
+    '--card-hover',
+  ].forEach((name) => element.style.removeProperty(name))
 }
 
 // A playing card: its front is the logo of the product on white paper, lit
@@ -73,12 +83,23 @@ const releasePointer = (event: React.PointerEvent<HTMLDivElement>) => {
 // card itself, an edge would tilt away from under the pointer, end the hover
 // and flatten the card again, so only its middle would respond. The CSS
 // variables set there pass down to the card.
-const ProductCard = ({ product, size, isFlipped }: ProductCardProps) => (
+const ProductCard = ({
+  product,
+  size,
+  isFlipped,
+  isTracked,
+}: ProductCardProps) => (
   <div
-    onPointerMove={trackPointer}
-    onPointerLeave={releasePointer}
+    onPointerMove={isTracked ? trackPointer : undefined}
+    onPointerLeave={isTracked ? releasePointer : undefined}
     data-flipped={isFlipped}
-    className={`${sizeClassOf(size)} [container-type:inline-size] [transform-style:preserve-3d]`}
+    data-tracked={isTracked}
+    className={[
+      sizeClassOf(size),
+      '[container-type:inline-size] [transform-style:preserve-3d]',
+      // Not tracked (in flight): the pointer goes through, unseen
+      isTracked ? '' : 'pointer-events-none',
+    ].join(' ')}
   >
     <div className='card-tilt relative size-full'>
       {/* Front */}
@@ -99,7 +120,7 @@ const ProductCard = ({ product, size, isFlipped }: ProductCardProps) => (
       </div>
       {/* Back */}
       <div className='card-edge absolute inset-0 [transform:rotateY(180deg)] overflow-hidden rounded-[4.5cqw] bg-white [backface-visibility:hidden]'>
-        {cardBackView()}
+        {cardBackView({ product })}
       </div>
     </div>
   </div>
@@ -216,12 +237,11 @@ const logoView = ({ product }: { readonly product: Product }) => {
 }
 
 // The back, after the back of a real deck: a white margin around a panel
-// framed by a thin black rule. Instead of a pattern, the panel is filled
-// with the word rinn7e, repeated in bold italic rows that run on a
-// diagonal, every other row shifted by half a word and drawn lighter, like
+// framed by a thin rule, in the color of the product as on its front.
+// Instead of a pattern, the panel is filled with the word rinn7e, repeated
+// in bold italic rows that run on a diagonal, every other row shifted by half a word and drawn lighter, like
 // a logo knitted into a fabric. The panel is a nested svg, which clips its
 // rows without an id, so the many cards on a page share none.
-const BACK_LINE = '#0c1014'
 const BACK_WORD = 'rinn7e'
 const BACK_ROW_TEXT = pipe(
   RA.replicate(8, BACK_WORD),
@@ -232,7 +252,7 @@ const BACK_ROW_TEXT = pipe(
 // turned
 const backRowList: ReadonlyArray<number> = RA.makeBy(19, (index) => index)
 
-const cardBackView = () => (
+const cardBackView = ({ product }: { readonly product: Product }) => (
   <div className='relative size-full bg-white'>
     <svg
       viewBox='0 0 100 140'
@@ -242,7 +262,7 @@ const cardBackView = () => (
       <svg x='8' y='8' width='84' height='124' viewBox='0 0 84 124'>
         <g
           transform='rotate(-30 42 62)'
-          fill={BACK_LINE}
+          fill={product.color}
           fontSize='11'
           fontStyle='italic'
           fontWeight='900'
@@ -270,7 +290,7 @@ const cardBackView = () => (
         height='124'
         rx='2'
         fill='none'
-        stroke={BACK_LINE}
+        stroke={product.color}
         strokeWidth='0.8'
       />
     </svg>
