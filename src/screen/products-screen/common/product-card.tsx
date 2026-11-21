@@ -215,88 +215,64 @@ const logoView = ({ product }: { readonly product: Product }) => {
   }
 }
 
-// The back: a fine black diamond lattice on white under a black symmetric
-// emblem (rings,
-// an eight-pointed star and a diamond at each corner). Every shape comes from
-// one point list turned around the centre, so the halves mirror exactly.
-const BACK_CX = 50
-const BACK_CY = 70
+// The back, after the back of a real deck: a white margin around a panel
+// framed by a thin black rule. Instead of a pattern, the panel is filled
+// with the word rinn7e, repeated in bold italic rows that run on a
+// diagonal, every other row shifted by half a word and drawn lighter, like
+// a logo knitted into a fabric. The panel is a nested svg, which clips its
+// rows without an id, so the many cards on a page share none.
+const BACK_LINE = '#0c1014'
+const BACK_WORD = 'rinn7e'
+const BACK_ROW_TEXT = pipe(
+  RA.replicate(8, BACK_WORD),
+  RA.intercalate(S.Monoid)(' '),
+)
 
-const pointAt = (radius: number, angleDeg: number): string => {
-  const angle = (angleDeg * Math.PI) / 180
-  const x = BACK_CX + radius * Math.sin(angle)
-  const y = BACK_CY - radius * Math.cos(angle)
-  return `${x.toFixed(2)},${y.toFixed(2)}`
-}
-
-// A star of `points` tips, alternating between the outer and inner radius
-const starPoints = (points: number, outer: number, inner: number): string =>
-  pipe(
-    RA.makeBy(points * 2, (index) =>
-      pointAt(index % 2 === 0 ? outer : inner, (index * 180) / points),
-    ),
-    RA.intercalate(S.Monoid)(' '),
-  )
-
-const cornerDiamond = (cx: number, cy: number, r: number): string =>
-  `${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`
+// The rows, top to bottom, wide and tall enough to cover the panel once
+// turned
+const backRowList: ReadonlyArray<number> = RA.makeBy(19, (index) => index)
 
 const cardBackView = () => (
-  <div className='relative size-full bg-[repeating-linear-gradient(45deg,rgb(0_0_0/0.07)_0_1px,transparent_1px_0.7em),repeating-linear-gradient(-45deg,rgb(0_0_0/0.07)_0_1px,transparent_1px_0.7em)]'>
+  <div className='relative size-full bg-white'>
     <svg
       viewBox='0 0 100 140'
       aria-hidden='true'
       className='absolute inset-0 size-full'
-      fill='none'
-      stroke='#0c1014'
     >
+      <svg x='8' y='8' width='84' height='124' viewBox='0 0 84 124'>
+        <g
+          transform='rotate(-30 42 62)'
+          fill={BACK_LINE}
+          fontSize='11'
+          fontStyle='italic'
+          fontWeight='900'
+          letterSpacing='-0.4'
+        >
+          {pipe(
+            backRowList,
+            RA.map((index) => (
+              <text
+                key={index}
+                x={index % 2 === 0 ? -60 : -78}
+                y={-30 + index * 11}
+                fillOpacity={index % 2 === 0 ? 1 : 0.3}
+              >
+                {BACK_ROW_TEXT}
+              </text>
+            )),
+          )}
+        </g>
+      </svg>
       <rect
-        x='5'
-        y='5'
-        width='90'
-        height='130'
-        rx='4'
-        strokeOpacity='0.35'
-        strokeWidth='0.6'
-      />
-      <circle cx='50' cy='70' r='34' strokeOpacity='0.18' strokeWidth='0.5' />
-      <circle cx='50' cy='70' r='29' strokeOpacity='0.3' strokeWidth='0.5' />
-      <polygon
-        points={starPoints(8, 27, 13)}
-        strokeOpacity='0.75'
-        strokeWidth='0.7'
-        fill='white'
-      />
-      <polygon
-        points={starPoints(4, 16, 6)}
-        strokeOpacity='0.5'
-        strokeWidth='0.5'
-      />
-      <circle
-        cx='50'
-        cy='70'
-        r='6.5'
-        strokeOpacity='0.9'
+        x='8'
+        y='8'
+        width='84'
+        height='124'
+        rx='2'
+        fill='none'
+        stroke={BACK_LINE}
         strokeWidth='0.8'
-        fill='white'
       />
-      <circle cx='50' cy='70' r='2' fill='#0c1014' stroke='none' />
-      {pipe(
-        [
-          [14, 14],
-          [86, 14],
-          [14, 126],
-          [86, 126],
-        ],
-        RA.map(([cx, cy]) => (
-          <polygon
-            key={`${cx}-${cy}`}
-            points={cornerDiamond(cx, cy, 3)}
-            strokeOpacity='0.6'
-            strokeWidth='0.5'
-          />
-        )),
-      )}
     </svg>
   </div>
 )
