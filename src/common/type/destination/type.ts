@@ -1,0 +1,82 @@
+import * as EqClass from 'fp-ts/Eq'
+import * as O from 'fp-ts/Option'
+import { type Option } from 'fp-ts/Option'
+import * as S from 'fp-ts/string'
+
+import { type ProductCategory } from '@/common/data/product'
+
+export type ProductsScreen = {
+  readonly _tag: 'ProductsScreen'
+  // The category filter, none for every product
+  readonly category: Option<ProductCategory>
+}
+
+export type AboutScreen = {
+  readonly _tag: 'AboutScreen'
+}
+
+export type NotFoundScreen = {
+  readonly _tag: 'NotFoundScreen'
+}
+
+export type Screen = ProductsScreen | AboutScreen | NotFoundScreen
+
+export const ProductsScreenEq: EqClass.Eq<ProductsScreen> = EqClass.struct({
+  _tag: S.Eq,
+  category: O.getEq(S.Eq),
+})
+
+export const AboutScreenEq: EqClass.Eq<AboutScreen> = EqClass.struct({
+  _tag: S.Eq,
+})
+
+export const NotFoundScreenEq: EqClass.Eq<NotFoundScreen> = EqClass.struct({
+  _tag: S.Eq,
+})
+
+export const ScreenEq: EqClass.Eq<Screen> = {
+  equals: (x, y) => {
+    if (x._tag === 'ProductsScreen' && y._tag === 'ProductsScreen') {
+      return ProductsScreenEq.equals(x, y)
+    } else if (x._tag === 'AboutScreen' && y._tag === 'AboutScreen') {
+      return AboutScreenEq.equals(x, y)
+    } else if (x._tag === 'NotFoundScreen' && y._tag === 'NotFoundScreen') {
+      return NotFoundScreenEq.equals(x, y)
+    } else {
+      return false
+    }
+  },
+}
+
+// Where the app is. Never stored: read from the models that show it
+// (`destinationOf`), and written to the URL from there.
+export type Destination = {
+  readonly screen: Screen
+}
+
+export const DestinationEq: EqClass.Eq<Destination> = EqClass.struct({
+  screen: ScreenEq,
+})
+
+export const destinationOfScreen = (screen: Screen): Destination => ({
+  screen,
+})
+
+export const productsScreen = (
+  category: Option<ProductCategory> = O.none,
+): Screen => ({ _tag: 'ProductsScreen', category })
+export const aboutScreen = (): Screen => ({ _tag: 'AboutScreen' })
+export const notFoundScreen = (): Screen => ({ _tag: 'NotFoundScreen' })
+
+export const defaultDestination = (): Destination =>
+  destinationOfScreen(productsScreen())
+
+export const aboutDestination = (): Destination =>
+  destinationOfScreen(aboutScreen())
+
+// Every move of the app goes through `navigationMsgHandler`. `UrlChanged`
+// is the browser's back or forward, the only move that comes from the URL
+// after the boot.
+export type NavigationMsg =
+  | { readonly _tag: 'Navigate'; readonly destination: Destination }
+  | { readonly _tag: 'UrlChanged'; readonly destination: Destination }

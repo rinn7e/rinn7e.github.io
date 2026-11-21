@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="site/favicon.svg" alt="R7 logo" width="128" height="128">
+  <img src="public/favicon.svg" alt="R7 logo" width="128" height="128">
 </p>
 
 <h1 align="center">rinn7e.com</h1>
 
 <p align="center">
-  The landing page of my open source products. For now it serves a placeholder page.
+  The landing page of my open source products: browser extensions, web apps, games and developer tools.
 </p>
 
 <p align="center">
@@ -13,18 +13,44 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/rinn7e/rinn7e.github.io" alt="License: GPL-3.0"></a>
 </p>
 
-The casual personal website that used to live here moved to [`rinn7e/me`](https://github.com/rinn7e/me), served at [me.rinn7e.com](https://me.rinn7e.com/). It keeps the full history of the old site; this repository starts fresh.
+[rinn7e.com](https://rinn7e.com/) shows each product with a screenshot, a short description and its links (the live app, the browser stores, the code), with a filter by category. The About page links my LinkedIn, my GitHub and my casual personal site, [me.rinn7e.com](https://me.rinn7e.com/) (its code is in [`rinn7e/me`](https://github.com/rinn7e/me)).
 
-## Layout
+## Screenshot
 
+![rinn7e.com](doc/screenshot.png)
+
+## Add a product
+
+1. Put a screenshot in `public/shot/` (WebP, at most 1200 px wide).
+2. Add an entry to `productList` in `src/common/data/product.ts`: its name, kind, description, categories, image and links.
+
+Only public repositories go here, and no libraries.
+
+## Development
+
+Built with React and [`react-tea-cup`](https://github.com/vankeisb/react-tea-cup) (The Elm Architecture), `fp-ts`, Tailwind CSS v4 and Vite. The code follows [`doc/code-convention.md`](doc/code-convention.md).
+
+Needs Node.js 24 and pnpm.
+
+```bash
+pnpm install
 ```
-site/index.html    the placeholder page, plain HTML and CSS
-site/favicon.svg   the R7 logo, with favicon-32.png and apple-touch-icon.png
+
+```bash
+pnpm dev
+```
+
+Checks, as the deploy runs them:
+
+```bash
+pnpm run check && pnpm run lint && pnpm run format:check && pnpm test
 ```
 
 ## Deploy
 
-GitHub Pages serves `site/` at [rinn7e.com](https://rinn7e.com/). `.github/workflows/deploy.yml` deploys every push to `master`. The custom domain is set in the Pages settings of the repository, with "GitHub Actions" as the source.
+GitHub Pages serves `dist/` at [rinn7e.com](https://rinn7e.com/). `.github/workflows/deploy.yml` checks, builds and deploys every push to `master`. The custom domain is set in the Pages settings of the repository, with "GitHub Actions" as the source. The build copies `index.html` to `about/index.html` and `404.html`, so a link straight to `/about` loads the app.
+
+The other GitHub Pages projects of `rinn7e` (such as `/claude-desktop-theme-tuner/`) are served under this domain by their own repositories, so no route of this site may use their names.
 
 ## License
 
