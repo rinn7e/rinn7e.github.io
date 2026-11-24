@@ -5,10 +5,7 @@ import { pipe } from 'fp-ts/function'
 import * as S from 'fp-ts/string'
 import React from 'react'
 
-import {
-  type ProductCategory,
-  productCategoryList,
-} from '@/common/data/product'
+import { type ProductCategory, shownCategoryList } from '@/common/data/product'
 import { destinationOfScreen, productsScreen } from '@/common/type/destination'
 import { categoryIconView, categoryLabelOf } from '@/component/category'
 import { Link } from '@/component/link'
@@ -56,7 +53,7 @@ const highlightView = ({
   </li>
 )
 
-// The highlights, one per category, centred; they scroll sideways when the
+// The highlights, one per category with a visible card, centred; they scroll sideways when the
 // screen is narrower (`safe center` keeps the first one reachable)
 export const highlightBarView = ({
   selected,
@@ -69,7 +66,7 @@ export const highlightBarView = ({
   >
     <ul className='flex [justify-content:safe_center] gap-[0.5rem] px-[0.875rem] lg:gap-[0.75rem]'>
       {pipe(
-        productCategoryList,
+        shownCategoryList,
         RA.map((category) =>
           highlightView({
             category,

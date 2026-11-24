@@ -13,9 +13,14 @@ import {
 import * as O from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { pipe } from 'fp-ts/function'
+import * as S from 'fp-ts/string'
 import * as t from 'io-ts'
 
-import { type ProductCategory, productList } from '@/common/data/product'
+import {
+  type ProductCategory,
+  productList,
+  shownCategoryList,
+} from '@/common/data/product'
 
 import {
   type Destination,
@@ -45,7 +50,7 @@ const categoryParam = t.union([
 
 type CategoryParam = t.TypeOf<typeof categoryParam>
 
-const categoryFromParam = (
+const knownCategoryFromParam = (
   param: string | undefined,
 ): O.Option<ProductCategory> => {
   if (categoryParam.is(param)) {
@@ -63,6 +68,15 @@ const categoryFromParam = (
     return O.none
   }
 }
+
+// A category with no visible product reads as every product too
+const categoryFromParam = (
+  param: string | undefined,
+): O.Option<ProductCategory> =>
+  pipe(
+    knownCategoryFromParam(param),
+    O.filter((category) => RA.elem(S.Eq)(category)(shownCategoryList)),
+  )
 
 const categoryToParam = (category: ProductCategory): CategoryParam => {
   switch (category) {

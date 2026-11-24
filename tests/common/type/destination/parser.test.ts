@@ -1,7 +1,7 @@
 import * as O from 'fp-ts/Option'
 import { describe, expect, it } from 'vitest'
 
-import { productList } from '@/common/data/product'
+import { productList, shownCategoryList } from '@/common/data/product'
 import {
   type Destination,
   aboutScreen,
@@ -28,8 +28,14 @@ describe('parseDestination', () => {
   })
 
   it('reads the category of a highlight', () => {
+    expect(parsePath('/?category=browser-extensions')).toEqual(
+      destinationOfScreen(productsScreen(O.none, O.some('BrowserExtension'))),
+    )
+  })
+
+  it('reads a category with no visible product as every product', () => {
     expect(parsePath('/?category=games')).toEqual(
-      destinationOfScreen(productsScreen(O.none, O.some('Game'))),
+      destinationOfScreen(productsScreen()),
     )
   })
 
@@ -41,6 +47,12 @@ describe('parseDestination', () => {
 
   it('reads an unknown product as every product', () => {
     expect(parsePath('/?product=nonsense')).toEqual(
+      destinationOfScreen(productsScreen()),
+    )
+  })
+
+  it('reads a hidden product as every product', () => {
+    expect(parsePath('/?product=image-overlay')).toEqual(
       destinationOfScreen(productsScreen()),
     )
   })
@@ -70,12 +82,11 @@ describe('toUrlString', () => {
       ...productList.map((product) =>
         destinationOfScreen(productsScreen(O.some(product.id))),
       ),
-      destinationOfScreen(productsScreen(O.none, O.some('WebApp'))),
-      destinationOfScreen(productsScreen(O.none, O.some('BrowserExtension'))),
-      destinationOfScreen(productsScreen(O.none, O.some('Game'))),
-      destinationOfScreen(productsScreen(O.none, O.some('DeveloperTool'))),
+      ...shownCategoryList.map((category) =>
+        destinationOfScreen(productsScreen(O.none, O.some(category))),
+      ),
       destinationOfScreen(
-        productsScreen(O.some('ninja-adventure-indigo'), O.some('Game')),
+        productsScreen(O.some('damn-center'), O.some('BrowserExtension')),
       ),
       destinationOfScreen(aboutScreen()),
       destinationOfScreen(privacyScreen()),

@@ -38,6 +38,9 @@ export type ProductSlide = {
 export type Product = {
   // Spelled in the URL (`/?product=<id>`)
   readonly id: string
+  // Shown on the site; a hidden product is left out everywhere, as if it
+  // were not in the list (its card, the counts, the search data, its URL)
+  readonly isVisible: boolean
   readonly name: string
   // The name printed on its card, short enough for the width of the card
   readonly cardName: string
@@ -85,6 +88,7 @@ const slidesOf = (
 const unorderedProductList: readonly Product[] = [
   {
     id: 'damn-center',
+    isVisible: true,
     createdAt: '2026-06-08T01:39:07Z',
     name: 'Damn Center',
     cardName: 'Damn Center',
@@ -115,6 +119,7 @@ const unorderedProductList: readonly Product[] = [
   },
   {
     id: 'claude-desktop-theme-tuner',
+    isVisible: true,
     createdAt: '2026-10-24T02:36:37Z',
     name: 'Claude Desktop Theme Tuner',
     cardName: 'Theme Tuner',
@@ -140,6 +145,7 @@ const unorderedProductList: readonly Product[] = [
   },
   {
     id: 'tea-ecosystem',
+    isVisible: true,
     createdAt: '2026-11-13T03:33:11Z',
     name: 'TEA Ecosystem',
     cardName: 'TEA Ecosystem',
@@ -166,6 +172,7 @@ const unorderedProductList: readonly Product[] = [
   },
   {
     id: 'realworld-conduit',
+    isVisible: false,
     createdAt: '2026-05-17T08:58:23Z',
     name: 'RealWorld Conduit',
     cardName: 'Conduit',
@@ -192,6 +199,7 @@ const unorderedProductList: readonly Product[] = [
   },
   {
     id: 'ninja-adventure-indigo',
+    isVisible: false,
     createdAt: '2026-09-29T08:36:19Z',
     name: 'Ninja Adventure',
     cardName: 'Ninja Adventure',
@@ -220,6 +228,7 @@ const unorderedProductList: readonly Product[] = [
   },
   {
     id: 'indigo-game-starter-template',
+    isVisible: false,
     createdAt: '2026-09-29T05:31:21Z',
     name: 'Indigo Game Starter',
     cardName: 'Indigo Starter',
@@ -246,6 +255,7 @@ const unorderedProductList: readonly Product[] = [
   },
   {
     id: 'image-overlay',
+    isVisible: false,
     createdAt: '2026-08-11T06:29:23Z',
     name: 'Image Overlay',
     cardName: 'Image Overlay',
@@ -266,6 +276,7 @@ const unorderedProductList: readonly Product[] = [
   },
   {
     id: 'universal-theme-tuner',
+    isVisible: false,
     createdAt: '2026-10-18T03:49:52Z',
     name: 'Universal Theme Tuner',
     cardName: 'Universal Tuner',
@@ -303,5 +314,18 @@ const newestFirstOrd: Ord.Ord<Product> = pipe(
 
 export const productList: readonly Product[] = pipe(
   unorderedProductList,
+  RA.filter((product) => product.isVisible),
   RA.sortBy([hasLogoFirstOrd, newestFirstOrd]),
+)
+
+// The categories with at least one visible product: a highlight with no card
+// behind it is left out, and its URL reads as every product
+export const shownCategoryList: readonly ProductCategory[] = pipe(
+  productCategoryList,
+  RA.filter((category) =>
+    pipe(
+      productList,
+      RA.exists((product) => RA.elem(S.Eq)(category)(product.categoryList)),
+    ),
+  ),
 )
