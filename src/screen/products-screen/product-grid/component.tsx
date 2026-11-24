@@ -18,12 +18,24 @@ import { gridCardDomId } from '../common/product-card/dom-id'
 import { type Msg } from '../type'
 import { type Props, PropsEq } from './type'
 
-// Every product as its card in a grid under the profile, dealt one after
+// Every product as its card in rows under the profile, dealt one after
 // the other on the first load: six a row across the page at most (each
-// column at least a sixth of it), at least 150px each, so fewer on a
-// narrower screen. A highlight filters the cards to its category. The card
-// of the product opened is away in the popup: its cell keeps the room, so
-// the grid does not move.
+// card a sixth of it), at least 150px each, so fewer on a narrower screen.
+// A row that is not full is centred. A highlight filters the cards to its
+// category. The card of the product opened is away in the popup: its cell
+// keeps the room, so the rows do not move.
+
+// The width of a cell: as many columns of at least 150px (9.375rem) as fit
+// with the 1px gaps, sharing the row; a column fits from 151px x n - 1px of
+// row width, and from 905px on, six share it
+const cellWidthClassName = [
+  'w-full',
+  '@min-[18.8125rem]:w-[calc((100%-1px)/2)]',
+  '@min-[28.25rem]:w-[calc((100%-2px)/3)]',
+  '@min-[37.6875rem]:w-[calc((100%-3px)/4)]',
+  '@min-[47.125rem]:w-[calc((100%-4px)/5)]',
+  '@min-[56.5625rem]:w-[calc((100%-5px)/6)]',
+].join(' ')
 
 const isInCategory =
   (category: Option<ProductCategory>) =>
@@ -77,7 +89,7 @@ const ProductGrid = ({
   isFirstShow,
   dispatch,
 }: Props) => (
-  <ul className='grid grid-cols-[repeat(auto-fill,minmax(max(9.375rem,calc((100%-5px)/6)),1fr))] gap-[1px] pt-[1px] pb-[6rem]'>
+  <ul className='@container flex flex-wrap justify-center gap-[1px] pt-[1rem] pb-[6rem] lg:pt-[2rem]'>
     {pipe(
       productList,
       RA.filter(isInCategory(category)),
@@ -87,6 +99,7 @@ const ProductGrid = ({
           style={{ '--deal-index': index }}
           className={[
             'p-[0.5rem] lg:p-[0.75rem]',
+            cellWidthClassName,
             // Away in the popup: the cell keeps its room
             O.elem(S.Eq)(product.id, away) ? 'invisible' : '',
             isFirstShow ? 'deal-in' : '',
