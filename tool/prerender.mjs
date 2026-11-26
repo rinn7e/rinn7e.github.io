@@ -13,7 +13,6 @@ import { Resvg } from '@resvg/resvg-js'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import satori from 'satori'
-import sharp from 'sharp'
 
 import {
   SHARE_IMAGE_HEIGHT,
@@ -64,10 +63,10 @@ const fonts = [400, 600, 800].map((weight) => ({
 const dataUrlOf = (type, data) =>
   `data:${type};base64,${Buffer.from(data).toString('base64')}`
 
-// Resvg draws no WebP, so the photo goes in as a PNG
-const avatarSrc = dataUrlOf(
-  'image/png',
-  await sharp('public/avatar.webp').resize(128, 128).png().toBuffer(),
+// The R7 logo of the site, at the top of every card
+const brandLogoSrc = dataUrlOf(
+  'image/svg+xml',
+  readFileSync('public/favicon.svg'),
 )
 
 const logoSrcMap = new Map(
@@ -89,7 +88,7 @@ const logoSrcOf = (product) => logoSrcMap.get(product.id)
 
 const pngOf = async (card) =>
   new Resvg(
-    await satori(shareCardView({ card, avatarSrc, logoSrcOf }), {
+    await satori(shareCardView({ card, brandLogoSrc, logoSrcOf }), {
       width: SHARE_IMAGE_WIDTH,
       height: SHARE_IMAGE_HEIGHT,
       fonts,

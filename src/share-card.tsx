@@ -18,7 +18,7 @@ import { type BlogPost } from '@/common/type/blog-post'
 // look of the site, drawn at build time with satori and resvg
 // (`scripts/prerender.mjs`), as TEA Ecosystem draws its own, so a link
 // shared on a chat or a social site shows what it leads to. On the axis:
-// the photo and the name, a quiet label, a large title, then the tags of a
+// the R7 logo and the name, a quiet label, a large title, then the tags of a
 // post, a lead, or the logos of the work, and the address at the bottom.
 // Satori lays out a subset of CSS with flexbox only and reads inline
 // styles, so this one file styles with `style` instead of Tailwind, and
@@ -215,15 +215,16 @@ const stripView = (
   }
 }
 
-// The card of a page, for satori. `avatarSrc` and `logoSrcOf` are data URLs
-// the build reads from `public/` (satori loads no file of its own).
+// The card of a page, for satori. `brandLogoSrc` (the R7 logo of the site,
+// `public/favicon.svg`) and `logoSrcOf` are data URLs the build reads from
+// `public/` (satori loads no file of its own).
 export const shareCardView = ({
   card,
-  avatarSrc,
+  brandLogoSrc,
   logoSrcOf,
 }: {
   readonly card: ShareCard
-  readonly avatarSrc: string
+  readonly brandLogoSrc: string
   readonly logoSrcOf: (product: Product) => string | undefined
 }): ReactElement => (
   <div
@@ -256,12 +257,7 @@ export const shareCardView = ({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <img
-          src={avatarSrc}
-          width={64}
-          height={64}
-          style={{ borderRadius: 32 }}
-        />
+        <img src={brandLogoSrc} width={64} height={64} />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <span style={{ fontSize: 28, fontWeight: 800 }}>{HANDLE}</span>
           <span style={{ fontSize: 20, color: color.muted }}>
