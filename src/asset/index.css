@@ -294,6 +294,12 @@
       @apply mx-auto h-auto max-w-full rounded-[0.75rem] border border-zinc-200 dark:border-zinc-800;
     }
 
+    /* A picture with a version for each theme (see \`tool/blog/render.ts\`)
+       lays out as the plain image does */
+    & picture {
+      @apply block;
+    }
+
     /* Code within a sentence */
     & :not(pre) > code {
       @apply rounded-[3px] bg-(--code-bg) px-[0.3em] py-[0.1em] font-mono text-[0.875em] [overflow-wrap:anywhere] text-(--hl-text);

@@ -75,6 +75,19 @@ export const blogPostFileList = (rootDir: string): readonly string[] => {
     : []
 }
 
+// The version for the dark theme of a picture of a post: `<name>.dark.<ext>`
+// next to `<name>.<ext>` in `public/`, when it is there. A post without one
+// (every post imported from dev.to) keeps its one picture for both themes.
+export const darkImageOf =
+  (rootDir: string) =>
+  (src: string): O.Option<string> =>
+    pipe(
+      O.fromNullable(/^(\/[^?#]+?)(\.[a-z0-9]+)$/i.exec(src)),
+      O.filter(([, base]) => !base.endsWith('.dark')),
+      O.map(([, base, extension]) => `${base}.dark${extension}`),
+      O.filter((dark) => existsSync(join(rootDir, 'public', dark))),
+    )
+
 // Every post of `content/blog/` in `rootDir`, rendered, newest first
 export const readBlogPostList = (rootDir: string): readonly BlogPost[] => {
   const dir = join(rootDir, BLOG_CONTENT_DIR)
@@ -107,7 +120,7 @@ export const readBlogPostList = (rootDir: string): readonly BlogPost[] => {
       readingMinutes: readingMinutesOf(body),
       devToUrl: O.fromNullable(frontMatter.devToUrl),
       coverImage: O.fromNullable(frontMatter.coverImage),
-      html: renderMarkdown(body, localLinkMap),
+      html: renderMarkdown(body, localLinkMap, darkImageOf(rootDir)),
     })),
     RA.sort(newestFirst),
   )

@@ -1,43 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0b1120"/><stop offset="1" stop-color="#131c36"/>
-    </linearGradient>
     <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="1.2" fill="#1e293b"/>
+      <circle cx="2" cy="2" r="1.2" fill="#e8edf3"/>
     </pattern>
-    <marker id="m" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="c" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="v" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="g" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="r" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#fb7185" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="m" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="c" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#0891b2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="v" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#b45309" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="g" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#047857" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="r" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#e11d48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
   </defs>
-  <rect width="1200" height="760" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="760" rx="28" fill="#ffffff"/>
   <rect width="1200" height="760" rx="28" fill="url(#dots)"/>
-  <text x="600" y="78" text-anchor="middle" font-size="40" font-weight="800" fill="#f1f5f9" letter-spacing="-0.5">Replay drift</text>
-  <text x="600" y="118" text-anchor="middle" font-size="20" fill="#94a3b8">Rebuild months later, and a new rule refuses an old command that was valid</text>
-  <text x="230" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#34d399" letter-spacing="2.5">MARCH</text>
-  <text x="600" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8" letter-spacing="2.5">JUNE</text>
-  <text x="970" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#fb7185" letter-spacing="2.5">REBUILD</text>
-  <rect x="80.0" y="214" width="300" height="150" rx="16" fill="#34d39914" stroke="#34d399" stroke-opacity="0.85" stroke-width="1.6"/>
-  <text x="230" y="284.0" text-anchor="middle" font-size="19" font-weight="700" fill="#f1f5f9">Alice publishes n1</text>
-  <text x="230" y="311.0" text-anchor="middle" font-size="16" fill="#34d399">no title: allowed</text>
-  <rect x="450.0" y="214" width="300" height="150" rx="16" fill="#94a3b810" stroke="#94a3b8" stroke-opacity="0.85" stroke-width="1.6"/>
-  <text x="600" y="284.0" text-anchor="middle" font-size="19" font-weight="700" fill="#f1f5f9">A new rule ships</text>
-  <text x="600" y="311.0" text-anchor="middle" font-size="16" fill="#94a3b8">a title first</text>
-  <rect x="820.0" y="214" width="300" height="150" rx="16" fill="#fb718514" stroke="#fb7185" stroke-opacity="0.85" stroke-width="1.6"/>
-  <text x="970" y="284.0" text-anchor="middle" font-size="19" font-weight="700" fill="#f1f5f9">Replay PublishNote n1</text>
-  <text x="970" y="311.0" text-anchor="middle" font-size="16" fill="#fb7185">new rule: refused</text>
-  <path d="M380.0 289 L442.0 289" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m)"/>
-  <path d="M750.0 289 L812.0 289" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m)"/>
-  <text x="600" y="412" text-anchor="middle" font-size="18" font-weight="700" fill="#fb7185">The rebuilt state no longer matches what really happened</text>
-  <line x1="428.4" y1="487" x2="168.39999999999998" y2="487" stroke="#334155" stroke-width="1.5"/>
-  <line x1="771.6" y1="487" x2="1031.6" y2="487" stroke="#334155" stroke-width="1.5"/>
-  <text x="600" y="492" text-anchor="middle" font-size="14" font-weight="700" fill="#fbbf24" letter-spacing="2.5">THE FIX: VERSION THE COMMAND</text>
-  <rect x="505.0" y="530" width="190" height="66" rx="16" fill="#fbbf2412" stroke="#fbbf24" stroke-opacity="0.85" stroke-width="1.6"/>
-  <text x="600" y="570.0" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">decide</text>
-  <rect x="110.0" y="630" width="380" height="96" rx="16" fill="#34d39914" stroke="#34d399" stroke-opacity="0.85" stroke-width="1.6"/>
-  <text x="300" y="673.0" text-anchor="middle" font-size="19" font-weight="700" fill="#f1f5f9" font-family="'JetBrains Mono', Menlo, Consolas, monospace">PublishNoteV1</text>
-  <text x="300" y="700.0" text-anchor="middle" font-size="16" fill="#34d399">old records keep the rule of their time</text>
-  <rect x="710.0" y="630" width="380" height="96" rx="16" fill="#22d3ee14" stroke="#22d3ee" stroke-opacity="0.85" stroke-width="1.6"/>
-  <text x="900" y="673.0" text-anchor="middle" font-size="19" font-weight="700" fill="#f1f5f9" font-family="'JetBrains Mono', Menlo, Consolas, monospace">PublishNoteV2</text>
-  <text x="900" y="700.0" text-anchor="middle" font-size="16" fill="#22d3ee">new requests get the new rule</text>
-  <path d="M505 563 L300 563 L300 624" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#g)"/>
-  <path d="M695 563 L900 563 L900 624" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#c)"/>
+  <text x="600" y="78" text-anchor="middle" font-size="40" font-weight="800" fill="#0f172a" letter-spacing="-0.5">Replay drift</text>
+  <text x="600" y="118" text-anchor="middle" font-size="20" fill="#64748b">Rebuild months later, and a new rule refuses an old command that was valid</text>
+  <text x="230" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#047857" letter-spacing="2.5">MARCH</text>
+  <text x="600" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#64748b" letter-spacing="2.5">JUNE</text>
+  <text x="970" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#e11d48" letter-spacing="2.5">REBUILD</text>
+  <rect x="80.0" y="214" width="300" height="150" rx="16" fill="#04785714" stroke="#047857" stroke-opacity="0.85" stroke-width="1.6"/>
+  <text x="230" y="284.0" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">Alice publishes n1</text>
+  <text x="230" y="311.0" text-anchor="middle" font-size="16" fill="#047857">no title: allowed</text>
+  <rect x="450.0" y="214" width="300" height="150" rx="16" fill="#64748b10" stroke="#64748b" stroke-opacity="0.85" stroke-width="1.6"/>
+  <text x="600" y="284.0" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">A new rule ships</text>
+  <text x="600" y="311.0" text-anchor="middle" font-size="16" fill="#64748b">a title first</text>
+  <rect x="820.0" y="214" width="300" height="150" rx="16" fill="#e11d4814" stroke="#e11d48" stroke-opacity="0.85" stroke-width="1.6"/>
+  <text x="970" y="284.0" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">Replay PublishNote n1</text>
+  <text x="970" y="311.0" text-anchor="middle" font-size="16" fill="#e11d48">new rule: refused</text>
+  <path d="M380.0 289 L442.0 289" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m)"/>
+  <path d="M750.0 289 L812.0 289" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m)"/>
+  <text x="600" y="412" text-anchor="middle" font-size="18" font-weight="700" fill="#e11d48">The rebuilt state no longer matches what really happened</text>
+  <line x1="428.4" y1="487" x2="168.39999999999998" y2="487" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="771.6" y1="487" x2="1031.6" y2="487" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="600" y="492" text-anchor="middle" font-size="14" font-weight="700" fill="#b45309" letter-spacing="2.5">THE FIX: VERSION THE COMMAND</text>
+  <rect x="505.0" y="530" width="190" height="66" rx="16" fill="#b4530912" stroke="#b45309" stroke-opacity="0.85" stroke-width="1.6"/>
+  <text x="600" y="570.0" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">decide</text>
+  <rect x="110.0" y="630" width="380" height="96" rx="16" fill="#04785714" stroke="#047857" stroke-opacity="0.85" stroke-width="1.6"/>
+  <text x="300" y="673.0" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a" font-family="'JetBrains Mono', Menlo, Consolas, monospace">PublishNoteV1</text>
+  <text x="300" y="700.0" text-anchor="middle" font-size="16" fill="#047857">old records keep the rule of their time</text>
+  <rect x="710.0" y="630" width="380" height="96" rx="16" fill="#0891b214" stroke="#0891b2" stroke-opacity="0.85" stroke-width="1.6"/>
+  <text x="900" y="673.0" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a" font-family="'JetBrains Mono', Menlo, Consolas, monospace">PublishNoteV2</text>
+  <text x="900" y="700.0" text-anchor="middle" font-size="16" fill="#0891b2">new requests get the new rule</text>
+  <path d="M505 563 L300 563 L300 624" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#g)"/>
+  <path d="M695 563 L900 563 L900 624" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#c)"/>
 </svg>

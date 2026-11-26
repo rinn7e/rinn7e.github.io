@@ -1,3 +1,5 @@
+import * as O from 'fp-ts/Option'
+import { pipe } from 'fp-ts/function'
 import hljs from 'highlight.js'
 import MarkdownIt from 'markdown-it'
 
@@ -9,6 +11,10 @@ import MarkdownIt from 'markdown-it'
 // canonical URL, with no trailing slash): a link from one post to another
 // stays on this site
 export type LocalLinkMap = ReadonlyMap<string, string>
+
+// The version for the dark theme of a picture of a post, by the address of
+// its light version, when the post has one
+export type DarkImageOf = (src: string) => O.Option<string>
 
 // A block of code, as TEA Ecosystem shows code (its `codeBlockView`): the
 // colors are classes of highlight.js (`hljs-keyword`), styled in
@@ -50,6 +56,7 @@ const linkAttrListOf = (
 export const renderMarkdown = (
   markdown: string,
   localLinkMap: LocalLinkMap,
+  darkImageOf: DarkImageOf,
 ): string => {
   const md = new MarkdownIt({
     html: false,
@@ -66,13 +73,27 @@ export const renderMarkdown = (
     return self.renderToken(tokens, index, options)
   }
 
-  // Pictures load as they come near, under the text above them
+  // Pictures load as they come near, under the text above them. A picture
+  // with a version for the dark theme becomes a `<picture>` that shows it
+  // when the system is dark, as the site follows the system theme (the
+  // `dark:` of Tailwind); the browser loads only the one it shows.
   md.renderer.rules.image = (tokens, index, options, env, self) => {
-    tokens[index]?.attrSet('loading', 'lazy')
-    tokens[index]?.attrSet('decoding', 'async')
-    return renderImage === undefined
-      ? self.renderToken(tokens, index, options)
-      : renderImage(tokens, index, options, env, self)
+    const token = tokens[index]
+    token?.attrSet('loading', 'lazy')
+    token?.attrSet('decoding', 'async')
+    const img =
+      renderImage === undefined
+        ? self.renderToken(tokens, index, options)
+        : renderImage(tokens, index, options, env, self)
+    return pipe(
+      O.fromNullable(token?.attrGet('src')),
+      O.chain((src) => darkImageOf(String(src))),
+      O.fold(
+        () => img,
+        (dark) =>
+          `<picture><source srcset="${md.utils.escapeHtml(dark)}" media="(prefers-color-scheme: dark)">${img}</picture>`,
+      ),
+    )
   }
 
   // A wide table scrolls on its own, never the page

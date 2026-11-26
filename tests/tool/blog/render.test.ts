@@ -1,3 +1,4 @@
+import * as O from 'fp-ts/Option'
 import { describe, expect, it } from 'vitest'
 
 import { renderMarkdown } from '../../../tool/blog/render'
@@ -6,7 +7,14 @@ const localLinkMap = new Map([
   ['https://dev.to/rinn7e/a-post-x1y', '/blog/a-post'],
 ])
 
-const render = (markdown: string) => renderMarkdown(markdown, localLinkMap)
+// A post with a dark version of one picture only
+const darkImageOf = (src: string) =>
+  src === '/blog/a-post/flow.svg'
+    ? O.some('/blog/a-post/flow.dark.svg')
+    : O.none
+
+const render = (markdown: string) =>
+  renderMarkdown(markdown, localLinkMap, darkImageOf)
 
 describe('the HTML of a post', () => {
   it('keeps a link to another post on this site', () => {
@@ -46,5 +54,17 @@ describe('the HTML of a post', () => {
 
   it('loads a picture lazily', () => {
     expect(render('![a map](/blog/a-post/map.png)')).toContain('loading="lazy"')
+  })
+
+  it('shows the dark version of a picture when the system theme is dark', () => {
+    expect(render('![a flow](/blog/a-post/flow.svg)')).toContain(
+      '<picture><source srcset="/blog/a-post/flow.dark.svg" media="(prefers-color-scheme: dark)"><img src="/blog/a-post/flow.svg" alt="a flow" loading="lazy" decoding="async"></picture>',
+    )
+  })
+
+  it('keeps a picture with no dark version a plain image', () => {
+    const html = render('![a map](/blog/a-post/map.png)')
+    expect(html).not.toContain('<picture>')
+    expect(html).toContain('<img src="/blog/a-post/map.png"')
   })
 })
