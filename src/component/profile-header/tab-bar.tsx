@@ -45,17 +45,19 @@ const flipButtonView = ({
   </button>
 )
 
+// Every tab has one width, so the tabs and their underlines read as equal:
+// on a desktop that of the longest label (Open-source work), on a phone a
+// narrower one that leaves room for Flip and Clear filter at the ends, the
+// products tab named Work there
 const tabClass = (isCurrent: boolean): string =>
   [
-    'flex h-[2.75rem] items-center gap-[0.375rem] border-b-[2px] px-[0.25rem] text-[0.75rem] font-semibold tracking-[0.06em] uppercase transition-colors',
+    'flex h-[2.75rem] w-[5.25rem] items-center justify-center gap-[0.375rem] border-b-[2px] lg:w-[12rem] px-[0.25rem] text-[0.75rem] font-semibold tracking-[0.06em] uppercase transition-colors',
     isCurrent
       ? 'border-[#0c1014] text-[#0c1014] dark:border-zinc-50 dark:text-zinc-50'
       : 'border-transparent text-[#6a717a] hover:text-[#0c1014] dark:text-zinc-400 dark:hover:text-zinc-50',
   ].join(' ')
 
-// The icon of a tab, on a desktop only: on a phone the three tabs fill the
-// row, and their labels alone leave room for Flip and Clear filter at the ends
-const tabIconClass = 'hidden size-[1rem] lg:block'
+const tabIconClass = 'size-[1rem] shrink-0'
 
 // The tabs (the products, the blog and About) on the centre axis, with Flip at the
 // left end and Clear filter at the right end (while a category is picked),
@@ -69,7 +71,7 @@ export const tabBarView = ({
 }) => (
   <nav
     aria-label='Sections'
-    className='relative flex w-full justify-center gap-[0.5rem] border-b border-[#dbdfe4] pt-[1.625rem] lg:gap-[3.75rem] dark:border-zinc-800'
+    className='relative flex w-full justify-center gap-[0.5rem] border-b border-[#dbdfe4] pt-[1.625rem] lg:gap-[1rem] dark:border-zinc-800'
   >
     <Link
       destination={destinationOfScreen(productsScreen())}
@@ -77,7 +79,8 @@ export const tabBarView = ({
       className={tabClass(headerScreen._tag === 'ProductsHeader')}
     >
       <Grid3x3 aria-hidden='true' className={tabIconClass} />
-      Open-source work
+      <span className='lg:hidden'>Work</span>
+      <span className='hidden lg:inline'>Open-source work</span>
     </Link>
     <Link
       destination={blogDestination()}
