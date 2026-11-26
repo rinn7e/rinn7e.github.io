@@ -9,6 +9,7 @@ import { prefersReducedMotion } from '@/common/util'
 
 import { ProductCardMemo } from '../common/product-card/component'
 import { panelCardDomId } from '../common/product-card/dom-id'
+import { quickLinkLayerView } from '../common/product-card/quick-link'
 import { flightStyleOf, popupLayerClassOf, revealClassOf } from './phase-style'
 import { productLinkView } from './product-link'
 import { roundButtonClass } from './round-button'
@@ -127,25 +128,33 @@ const productPanelView = ({
           style={flightStyleOf(model.phase)}
           className='[transform-style:preserve-3d]'
         >
-          {/* A click on the card puts it back in the grid */}
-          <button
-            type='button'
-            aria-label={`Close ${product.name}`}
-            className={[
-              'block rounded-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100',
-              // In flight, the card takes no pointer at all
-              model.phase._tag === 'Shown' ? '' : 'pointer-events-none',
-            ].join(' ')}
-            onClick={() => dispatch(closeMsg())}
-          >
-            <ProductCardMemo
-              hasQuickLink={false}
-              product={product}
-              size='PanelCard'
-              isFlipped={isFlipped}
-              isTracked={model.phase._tag === 'Shown'}
-            />
-          </button>
+          {/* A click on the card puts it back in the grid, a click on its
+              footer goes to the product */}
+          <div className='group/card relative'>
+            <button
+              type='button'
+              aria-label={`Close ${product.name}`}
+              className={[
+                'block rounded-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100',
+                // In flight, the card takes no pointer at all
+                model.phase._tag === 'Shown' ? '' : 'pointer-events-none',
+              ].join(' ')}
+              onClick={() => dispatch(closeMsg())}
+            >
+              <ProductCardMemo
+                hasQuickLink
+                product={product}
+                size='PanelCard'
+                isFlipped={isFlipped}
+                isTracked={model.phase._tag === 'Shown'}
+              />
+            </button>
+            {quickLinkLayerView({
+              product,
+              isShown:
+                !isFlipped && model.phase._tag === 'Shown' && !model.isPlaying,
+            })}
+          </div>
         </div>
       </div>
     </div>
