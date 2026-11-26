@@ -44,7 +44,7 @@ tags:
 
 Its pictures go in `public/blog/<slug>/`, and the body links them as `/blog/<slug>/<name>.<ext>`. A picture may also have a version for the dark theme, `<name>.dark.<ext>` next to it: the page then shows the one that matches the theme of the system. A picture without one is shown in both themes.
 
-The build renders the Markdown to HTML, with the code colored by highlight.js (`tool/blog/`), so the browser gets no Markdown code. Raw HTML in a post is shown as text. Prettier leaves `content/` alone, so a post stays as written.
+The code examples of a post are in Haskell. The build renders the Markdown to HTML, with the code colored by highlight.js (`tool/blog/`), so the browser gets no Markdown code. Raw HTML in a post is shown as text. Prettier leaves `content/` alone, so a post stays as written.
 
 ### Publish a new post (required: here and on dev.to)
 

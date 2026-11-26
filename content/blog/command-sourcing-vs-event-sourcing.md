@@ -5,7 +5,7 @@ date: 2026-11-26
 tags:
   - architecture
   - eventsourcing
-  - typescript
+  - haskell
   - database
 devToUrl: https://dev.to/rinn7e/command-sourcing-vs-event-sourcing-12i6
 ---
@@ -30,29 +30,27 @@ Strip any app down and you get the same loop. Here it is for a note-taking app:
 
 In code, it is two functions:
 
-```ts
-// The rules: may this command happen, and what changes if it does?
-function decide(state: State, command: Command): Rejection | Event[]
+```haskell
+-- The rules: may this command happen, and what changes if it does?
+decide :: State -> Command -> Either Rejection [Event]
 
-// No rules: write the change into the state
-function apply(state: State, event: Event): State
+-- No rules: write the change into the state
+apply :: State -> Event -> State
 ```
 
 To survive a restart, you write something to a log and rebuild the state from it. There are exactly two places in this loop to cut: before `decide`, or after it.
 
-```ts
-// Command sourcing: log the commands, run the rules again on replay
-const replayCommands = (commands: Command[]): State =>
-  commands.reduce((state, command) => {
-    const result = decide(state, command)
-    // Only accepted commands are logged, so each must be accepted again
-    if (isRejection(result)) throw new Error("replay drift")
-    return result.reduce(apply, state)
-  }, initialState)
+```haskell
+-- Command sourcing: log the commands, run the rules again on replay.
+-- Only accepted commands are logged, so a refusal (Left) means drift.
+replayCommands :: [Command] -> Either Rejection State
+replayCommands = foldM step initialState
+  where
+    step state command = foldl apply state <$> decide state command
 
-// Event sourcing: log the events, only apply them on replay
-const replayEvents = (events: Event[]): State =>
-  events.reduce(apply, initialState)
+-- Event sourcing: log the events, only apply them on replay
+replayEvents :: [Event] -> State
+replayEvents = foldl apply initialState
 ```
 
 Everything else in this post follows from where you cut.
@@ -134,23 +132,19 @@ In March, Alice publishes a note with no title. That is allowed. In June you shi
 
 The fix is to version the command. When a rule changes the result of a command that already exists, add a new version and keep the old rule for the old one (the owner, the draft and the version checks are left out to keep it short):
 
-```ts
-type Command =
-  | { type: "CreateNote"; noteId: string; at: string; title: string }
-  | { type: "PublishNoteV1"; noteId: string } // the March rule: any note can be published
-  | { type: "PublishNoteV2"; noteId: string } // the June rule: a title first
+```haskell
+data Command
+  = CreateNote NoteId UTCTime Text
+  | PublishNoteV1 NoteId -- the March rule: any note can be published
+  | PublishNoteV2 NoteId -- the June rule: a title first
 
-function decide(state: State, command: Command): Rejection | Event[] {
-  switch (command.type) {
-    case "PublishNoteV1":
-      return [{ type: "NotePublished", noteId: command.noteId }]
-    case "PublishNoteV2":
-      return state.notes[command.noteId].title.trim() === ""
-        ? { rejection: "NoTitle" }
-        : [{ type: "NotePublished", noteId: command.noteId }]
-    // ...
-  }
-}
+decide :: State -> Command -> Either Rejection [Event]
+decide state = \case
+  PublishNoteV1 noteId -> Right [NotePublished noteId]
+  PublishNoteV2 noteId
+    | Text.null (Text.strip (titleOf state noteId)) -> Left NoTitle
+    | otherwise -> Right [NotePublished noteId]
+  -- ...
 ```
 
 The log stores the version (an old record with no version, like the `PublishNote` above, reads as V1), the API only ever creates the newest one, and old records replay under the rule they were decided with.
@@ -174,14 +168,13 @@ Two more guards:
 
 So do the impure work before the command exists, and put the results into it:
 
-```ts
-// In the API handler: everything impure happens here, once
-const command: Command = {
-  type: "CreateNote",
-  noteId: crypto.randomUUID(), // not generated inside decide
-  at: new Date().toISOString(), // not read inside decide
-  title: body.title,
-}
+```haskell
+-- In the API handler: everything impure happens here, once
+createNoteCommand :: Text -> IO Command
+createNoteCommand title = do
+  noteId <- NoteId <$> UUID.nextRandom -- not generated inside decide
+  at <- getCurrentTime -- not read inside decide
+  pure (CreateNote noteId at title)
 ```
 
 The log now holds everything `decide` needs, and every replay sees the same id and the same time. It is the same reason statement-based MySQL replication has trouble with `RAND()`, `UUID()` and `SYSDATE()`, and why it makes `NOW()` safe by writing the time into the log.
