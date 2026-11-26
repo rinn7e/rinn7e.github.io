@@ -16,8 +16,8 @@ import { Link } from '@/component/link'
 
 import { type Props, PropsEq } from './type'
 
-// The posts, newest first, a centred column of equal cards, each opening
-// its page. Its model is empty (`type.ts`), so the memo draws it once. It
+// The posts, newest first, in one card on the axis: a row per post, the
+// rows divided by thin rules, each opening its page. Its model is empty (`type.ts`), so the memo draws it once. It
 // sits under the profile, so it has no title of its own.
 const BlogScreen = ({ newSince }: Props) => (
   <div className='flex flex-col items-center pt-[2rem] pb-[6rem] lg:pt-[2.5rem]'>
@@ -26,7 +26,7 @@ const BlogScreen = ({ newSince }: Props) => (
         No posts yet.
       </p>
     ) : (
-      <ul className='flex w-full max-w-[45rem] flex-col gap-[1rem]'>
+      <ul className='flex w-full max-w-[45rem] flex-col divide-y divide-zinc-200 overflow-hidden rounded-[0.875rem] border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950'>
         {pipe(
           blogPostList,
           RA.map((post) =>
@@ -38,12 +38,12 @@ const BlogScreen = ({ newSince }: Props) => (
   </div>
 )
 
-// A card of the list, mirrored around its axis: the day on the left edge
+// A row of the list, mirrored around its axis: the day on the left edge
 // and the minutes to read on the right, then the title, the description and
 // the tags, centred, and the badge New on the axis on a post of the last 30
-// days. Every card has the same frame and the same height: the title and
-// the description each get a box of two lines, clamped to it, with a
-// shorter text centred in it, so a long title never makes its card taller.
+// days. Every row has the same height: the title and the description each
+// get a box of two lines, clamped to it, with a shorter text centred in it,
+// so a long title never makes its row taller.
 const postCardView = ({
   post,
   isNew,
@@ -54,7 +54,7 @@ const postCardView = ({
   <li key={post.slug} className='flex'>
     <Link
       destination={blogPostDestination(post.slug)}
-      className='flex w-full flex-col gap-[0.75rem] rounded-[0.875rem] border border-zinc-200 bg-white px-[1.25rem] py-[1rem] text-center transition-colors hover:border-blue-600 lg:px-[1.5rem] lg:py-[1.25rem] dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-blue-400'
+      className='flex w-full flex-col gap-[0.75rem] px-[1.25rem] py-[1rem] text-center transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-zinc-900 lg:px-[1.5rem] lg:py-[1.25rem] dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-100'
     >
       {/* Mirrored around the axis: the day on the left edge, the minutes
           to read on the right, and the badge New on the axis between them */}
