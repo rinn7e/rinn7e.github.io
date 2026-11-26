@@ -8,7 +8,7 @@ import {
   parseDestination,
   toUrlString,
 } from '@/common/type/destination'
-import { pushUrlCmd, replaceUrlCmd } from '@/common/util'
+import { pushUrlCmd, replaceUrlCmd, savedScrollOfEntry } from '@/common/util'
 import { type Model, type Msg } from '@/type'
 
 import { destinationOf } from './destination'
@@ -18,8 +18,14 @@ import { destinationOf } from './destination'
 // boot and on the browser's back and forward (`UrlChanged`).
 // `toUrlString` / `parseDestination` are the only code that knows its
 // spelling.
+// A push that does not move the page (`saveScroll`: anything but a move
+// by a link) keeps the scroll of the entry it leaves first.
 export type UrlWrite =
-  | { readonly _tag: 'PushUrl'; readonly url: string }
+  | {
+      readonly _tag: 'PushUrl'
+      readonly url: string
+      readonly saveScroll: boolean
+    }
   | { readonly _tag: 'ReplaceUrl'; readonly url: string }
 
 // How the browser's history follows a step: every change of destination
@@ -39,7 +45,13 @@ export const urlWriteOf = (
   ) {
     return O.none
   } else {
-    return O.some({ _tag: 'PushUrl', url: toUrlString(destinationOf(model)) })
+    return O.some({
+      _tag: 'PushUrl',
+      url: toUrlString(destinationOf(model)),
+      saveScroll: !(
+        msg._tag === 'NavigationMsg' && msg.subMsg._tag === 'Navigate'
+      ),
+    })
   }
 }
 
@@ -65,10 +77,16 @@ export const bootUrlOf = (
   }
 }
 
-// The browser's back or forward landed on `location`: opened as a move
+// The browser's back or forward landed on `location`: opened as a move,
+// with the scroll saved in the entry it landed on (already the state of
+// the history when `popstate` fires)
 export const urlChangedMsg = (location: Location): Msg => ({
   _tag: 'NavigationMsg',
-  subMsg: { _tag: 'UrlChanged', destination: parseDestination(location.href) },
+  subMsg: {
+    _tag: 'UrlChanged',
+    destination: parseDestination(location.href),
+    scrollY: savedScrollOfEntry(),
+  },
 })
 
 // Keeps the URL in sync with the destination (see `urlWriteOf`). The one
@@ -87,7 +105,7 @@ export const withUrl = (
         model,
         Cmd.batch([
           write._tag === 'PushUrl'
-            ? pushUrlCmd(write.url)
+            ? pushUrlCmd(write.url, write.saveScroll)
             : replaceUrlCmd(write.url),
           cmd,
         ]),

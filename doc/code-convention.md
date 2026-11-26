@@ -61,7 +61,8 @@ The app owns where it is; the URL only follows.
 2. Every move is a `NavigationMsg` (`Navigate` from a click, `UrlChanged` from the browser back and forward), handled by `navigationMsgHandler`. Links in the app use `Link`, a real anchor that navigates in the app on a plain left click.
 3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?product=damn-center`, `/blog`, `/blog/format-date-with-purescript`, `/about`, `/privacy`). A slug with no post reads as not found. The build writes a page per post at the same path (`blogPostPathOf` in `tool/blog/post-list.ts`), and a test holds the two spellings together.
 4. The URL is written after every step by `withUrl`, the one wrapper around the root `update`: a change of destination pushes an entry, the same destination writes nothing, and `UrlChanged` already has its entry. The boot replaces the URL when it was another spelling of its destination (`/about/`).
-5. A param of a screen (the product opened) lives in the model of that screen only; opening or closing a product is a message of the screen, and the URL follows. The screenshot shown is not in the URL.
+5. The scroll of a move is the app's, as on TEA Ecosystem (`src/common/util/browser-history.ts`): the browser's own restoration is off, each history entry keeps the scroll it was left at (saved by `Link` at the click, or by a push that does not move the page, a product opened or closed), and every move sets `Model.scroll`, a link move at the top and the browser's back or forward at the scroll saved in its entry. `useScrollOf` in `src/view.tsx` scrolls there after React has drawn the screen and before the browser paints it, so a page never shows at a wrong scroll first.
+6. A param of a screen (the product opened) lives in the model of that screen only; opening or closing a product is a message of the screen, and the URL follows. The screenshot shown is not in the URL.
 
 ## Search engines
 
@@ -95,7 +96,7 @@ The Privacy page (`/privacy`) lists every party that sees a visit and everything
 
 ## Code
 
-1. Side effects (the URL, the scroll, the title) run only in a `Cmd` (`cmdSucceed`), never inside an `update`. The backdrop of the page is drawn on a canvas by an effect of its own component (`src/component/page-backdrop.tsx`), never as text in the page: as text, Safari Reader took its rows for the article.
+1. Side effects (the URL, the title) run only in a `Cmd` (`cmdSucceed`), never inside an `update`. Two exceptions draw in an effect of a view: the scroll of a move (`update` only says where, `Model.scroll`, and a layout effect of the root view scrolls there, as a `Cmd` runs too late, after the paint), and the backdrop of the page, drawn on a canvas by its own component (`src/component/page-backdrop.tsx`), never as text in the page: as text, Safari Reader took its rows for the article.
 2. Use `fp-ts` with `pipe` (`A.map`, `A.filter`, `O.fold`) instead of methods on arrays and options; import modules by name (`fp-ts/Option`, not `fp-ts/lib/Option`).
 3. Branch with a full `if` / `else if` / `else` tree, no early return; `switch` on `_tag` for unions. No `let`.
 4. Prefer `satisfies` to `as`.

@@ -3,6 +3,7 @@ import { pipe } from 'fp-ts/function'
 import { ProgramWithNav } from 'react-tea-cup'
 import { Cmd, type Dispatcher, Sub, Task } from 'tea-cup-fp'
 
+import { savedScrollOfEntry } from '@/common/util'
 import { bootOf } from '@/common/util/boot'
 
 import { type Model, type Msg } from './type'
@@ -34,9 +35,9 @@ const bootInit = (location: Location): [Model, Cmd<Msg>] =>
   pipe(
     bootOf(document),
     O.fold(
-      () => init(location, Date.now()),
+      () => init(location, Date.now(), savedScrollOfEntry()),
       (boot) => {
-        const [model, cmd] = init(location, boot.now)
+        const [model, cmd] = init(location, boot.now, savedScrollOfEntry())
         return [model, Cmd.batch([cmd, setNowCmd])]
       },
     ),

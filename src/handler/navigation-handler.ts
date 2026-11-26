@@ -11,8 +11,12 @@ import {
   PRODUCTS_TITLE,
   blogPostTitleOf,
 } from '@/common/seo'
-import { type Destination, type NavigationMsg } from '@/common/type/destination'
-import { cmdSucceed, scrollToTopCmd } from '@/common/util'
+import {
+  type Destination,
+  DestinationEq,
+  type NavigationMsg,
+} from '@/common/type/destination'
+import { cmdSucceed } from '@/common/util'
 import * as AboutScreen from '@/screen/about-screen'
 import * as BlogPostScreen from '@/screen/blog-post-screen'
 import * as BlogScreen from '@/screen/blog-screen'
@@ -25,6 +29,7 @@ import {
   type ScreenModel,
   currentScreenModelOfMove,
 } from '@/type'
+import { destinationOf } from '@/util/destination'
 
 // The title of the browser tab for each screen
 const titleOf = (destination: Destination): string => {
@@ -119,31 +124,38 @@ const freshScreenModelOf = (
   }
 }
 
-// Opens `destination`. A click (`Navigate`) starts the screen at its top;
-// the browser's back and forward (`UrlChanged`) leave the scroll to the
-// browser.
+// Opens `destination`, its screen drawn at `top` (`Model.scroll`): the app
+// scrolls there after React has drawn the screen and before the browser
+// paints it (`useScrollOf`), so its first frame is at its place
 export const navigateHandler =
-  (destination: Destination, isInternal: boolean) =>
+  (destination: Destination, top: number) =>
   (model: Model): [Model, Cmd<Msg>] => {
     const [screenModel, screenCmd] = initScreenModel(destination, false)
-    const updatedModel: Model = { ...model, screenModel }
-    if (isInternal) {
-      return [updatedModel, Cmd.batch([screenCmd, scrollToTopCmd()])]
-    } else {
-      return [updatedModel, screenCmd]
-    }
+    return [
+      {
+        ...model,
+        screenModel,
+        scroll: { seq: model.scroll.seq + 1, top },
+      },
+      screenCmd,
+    ]
   }
 
 // Every move of the app. The URL follows the destination after the step
-// (`withUrl`), so nothing here writes it.
+// (`withUrl`), so nothing here writes it. Each move also says where its
+// screen is drawn: a move by a link at the top, a landing on a history
+// entry (the browser's back or forward) at the scroll saved in that entry.
+// A landing on the destination already shown changes nothing.
 export const navigationMsgHandler = (
   subMsg: NavigationMsg,
   model: Model,
 ): [Model, Cmd<Msg>] => {
   switch (subMsg._tag) {
     case 'Navigate':
-      return navigateHandler(subMsg.destination, true)(model)
+      return navigateHandler(subMsg.destination, 0)(model)
     case 'UrlChanged':
-      return navigateHandler(subMsg.destination, false)(model)
+      return DestinationEq.equals(destinationOf(model), subMsg.destination)
+        ? [model, Cmd.none()]
+        : navigateHandler(subMsg.destination, subMsg.scrollY)(model)
   }
 }

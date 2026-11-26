@@ -16,20 +16,20 @@ import { locationOf } from '../helper/location'
 
 const navigateTo = (destination = aboutDestination()): Msg => ({
   _tag: 'NavigationMsg',
-  subMsg: { _tag: 'Navigate', destination },
+  subMsg: { _tag: 'Navigate', destination, scrollY: 0 },
 })
 
 describe('urlWriteOf', () => {
-  it('pushes the URL of a move to another screen', () => {
+  it('pushes the URL of a move to another screen, its scroll saved by the link', () => {
     const model = bootOn('/')
     const msg = navigateTo(aboutDestination())
     const [updatedModel] = update(msg, model)
     expect(urlWriteOf(msg, model, updatedModel)).toEqual(
-      O.some({ _tag: 'PushUrl', url: '/about' }),
+      O.some({ _tag: 'PushUrl', url: '/about', saveScroll: false }),
     )
   })
 
-  it('pushes the URL of a product opened in place, and of its close', () => {
+  it('pushes the URL of a product opened in place, and of its close, keeping the scroll they leave', () => {
     const model = bootOn('/')
     const openMsg: Msg = {
       _tag: 'ProductsScreenMsg',
@@ -37,7 +37,11 @@ describe('urlWriteOf', () => {
     }
     const [openedModel] = update(openMsg, model)
     expect(urlWriteOf(openMsg, model, openedModel)).toEqual(
-      O.some({ _tag: 'PushUrl', url: '/?product=damn-center' }),
+      O.some({
+        _tag: 'PushUrl',
+        url: '/?product=damn-center',
+        saveScroll: true,
+      }),
     )
     const closeMsg: Msg = {
       _tag: 'ProductsScreenMsg',
@@ -48,7 +52,7 @@ describe('urlWriteOf', () => {
     }
     const [closedModel] = update(closeMsg, openedModel)
     expect(urlWriteOf(closeMsg, openedModel, closedModel)).toEqual(
-      O.some({ _tag: 'PushUrl', url: '/' }),
+      O.some({ _tag: 'PushUrl', url: '/', saveScroll: true }),
     )
   })
 
@@ -76,7 +80,11 @@ describe('urlWriteOf', () => {
     const model = bootOn('/about')
     const msg: Msg = {
       _tag: 'NavigationMsg',
-      subMsg: { _tag: 'UrlChanged', destination: defaultDestination() },
+      subMsg: {
+        _tag: 'UrlChanged',
+        destination: defaultDestination(),
+        scrollY: 0,
+      },
     }
     const [updatedModel] = update(msg, model)
     expect(urlWriteOf(msg, model, updatedModel)).toEqual(O.none)

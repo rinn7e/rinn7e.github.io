@@ -3,7 +3,11 @@ import { pipe } from 'fp-ts/function'
 import { Cmd } from 'tea-cup-fp'
 
 import { newSinceOf } from '@/common/data/blog'
-import { replaceUrlCmd, updateAndCmd } from '@/common/util'
+import {
+  manualScrollRestorationCmd,
+  replaceUrlCmd,
+  updateAndCmd,
+} from '@/common/util'
 import * as DebugPanel from '@/component/debug-panel'
 import type * as ProfileHeader from '@/component/profile-header'
 import {
@@ -18,9 +22,15 @@ import * as ProductsScreen from '@/screen/products-screen'
 import { type Model, type Msg, sameScreenWith } from '@/type'
 import { bootDestinationOf, bootUrlOf } from '@/util'
 
-// `now` is the time of the boot (ms since 1970), passed in by the program so
-// `init` stays pure
-export const init = (location: Location, now: number): [Model, Cmd<Msg>] => {
+// `now` is the time of the boot (ms since 1970), and `scrollY` the scroll
+// saved in the history entry booted on (0 for a page opened from its URL),
+// passed in by the program so `init` stays pure. A page the browser comes
+// back to from another site, and loads again, opens at its scroll.
+export const init = (
+  location: Location,
+  now: number,
+  scrollY: number = 0,
+): [Model, Cmd<Msg>] => {
   const destination = bootDestinationOf(location)
   // The boot: the screen the visitor sees first
   const [screenModel, screenCmd] = initScreenModel(destination, true)
@@ -36,8 +46,13 @@ export const init = (location: Location, now: number): [Model, Cmd<Msg>] => {
       screenModel,
       debugPanel: DebugPanel.init(),
       newSince: newSinceOf(now),
+      scroll: { seq: 0, top: scrollY },
     },
-    Cmd.batch([bootUrlCmd, screenCmd]),
+    Cmd.batch([
+      manualScrollRestorationCmd().map((noOp): Msg => noOp),
+      bootUrlCmd,
+      screenCmd,
+    ]),
   ]
 }
 

@@ -11,7 +11,7 @@ const navigateTo =
   (model: Model): Model => {
     const msg: Msg = {
       _tag: 'NavigationMsg',
-      subMsg: { _tag: 'Navigate', destination },
+      subMsg: { _tag: 'Navigate', destination, scrollY: 0 },
     }
     return update(msg, model)[0]
   }

@@ -67,6 +67,9 @@ export type Model = {
   // The first day a blog post still counts as new (`newSinceOf`), read once
   // at boot: the badge New of its card and its page
   readonly newSince: string
+  // Where the screen shown is drawn: set by every move, and scrolled to
+  // once per `seq`, before the browser paints the screen (`useScrollOf`)
+  readonly scroll: { readonly seq: number; readonly top: number }
 }
 
 export type Msg =

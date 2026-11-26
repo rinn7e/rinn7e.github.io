@@ -11,7 +11,7 @@ import {
 } from '@/common/global-context'
 import { type BlogPost } from '@/common/type/blog-post'
 import { blogDestination, parseDestination } from '@/common/type/destination'
-import { newTabProps } from '@/common/util'
+import { newTabProps, saveScrollOfEntry } from '@/common/util'
 import {
   blogDateView,
   blogMetaClass,
@@ -53,11 +53,13 @@ const bodyClickHandler =
       !e.altKey
     ) {
       e.preventDefault()
+      saveScrollOfEntry()
       setGlobalMsg({
         _tag: 'NavigationMsg',
         subMsg: {
           _tag: 'Navigate',
           destination: parseDestination(anchor.href),
+          scrollY: window.scrollY,
         },
       })
     }

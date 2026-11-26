@@ -20,24 +20,6 @@ export const updateAndCmd =
     return [updatedModel, Cmd.batch([cmd, nextCmd])]
   }
 
-// Adds `url` to the history as a new entry (no `popstate` fires for it)
-export const pushUrlCmd = (url: string): Cmd<NoOpMsg> =>
-  cmdSucceed(() => {
-    window.history.pushState(null, '', url)
-  })
-
-// Changes the history entry shown to `url` (no `popstate` fires for it)
-export const replaceUrlCmd = (url: string): Cmd<NoOpMsg> =>
-  cmdSucceed(() => {
-    window.history.replaceState(null, '', url)
-  })
-
-// A move to another screen starts at its top, as a page load would
-export const scrollToTopCmd = (): Cmd<NoOpMsg> =>
-  cmdSucceed(() => {
-    window.scrollTo({ top: 0 })
-  })
-
 // Browsers throttle `requestAnimationFrame` in hidden tabs (down to about
 // 1s), so a wait for a paint gives up after this
 const maxPaintWaitMs = 100
