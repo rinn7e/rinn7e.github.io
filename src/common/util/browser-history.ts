@@ -15,14 +15,16 @@ import { type NoOpMsg, cmdSucceed } from './cmd'
 //
 // The browser restores the scroll of an entry too (its restoration stays
 // `auto`), and the swipe back of Safari needs it: Safari shows its snapshot
-// of the entry only when the browser restores the scroll, and with
-// `manual` it drew a blank page under the finger. Both land on the same
-// place, because the browser draws the entry it lands on in the `popstate`
-// event itself (`popStateSub`), before it restores the scroll, and a link
-// move adds its entry before it draws the new screen, while the page is
-// still at the scroll it leaves (`pushEntryOfLink`). TEA Ecosystem keeps
-// `manual` and scrolls in its own box instead: "Scroll and the swipe back"
-// in `doc/code-convention.md` says why this site does not.
+// of the entry only when the browser restores the scroll (or the window is
+// at the scroll of the snapshot), and with `manual` it drew a blank page
+// under the finger. Both land on the same place, because the app draws the
+// entry it lands on in the `popstate` event itself (`popStateSub`), before
+// the browser restores the scroll, and a link move adds its entry before it
+// draws the new screen, while the page is still at the scroll it leaves
+// (`pushEntryOfLink`): Safari takes its snapshot of the entry left, and
+// saves its scroll, when the new entry is added. `doc/swipe-back.md` says
+// what Safari does on a swipe back, how to measure it, and why this site
+// does not scroll in its own box as TEA Ecosystem does.
 
 type ScrollState = { readonly scrollY: number }
 

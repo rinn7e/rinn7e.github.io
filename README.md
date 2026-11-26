@@ -33,7 +33,7 @@ Checks, as the deploy runs them:
 pnpm run check && pnpm run lint && pnpm run format:check && pnpm test
 ```
 
-Code convention: [`doc/code-convention.md`](doc/code-convention.md).
+Code convention: [`doc/code-convention.md`](doc/code-convention.md). Back, forward and the swipe back of Safari: [`doc/swipe-back.md`](doc/swipe-back.md).
 
 ## Add a product
 
