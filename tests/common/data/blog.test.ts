@@ -30,16 +30,6 @@ describe('the posts of the blog', () => {
     })
   })
 
-  it('include posts first published here, with no original on dev.to', () => {
-    expect(
-      blogPostList.some(
-        (post) =>
-          post.slug === 'command-sourcing-vs-event-sourcing' &&
-          O.isNone(post.devToUrl),
-      ),
-    ).toBe(true)
-  })
-
   it('are written by the build at the address the app spells', () => {
     blogPostList.forEach((post) => {
       expect(blogPostPathOf(post.slug)).toBe(

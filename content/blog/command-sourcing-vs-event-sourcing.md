@@ -7,6 +7,7 @@ tags:
   - eventsourcing
   - typescript
   - database
+devToUrl: https://dev.to/rinn7e/command-sourcing-vs-event-sourcing-12i6
 ---
 
 **Command sourcing logs the request and runs your business rules again on every replay. Event sourcing logs the result and only applies it.** That is the whole difference, and it decides what breaks when your code changes.
