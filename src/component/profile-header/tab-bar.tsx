@@ -82,7 +82,10 @@ export const tabBarView = ({
     <Link
       destination={blogDestination()}
       aria-current={headerScreen._tag === 'BlogHeader' ? 'page' : undefined}
-      className={tabClass(headerScreen._tag === 'BlogHeader')}
+      className={tabClass(
+        headerScreen._tag === 'BlogHeader' ||
+          headerScreen._tag === 'BlogPostHeader',
+      )}
     >
       <BookOpenText aria-hidden='true' className={tabIconClass} />
       Blog

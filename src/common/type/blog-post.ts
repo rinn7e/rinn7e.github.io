@@ -11,6 +11,8 @@ export type BlogPost = {
   // The day it was first published, `YYYY-MM-DD`
   readonly date: string
   readonly tagList: readonly string[]
+  // How long it takes to read, in minutes, as dev.to counts it
+  readonly readingMinutes: number
   // The original on dev.to, the canonical address of the post
   readonly canonicalUrl: string
   // A picture of the site (`/blog/<slug>/cover.png`), shown above the post

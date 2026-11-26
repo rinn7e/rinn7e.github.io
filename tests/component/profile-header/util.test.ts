@@ -22,7 +22,7 @@ describe('the header of each screen', () => {
     })
     expect(headerScreenOf(blogScreen(), true)).toEqual({ _tag: 'BlogHeader' })
     expect(headerScreenOf(blogPostScreen('a-post'), true)).toEqual({
-      _tag: 'BlogHeader',
+      _tag: 'BlogPostHeader',
     })
     expect(headerScreenOf(aboutScreen(), true)).toEqual({ _tag: 'AboutHeader' })
     expect(headerScreenOf(privacyScreen(), true)).toEqual({

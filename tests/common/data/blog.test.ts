@@ -1,6 +1,11 @@
+import * as O from 'fp-ts/Option'
 import { describe, expect, it } from 'vitest'
 
-import { blogPostList, readableDateOf } from '@/common/data/blog'
+import {
+  blogPostList,
+  neighbourPostsOf,
+  readableDateOf,
+} from '@/common/data/blog'
 import { blogPostDestination, toUrlString } from '@/common/type/destination'
 
 import { blogPostPathOf } from '../../../tool/blog/post-list'
@@ -30,5 +35,31 @@ describe('the posts of the blog', () => {
   it('show the day they were published as a reader reads it', () => {
     expect(readableDateOf('2026-10-27')).toBe('27 Oct 2026')
     expect(readableDateOf('2025-09-06')).toBe('6 Sep 2025')
+  })
+})
+
+describe('the posts on either side of a post', () => {
+  it('are the newer one before it and the older one after it', () => {
+    const [newest, second, third] = blogPostList
+    if (newest !== undefined && second !== undefined && third !== undefined) {
+      expect(neighbourPostsOf(second.slug)).toEqual({
+        newer: O.some(newest),
+        older: O.some(third),
+      })
+    }
+  })
+
+  it('are only one at either end of the list', () => {
+    const newest = blogPostList[0]
+    const oldest = blogPostList[blogPostList.length - 1]
+    expect(neighbourPostsOf(newest?.slug ?? '').newer).toEqual(O.none)
+    expect(neighbourPostsOf(oldest?.slug ?? '').older).toEqual(O.none)
+  })
+
+  it('are none for a slug with no post', () => {
+    expect(neighbourPostsOf('nonsense')).toEqual({
+      newer: O.none,
+      older: O.none,
+    })
   })
 })

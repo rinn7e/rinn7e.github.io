@@ -19,6 +19,22 @@ export const BLOG_CONTENT_DIR = 'content/blog'
 // `src/common/type/destination/parser.ts`; a test holds the two together.
 export const blogPostPathOf = (slug: string): string => `/blog/${slug}`
 
+// dev.to counts 275 words a minute, rounded up (it gives the same minutes
+// for every post imported)
+const WORDS_PER_MINUTE = 275
+
+// How long the Markdown of a post takes to read, in minutes, at least one
+export const readingMinutesOf = (markdown: string): number =>
+  Math.max(
+    1,
+    Math.ceil(
+      pipe(
+        markdown.split(/\s+/),
+        RA.filter((word) => word !== ''),
+      ).length / WORDS_PER_MINUTE,
+    ),
+  )
+
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 type NamedPostFile = {
@@ -83,6 +99,7 @@ export const readBlogPostList = (rootDir: string): readonly BlogPost[] => {
       description: frontMatter.description,
       date: frontMatter.date,
       tagList: frontMatter.tags,
+      readingMinutes: readingMinutesOf(body),
       canonicalUrl: frontMatter.canonicalUrl,
       coverImage: O.fromNullable(frontMatter.coverImage),
       html: renderMarkdown(body, localLinkMap),

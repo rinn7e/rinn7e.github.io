@@ -1,3 +1,4 @@
+import * as O from 'fp-ts/Option'
 import { type Option } from 'fp-ts/Option'
 import * as RA from 'fp-ts/ReadonlyArray'
 import { pipe } from 'fp-ts/function'
@@ -14,6 +15,26 @@ export const blogPostOf = (slug: string): Option<BlogPost> =>
   pipe(
     blogPostList,
     RA.findFirst((post) => post.slug === slug),
+  )
+
+// The posts on either side of a post in the list: the newer one before it,
+// the older one after it, none at either end
+export type NeighbourPosts = {
+  readonly newer: Option<BlogPost>
+  readonly older: Option<BlogPost>
+}
+
+export const neighbourPostsOf = (slug: string): NeighbourPosts =>
+  pipe(
+    blogPostList,
+    RA.findIndex((post) => post.slug === slug),
+    O.fold(
+      (): NeighbourPosts => ({ newer: O.none, older: O.none }),
+      (index) => ({
+        newer: RA.lookup(index - 1)(blogPostList),
+        older: RA.lookup(index + 1)(blogPostList),
+      }),
+    ),
   )
 
 // Three letters each: the short month of `Intl` is `Sept` in English

@@ -27,10 +27,17 @@ describe('the HTML of a post', () => {
     )
   })
 
-  it('shows the code of an unknown language as plain, escaped text', () => {
+  it('puts code in the code block of the site', () => {
+    expect(render('```elm\nmain = 1\n```')).toMatch(
+      /^<pre><code class="hljs">.*<\/code><\/pre>/,
+    )
+  })
+
+  it('guesses the language of code with an unknown or no language, escaped', () => {
     const html = render('```nonsense\n<b>x</b>\n```')
-    expect(html).toContain('&lt;b&gt;x&lt;/b&gt;')
-    expect(html).not.toContain('hljs-')
+    expect(html).toContain('hljs-')
+    expect(html).not.toContain('<b>')
+    expect(render('```\n<b>x</b>\n```')).toBe(html)
   })
 
   it('shows raw HTML of the Markdown as text', () => {

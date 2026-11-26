@@ -10,13 +10,19 @@ import MarkdownIt from 'markdown-it'
 // stays on this site
 export type LocalLinkMap = ReadonlyMap<string, string>
 
-// The colors are classes of highlight.js (`hljs-keyword`), styled in
-// `src/asset/index.css` for light and dark. A language highlight.js does
-// not know stays plain text (markdown-it escapes it).
-const highlightCode = (code: string, language: string): string =>
-  language !== '' && hljs.getLanguage(language) !== undefined
-    ? hljs.highlight(code, { language, ignoreIllegals: true }).value
-    : ''
+// A block of code, as TEA Ecosystem shows code (its `codeBlockView`): the
+// colors are classes of highlight.js (`hljs-keyword`), styled in
+// `src/asset/index.css` for light and dark. A block with no language, or
+// one highlight.js does not know, gets the language highlight.js guesses.
+// markdown-it takes a result that starts with `<pre` as the whole block.
+const highlightCode = (code: string, language: string): string => {
+  const trimmed = code.trimEnd()
+  const html =
+    language !== '' && hljs.getLanguage(language) !== undefined
+      ? hljs.highlight(trimmed, { language, ignoreIllegals: true }).value
+      : hljs.highlightAuto(trimmed).value
+  return `<pre><code class="hljs">${html}</code></pre>`
+}
 
 const withoutTrailingSlash = (url: string): string => url.replace(/\/$/, '')
 

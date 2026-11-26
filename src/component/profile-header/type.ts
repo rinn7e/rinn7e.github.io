@@ -20,8 +20,10 @@ export type HeaderScreen =
       // Whether the cards show their back (the label of Flip)
       readonly isFlipped: boolean
     }
-  // The list of posts, or one post
+  // The list of posts
   | { readonly _tag: 'BlogHeader' }
+  // One post: a slim header, so the post starts at the top of the page
+  | { readonly _tag: 'BlogPostHeader' }
   | { readonly _tag: 'AboutHeader' }
   // A page with no tab: Privacy, Not found
   | { readonly _tag: 'NoTabHeader' }

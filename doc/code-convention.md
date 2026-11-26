@@ -29,7 +29,9 @@ src/screen/products-screen/
                                slideshow, its view split into the panel, the slideshow,
                                the links and the styles of each phase
 src/screen/blog-screen/        the list of the posts
-src/screen/blog-post-screen/   the page of a post
+src/screen/blog-post-screen/   the page of a post, and the newer and older post under it
+src/component/blog/            what the list and the page of a post share: the tags, the day
+                               and the minutes to read
 content/blog/                  the posts, one Markdown file each (see "The blog")
 tool/                          what runs in Node, not in the browser: the import from dev.to
                                (`import-dev-to.ts`, run by `run.ts`) and the blog plugin of
@@ -67,11 +69,12 @@ The app owns where it is; the URL only follows.
 
 The posts are copies of the posts of `dev.to/rinn7e`, one Markdown file each in `content/blog/<slug>.md` (front matter, then the body as written on dev.to), written by `pnpm run blog:import` (`tool/import-dev-to.ts`). Their pictures are saved in `public/blog/<slug>/`, so no page loads anything from dev.to. The import repairs text that dev.to itself holds garbled (UTF-8 read as Windows-1252, `tool/blog/mojibake.ts`).
 
-1. The build reads them, not the browser: the plugin of `tool/blog/plugin.ts` decodes each front matter with its io-ts codec (`tool/blog/front-matter.ts`, also used by the import), renders the Markdown with markdown-it and colors the code with the classes of highlight.js (`tool/blog/render.ts`), and serves the posts, newest first, as the module `virtual:blog-post-list`. A file that does not fit stops the build and names itself.
+1. The build reads them, not the browser: the plugin of `tool/blog/plugin.ts` decodes each front matter with its io-ts codec (`tool/blog/front-matter.ts`, also used by the import), renders the Markdown with markdown-it and colors the code with the classes of highlight.js, guessing the language of a block that names none (`tool/blog/render.ts`), and serves the posts, newest first, as the module `virtual:blog-post-list`. A file that does not fit stops the build and names itself.
 2. Raw HTML in the Markdown shows as text. A link to another post (its dev.to address) is rewritten to its page here and moves in the app (`bodyClickHandler` of the post screen); any other outside link opens in a new tab.
-3. The body carries no classes, so it is the one place styled by a CSS block, `.blog-prose` in `src/asset/index.css` (with `@apply`, spaced by the gap of its column, with the colors of the code for light and dark).
+3. The body carries no classes, so it is the one place styled by a CSS block, `.blog-prose` in `src/asset/index.css` (with `@apply`, spaced by the gap of its column). Code looks as on TEA Ecosystem (its `codeBlockView`): one flat grey box with no border, long lines wrapped so it never scrolls sideways, in the GitHub colors of highlight.js for light and dark (`--hl-*`). The post sits on a solid card, so the backdrop of the page never shows behind its text.
 4. `tool/` runs in Node. A script there runs through the module runner of Vite (`node tool/run.ts <script>`), as fp-ts has no `exports` map for plain Node.
 5. Prettier leaves `content/` alone, so a post stays as written on dev.to.
+6. A post reads on the centre axis, in the look of the site. The profile header shrinks to a slim one (`BlogPostHeader`: the photo, the name and the tabs), so the post starts near the top of the page. The post is one card: a mirrored row (All posts on the left edge, dev.to on the right), the day and the minutes to read (`readingMinutesOf`, 275 words a minute as dev.to counts), the title and the tags centred, the body left-aligned in a centred column, and the discussion (on dev.to) centred between two rules. Under it, the newer and the older post as two equal cards. On a phone the card is a band as wide as the screen, and the mirrored row is a bar that stays at the bottom of the screen while the post is read (sticky, so it stops above the footer). The list is a centred column of equal cards, the day and the minutes to read mirrored on their two edges.
 
 ## The privacy page
 

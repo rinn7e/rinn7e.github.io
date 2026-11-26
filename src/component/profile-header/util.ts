@@ -12,8 +12,9 @@ export const headerScreenOf = (
     case 'ProductsScreen':
       return { _tag: 'ProductsHeader', category: screen.category, isFlipped }
     case 'BlogScreen':
-    case 'BlogPostScreen':
       return { _tag: 'BlogHeader' }
+    case 'BlogPostScreen':
+      return { _tag: 'BlogPostHeader' }
     case 'AboutScreen':
       return { _tag: 'AboutHeader' }
     case 'PrivacyScreen':
