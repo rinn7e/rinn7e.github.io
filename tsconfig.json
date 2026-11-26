@@ -17,5 +17,11 @@
     },
     "types": ["vite/client"]
   },
-  "include": ["src/**/*", "tests/**/*", "vite.config.ts", "eslint.config.js"]
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "tool/**/*",
+    "vite.config.ts",
+    "eslint.config.js"
+  ]
 }

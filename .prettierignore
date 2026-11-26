@@ -1,3 +1,5 @@
 dist
 pnpm-lock.yaml
 public
+# The posts are kept as written on dev.to
+content
