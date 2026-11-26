@@ -95,7 +95,7 @@ The Privacy page (`/privacy`) lists every party that sees a visit and everything
 
 ## Code
 
-1. Side effects (the URL, the scroll, the title) run only in a `Cmd` (`cmdSucceed`), never inside an `update`.
+1. Side effects (the URL, the scroll, the title) run only in a `Cmd` (`cmdSucceed`), never inside an `update`. The backdrop of the page is drawn on a canvas by an effect of its own component (`src/component/page-backdrop.tsx`), never as text in the page: as text, Safari Reader took its rows for the article.
 2. Use `fp-ts` with `pipe` (`A.map`, `A.filter`, `O.fold`) instead of methods on arrays and options; import modules by name (`fp-ts/Option`, not `fp-ts/lib/Option`).
 3. Branch with a full `if` / `else if` / `else` tree, no early return; `switch` on `_tag` for unions. No `let`.
 4. Prefer `satisfies` to `as`.
