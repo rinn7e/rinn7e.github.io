@@ -22,9 +22,12 @@ const closeMsg = (): Msg => ({
 
 // The popup of a product over the page: a dimmed backdrop, and on it a white
 // panel with the screenshots, the card and the text. It closes with its
-// close button, Escape, or a click on the backdrop. The page under it does
-// not scroll (`data-popup-open`, see the CSS); on a small screen the popup
-// scrolls by itself.
+// close button, Escape, or a click on the backdrop. On a small screen the
+// popup scrolls by itself, and no scroll in it ever reaches the page under
+// it (`overscroll-contain`). The page keeps its scrollbar: hiding it
+// (`overflow: hidden`) shifted the page sideways, as the bar of the site is
+// a styled one of 12px and a hidden root keeps no room for it on a system
+// with overlay scrollbars.
 // The popup draws the product of its model, looked up in the list (nothing
 // when the id is not known), so its product can never differ from its model
 const ProductPopup = ({ model, isFlipped, dispatch }: Props) =>
@@ -46,9 +49,8 @@ const productPopupView = ({
   dispatch,
 }: ViewProps) => (
   <div
-    data-popup-open='true'
     className={[
-      'fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-[0.75rem] lg:items-center lg:p-[2rem]',
+      'fixed inset-0 z-40 flex items-start justify-center overflow-y-auto overscroll-contain p-[0.75rem] lg:items-center lg:p-[2rem]',
       // While it closes, clicks go through to the page, so another card
       // opens at once
       isClosingPhase(model.phase) ? 'pointer-events-none' : '',

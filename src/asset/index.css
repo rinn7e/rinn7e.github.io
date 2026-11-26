@@ -10,7 +10,8 @@
     /* The scrollbar of the page is always shown, so a short page (a blog
        post near its end, About) sits on the same axis as a long one and a
        move between them never shifts the page sideways, as on TEA
-       Ecosystem. Its room stays kept while a popup locks the page. */
+       Ecosystem. A popup never hides it (see `product-popup`), so it never
+       shifts the page either. */
     overflow-y: scroll;
     scrollbar-gutter: stable;
   }
@@ -72,14 +73,6 @@
   select:disabled,
   [aria-disabled='true'] {
     cursor: not-allowed;
-  }
-
-  /* A product popup is open: the page under it does not scroll. On `html`,
-     which scrolls the page (its `overflow-y: scroll` keeps `body` from
-     passing its overflow to the window); `scrollbar-gutter` keeps the room
-     of the bar, so the page does not shift as the popup opens. */
-  html:has([data-popup-open='true']) {
-    overflow: hidden;
   }
 
   body {
