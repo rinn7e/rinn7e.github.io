@@ -55,7 +55,12 @@ A part of a screen with state of its own is a TEA component under it, with the s
 
 ## Navigation and the URL
 
-The app owns where it is; the URL only follows.
+The app owns where it is; the URL only follows. This is the architecture of every move of the app, and no change may break it, not even to work around a browser (the swipe back of Safari, a scroll restored too early):
+
+- The URL is a thin wrapper around the destination: written only from it (`destinationOf`, read from the models), after a step, by the one URL writer (`urlWriterOf`, rule 4). Nothing else writes the URL or the history: no view, no handler, no `Cmd` of a screen.
+- The URL is read only at boot and on the browser back and forward (`UrlChanged`), never to decide anything else.
+- A link, a button or anything else that moves the app only dispatches its message (`Navigate`); the step decides where the app goes, and the URL follows it.
+- Only `src/common/util/browser-history.ts` touches `window.history`; ESLint refuses it anywhere else (`no-restricted-properties` in `eslint.config.js`). A fix that seems to need the history elsewhere belongs in the URL writer instead, as the one for the swipe back did (`doc/swipe-back.md`).
 
 1. A `Destination` is a `Screen` with its params (`ProductsScreen` with the `product` opened and the `category` filtered to, `BlogScreen`, `BlogPostScreen` with its `slug`, `AboutScreen`, `PrivacyScreen`). It is never stored: `destinationOf(model)` reads it from the screen model.
 2. Every move is a `NavigationMsg` (`Navigate` from a click, `UrlChanged` from the browser back and forward), handled by `navigationMsgHandler`. Links in the app use `Link`, a real anchor that navigates in the app on a plain left click.

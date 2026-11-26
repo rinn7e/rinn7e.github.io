@@ -96,6 +96,35 @@ export default tseslint.config([
       'react-x/no-array-index-key': 'off',
 
       'react-dom/no-dangerously-set-innerhtml': 'off',
+
+      // The URL is a thin wrapper around the destination: only the URL
+      // adapter (`src/common/util/browser-history.ts`) touches the history
+      // of the browser (doc/code-convention.md, "Navigation and the URL")
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'window',
+          property: 'history',
+          message:
+            'Only src/common/util/browser-history.ts touches the history: the URL is written from the destination by urlWriterOf (doc/code-convention.md, "Navigation and the URL").',
+        },
+      ],
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'history',
+          message:
+            'Only src/common/util/browser-history.ts touches the history: the URL is written from the destination by urlWriterOf (doc/code-convention.md, "Navigation and the URL").',
+        },
+      ],
+    },
+  },
+  {
+    // The URL adapter: the one file that reads and writes the history
+    files: ['src/common/util/browser-history.ts'],
+    rules: {
+      'no-restricted-properties': 'off',
+      'no-restricted-globals': 'off',
     },
   },
   {
