@@ -70,6 +70,7 @@ const screenView = ({ model, dispatch }: RootProps) => {
       return (
         <BlogScreenMemo
           model={screenModel.model}
+          newSince={model.newSince}
           dispatch={(subMsg) => dispatch({ _tag: 'BlogScreenMsg', subMsg })}
         />
       )
@@ -77,6 +78,7 @@ const screenView = ({ model, dispatch }: RootProps) => {
       return (
         <BlogPostScreenMemo
           model={screenModel.model}
+          newSince={model.newSince}
           dispatch={(subMsg) => dispatch({ _tag: 'BlogPostScreenMsg', subMsg })}
         />
       )

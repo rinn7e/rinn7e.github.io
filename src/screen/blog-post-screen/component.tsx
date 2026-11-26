@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight, MessageCircle } from 'lucide-react'
 import React, { memo, useContext } from 'react'
 import { type Dispatcher } from 'tea-cup-fp'
 
+import { isNewPost } from '@/common/data/blog'
 import {
   type GlobalNavigationMsg,
   SetGlobalMsgContext,
@@ -16,6 +17,7 @@ import {
   blogMetaClass,
   readingTimeOf,
 } from '@/component/blog/meta'
+import { newBadgeView } from '@/component/blog/new-badge'
 import { blogTagListView } from '@/component/blog/tag-list'
 import { Link } from '@/component/link'
 
@@ -129,7 +131,7 @@ const phoneBarView = ({ post }: { readonly post: BlogPost }) => (
   </nav>
 )
 
-const BlogPostScreen = ({ model }: Props) => {
+const BlogPostScreen = ({ model, newSince }: Props) => {
   const setGlobalMsg = useContext(SetGlobalMsgContext)
   const { post } = model
   return (
@@ -174,6 +176,7 @@ const BlogPostScreen = ({ model }: Props) => {
           </a>
         </nav>
         <header className='flex flex-col items-center gap-[1rem] px-[1rem] pt-[1.75rem] text-center lg:gap-[1.25rem] lg:px-[4rem] lg:pt-[1.5rem]'>
+          {isNewPost(post, newSince) ? newBadgeView() : null}
           <p className={blogMetaClass}>
             {blogDateView(post.date)} {'·'} {readingTimeOf(post.readingMinutes)}
           </p>

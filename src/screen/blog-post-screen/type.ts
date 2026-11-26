@@ -24,11 +24,15 @@ export type Msg = { readonly _tag: 'NoOp' }
 
 export type Props = {
   readonly model: Model
+  // The first day a post still counts as new (the badge New), from the
+  // root model
+  readonly newSince: string
   readonly dispatch: Dispatcher<Msg>
 }
 
 // `dispatch` is left out: the one the app passes sends the same message
 // whatever the model
 export const PropsEq: EqClass.Eq<Props> = {
-  equals: (x, y) => ModelEq.equals(x.model, y.model),
+  equals: (x, y) =>
+    ModelEq.equals(x.model, y.model) && S.Eq.equals(x.newSince, y.newSince),
 }

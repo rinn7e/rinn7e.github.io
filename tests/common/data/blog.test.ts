@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   blogPostList,
+  isNewPost,
   neighbourPostsOf,
+  newSinceOf,
   readableDateOf,
 } from '@/common/data/blog'
 import { blogPostDestination, toUrlString } from '@/common/type/destination'
@@ -61,5 +63,22 @@ describe('the posts on either side of a post', () => {
       newer: O.none,
       older: O.none,
     })
+  })
+})
+
+describe('a new post', () => {
+  const postOn = (date: string) => ({ ...blogPostList[0]!, date })
+
+  it('counts from the local day 30 days before now', () => {
+    expect(newSinceOf(new Date(2026, 10, 26, 12).getTime())).toBe('2026-10-27')
+    expect(newSinceOf(new Date(2026, 2, 5, 23, 59).getTime())).toBe(
+      '2026-02-03',
+    )
+  })
+
+  it('is one published on or after that day', () => {
+    expect(isNewPost(postOn('2026-10-27'), '2026-10-27')).toBe(true)
+    expect(isNewPost(postOn('2026-11-20'), '2026-10-27')).toBe(true)
+    expect(isNewPost(postOn('2026-10-26'), '2026-10-27')).toBe(false)
   })
 })

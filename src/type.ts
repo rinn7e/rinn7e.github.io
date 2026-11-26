@@ -64,6 +64,9 @@ export const sameScreenWith =
 export type Model = {
   readonly screenModel: CurrentScreenModel
   readonly debugPanel: DebugPanel.Model
+  // The first day a blog post still counts as new (`newSinceOf`), read once
+  // at boot: the badge New of its card and its page
+  readonly newSince: string
 }
 
 export type Msg =

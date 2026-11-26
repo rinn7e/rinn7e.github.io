@@ -59,3 +59,25 @@ export const readableDateOf = (date: string): string => {
   const [year = '', month = '', day = ''] = date.split('-')
   return `${Number(day)} ${monthList[Number(month) - 1] ?? month} ${year}`
 }
+
+// How long a post shows as new, as an entry of TEA Ecosystem shows as
+// recently added
+export const NEW_POST_DAYS = 30
+
+// The first day that still counts as new, `YYYY-MM-DD`, from `now` (ms
+// since 1970, read once at boot): a local day of the reader, as the date of
+// a post is a day, not a time
+export const newSinceOf = (now: number): string => {
+  const today = new Date(now)
+  const since = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() - NEW_POST_DAYS,
+  )
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return `${since.getFullYear()}-${pad(since.getMonth() + 1)}-${pad(since.getDate())}`
+}
+
+// Its card and its page wear the badge New
+export const isNewPost = (post: BlogPost, newSince: string): boolean =>
+  post.date >= newSince

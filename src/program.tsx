@@ -20,7 +20,8 @@ export const AppProgram = () => (
     // The browser's back and forward (the app's own URL writes fire no
     // `popstate`)
     onUrlChange={urlChangedMsg}
-    init={init}
+    // The time of the boot, read here so `init` stays pure
+    init={(location) => init(location, Date.now())}
     update={appUpdate}
     view={appView}
     subscriptions={() => Sub.none()}

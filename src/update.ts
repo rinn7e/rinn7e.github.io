@@ -2,6 +2,7 @@ import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
 import { Cmd } from 'tea-cup-fp'
 
+import { newSinceOf } from '@/common/data/blog'
 import { replaceUrlCmd, updateAndCmd } from '@/common/util'
 import * as DebugPanel from '@/component/debug-panel'
 import type * as ProfileHeader from '@/component/profile-header'
@@ -17,7 +18,9 @@ import * as ProductsScreen from '@/screen/products-screen'
 import { type Model, type Msg, sameScreenWith } from '@/type'
 import { bootDestinationOf, bootUrlOf } from '@/util'
 
-export const init = (location: Location): [Model, Cmd<Msg>] => {
+// `now` is the time of the boot (ms since 1970), passed in by the program so
+// `init` stays pure
+export const init = (location: Location, now: number): [Model, Cmd<Msg>] => {
   const destination = bootDestinationOf(location)
   // The boot: the screen the visitor sees first
   const [screenModel, screenCmd] = initScreenModel(destination, true)
@@ -29,7 +32,11 @@ export const init = (location: Location): [Model, Cmd<Msg>] => {
     ),
   )
   return [
-    { screenModel, debugPanel: DebugPanel.init() },
+    {
+      screenModel,
+      debugPanel: DebugPanel.init(),
+      newSince: newSinceOf(now),
+    },
     Cmd.batch([bootUrlCmd, screenCmd]),
   ]
 }
