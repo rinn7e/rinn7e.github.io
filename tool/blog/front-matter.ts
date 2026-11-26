@@ -27,8 +27,8 @@ export const FrontMatter = t.intersection([
     description: t.string,
     date: IsoDate,
     tags: t.array(t.string),
-    // The original on dev.to, the canonical address of the post
-    canonicalUrl: t.string,
+    // The original on dev.to, where its comments and reactions are
+    devToUrl: t.string,
     // The id of the post on dev.to, so a new import keeps its file (and its
     // slug) even when its title changed there
     devToId: t.number,

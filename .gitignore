@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-# Builds
+# Builds (`dist-ssr/` is the renderer of the pages, `tool/prerender.mjs`)
 dist/
+dist-ssr/
 
 # Temporary / scratch files
 scratch/

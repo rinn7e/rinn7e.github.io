@@ -6,7 +6,7 @@ tags:
   - elm
   - googlemap
   - web
-canonicalUrl: https://dev.to/rinn7e/display-and-edit-google-map-inelm-dg1
+devToUrl: https://dev.to/rinn7e/display-and-edit-google-map-inelm-dg1
 devToId: 11513
 ---
 

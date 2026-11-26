@@ -71,6 +71,9 @@ export type Model = {
 
 export type Msg =
   | { readonly _tag: 'NoOp' }
+  // The time of the browser, after a first render drawn with the time a
+  // page was rendered with ahead of time (`program.tsx`)
+  | { readonly _tag: 'SetNow'; readonly now: number }
   | { readonly _tag: 'NavigationMsg'; readonly subMsg: NavigationMsg }
   | {
       readonly _tag: 'ProductsScreenMsg'

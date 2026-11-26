@@ -93,7 +93,7 @@ const discussionView = ({ post }: { readonly post: BlogPost }) => (
     </p>
     <a
       {...newTabProps}
-      href={`${post.canonicalUrl}#comments`}
+      href={`${post.devToUrl}#comments`}
       className={buttonClass}
     >
       Join the discussion on dev.to
@@ -122,7 +122,7 @@ const phoneBarView = ({ post }: { readonly post: BlogPost }) => (
     </Link>
     <a
       {...newTabProps}
-      href={`${post.canonicalUrl}#comments`}
+      href={`${post.devToUrl}#comments`}
       className={barLinkClass}
     >
       Discuss
@@ -166,11 +166,7 @@ const BlogPostScreen = ({ model, newSince }: Props) => {
             <ArrowLeft aria-hidden='true' className='size-[1rem]' />
             All posts
           </Link>
-          <a
-            {...newTabProps}
-            href={post.canonicalUrl}
-            className={edgeLinkClass}
-          >
+          <a {...newTabProps} href={post.devToUrl} className={edgeLinkClass}>
             dev.to
             <ArrowUpRight aria-hidden='true' className='size-[1rem]' />
           </a>

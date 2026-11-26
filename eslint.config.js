@@ -10,7 +10,7 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'dist-ssr']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -96,6 +96,15 @@ export default tseslint.config([
       'react-x/no-array-index-key': 'off',
 
       'react-dom/no-dangerously-set-innerhtml': 'off',
+    },
+  },
+  {
+    // The renderer of the pages and the share cards run in Node at build
+    // time (`tool/prerender.mjs`), never under Fast Refresh, so they export
+    // functions next to their views, as on TEA Ecosystem
+    files: ['src/prerender.tsx', 'src/share-card.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 ])

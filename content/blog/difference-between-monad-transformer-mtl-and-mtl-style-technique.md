@@ -7,7 +7,7 @@ tags:
   - monad
   - monadtransformer
   - mtl
-canonicalUrl: https://dev.to/rinn7e/dead-simple-explanation-of-the-difference-between-monad-transfomer-mtl-and-mtl-style-technique-5cf1
+devToUrl: https://dev.to/rinn7e/dead-simple-explanation-of-the-difference-between-monad-transfomer-mtl-and-mtl-style-technique-5cf1
 devToId: 88779
 ---
 

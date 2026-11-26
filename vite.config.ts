@@ -44,8 +44,11 @@ const seoPlugin = (): Plugin => {
       }
       const built = String(index.source)
       index.source = htmlOfPage(built, firstPage)
-      const blogPostPageList = readBlogPostList(rootDir).map(blogPostSeoPageOf)
-      ;[...seoPageList.slice(1), ...blogPostPageList].forEach((page) => {
+      const pageList = [
+        ...seoPageList,
+        ...readBlogPostList(rootDir).map(blogPostSeoPageOf),
+      ]
+      pageList.slice(1).forEach((page) => {
         this.emitFile({
           type: 'asset',
           fileName: `${page.path.replace(/^\//, '')}index.html`,
@@ -60,7 +63,7 @@ const seoPlugin = (): Plugin => {
       this.emitFile({
         type: 'asset',
         fileName: 'sitemap.xml',
-        source: sitemapXml(),
+        source: sitemapXml(pageList),
       })
     },
   }
@@ -107,5 +110,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  // The renderer of the pages (`vite build --ssr src/prerender.tsx`, run by
+  // `tool/prerender.mjs`) carries every package in its bundle: fp-ts is
+  // imported by paths without an extension, which only a bundler resolves
+  ssr: { noExternal: true },
   server: { port: 5180 },
 })

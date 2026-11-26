@@ -86,7 +86,7 @@ export const readBlogPostList = (rootDir: string): readonly BlogPost[] => {
     pipe(
       namedList,
       RA.map(({ slug, file }): [string, string] => [
-        file.frontMatter.canonicalUrl.replace(/\/$/, ''),
+        file.frontMatter.devToUrl.replace(/\/$/, ''),
         blogPostPathOf(slug),
       ]),
     ),
@@ -100,7 +100,7 @@ export const readBlogPostList = (rootDir: string): readonly BlogPost[] => {
       date: frontMatter.date,
       tagList: frontMatter.tags,
       readingMinutes: readingMinutesOf(body),
-      canonicalUrl: frontMatter.canonicalUrl,
+      devToUrl: frontMatter.devToUrl,
       coverImage: O.fromNullable(frontMatter.coverImage),
       html: renderMarkdown(body, localLinkMap),
     })),

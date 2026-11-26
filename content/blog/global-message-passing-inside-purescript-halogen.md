@@ -7,7 +7,7 @@ tags:
   - halogen
   - javascript
   - functional
-canonicalUrl: https://dev.to/rinn7e/global-message-passing-inside-purescript-halogen-30ol
+devToUrl: https://dev.to/rinn7e/global-message-passing-inside-purescript-halogen-30ol
 devToId: 105718
 ---
 

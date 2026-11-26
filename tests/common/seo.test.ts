@@ -10,7 +10,15 @@ import {
 } from '@/common/seo'
 
 const template =
-  '<html><head><title>%SEO_TITLE%</title><link rel="canonical" href="%SEO_URL%" /></head><body></body></html>'
+  '<html><head><title>%SEO_TITLE%</title><link rel="canonical" href="%SEO_URL%" /><meta property="og:type" content="%SEO_TYPE%" /><meta property="og:image" content="%SEO_IMAGE%" /></head><body></body></html>'
+
+const aPost = blogPostSeoPageOf({
+  slug: 'a-post',
+  title: 'A post',
+  description: 'About a post',
+  date: '2026-10-27',
+  tagList: ['elm'],
+})
 
 describe('search data', () => {
   it('fills in the head of each page with its own title and address', () => {
@@ -33,26 +41,34 @@ describe('search data', () => {
     }
   })
 
-  it('lists every page in the sitemap', () => {
-    seoPageList.forEach((page) => {
-      expect(sitemapXml()).toContain(
+  it('lists every page it is given in the sitemap', () => {
+    const pageList = [...seoPageList, aPost]
+    pageList.forEach((page) => {
+      expect(sitemapXml(pageList)).toContain(
         `<loc>https://rinn7e.com${page.path}</loc>`,
       )
     })
   })
 
-  it('points search engines from the page of a post to its original on dev.to', () => {
-    const page = blogPostSeoPageOf({
-      slug: 'a-post',
-      title: 'A post',
-      description: 'About a post',
-      canonicalUrl: 'https://dev.to/rinn7e/a-post-x1y',
+  it('gives each page its own share image', () => {
+    const pathList = [...seoPageList, aPost].map((page) => page.image.path)
+    expect(new Set(pathList).size).toBe(pathList.length)
+    seoPageList.forEach((page) => {
+      expect(htmlOfPage(template, page)).toContain(
+        `content="https://rinn7e.com${page.image.path}"`,
+      )
     })
-    const html = htmlOfPage(template, page)
-    expect(page.path).toBe('/blog/a-post/')
+  })
+
+  it('counts the page of a post as an article at its own address', () => {
+    const html = htmlOfPage(template, aPost)
+    expect(aPost.path).toBe('/blog/a-post/')
     expect(html).toContain('<title>A post - rinn7e</title>')
-    expect(html).toContain('href="https://dev.to/rinn7e/a-post-x1y"')
-    expect(sitemapXml()).not.toContain('/blog/a-post/')
+    expect(html).toContain('href="https://rinn7e.com/blog/a-post/"')
+    expect(html).toContain('<meta property="og:type" content="article" />')
+    expect(html).toContain('"@type":"BlogPosting"')
+    expect(html).toContain('"datePublished":"2026-10-27"')
+    expect(html).toContain('content="https://rinn7e.com/og/blog/a-post.png"')
   })
 
   it('describes every product in the structured data', () => {

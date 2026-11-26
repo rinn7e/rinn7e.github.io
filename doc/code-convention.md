@@ -5,7 +5,9 @@ The site is a small app on The Elm Architecture: React with `react-tea-cup`, `fp
 ## Folders
 
 ```
-src/root.tsx                   mounts the program
+src/root.tsx                   hydrates the page rendered ahead of time, or mounts the program
+src/prerender.tsx              renders every page to HTML at build time (see "Search engines")
+src/share-card.tsx             the share image of every page, drawn at build time
 src/program.tsx                the ProgramWithNav, with withUrl around update
 src/type.ts                    the root Model and Msg, the screen model
 src/update.ts                  init (the boot) and the root update
@@ -63,7 +65,9 @@ The app owns where it is; the URL only follows.
 
 ## Search engines
 
-`src/common/seo.ts` holds what search engines and link previews read: the title and description of each page (`seoPageList`), the social card (`public/og.png`, 1200x630, a render of the top of the products page) and the structured data (schema.org JSON-LD: the person, the site and the products, built from `productList`). `index.html` has placeholders (`%SEO_TITLE%` and the like). In the dev server the plugin of `vite.config.ts` fills them in for the first page; in a build it writes a copy of the app for each page at its path (`about/index.html`, `privacy/index.html`, which GitHub Pages serves for `/about` and `/privacy`), a `404.html` copy with `noindex`, and `sitemap.xml`. `public/robots.txt` points to the sitemap. A new page goes into `seoPageList`, and the app sets the same title as it moves (`titleOf` in `src/handler/navigation-handler.ts`). The page of each blog post is added by the build (`blogPostSeoPageOf`): its canonical URL is its original on dev.to, so it stays out of the sitemap.
+`src/common/seo.ts` holds what search engines and link previews read: the title, description, share image and kind of each page (`seoPageList`, and `blogPostSeoPageOf` for each post, an `article`) and the structured data (schema.org JSON-LD: the person, the site and the products, built from `productList`, and a `BlogPosting` on the page of a post). Every page is its own canonical URL, posts included. `index.html` has placeholders (`%SEO_TITLE%` and the like). In the dev server the plugin of `vite.config.ts` fills them in for the first page; in a build it writes a copy of the app for each page at its path (`about/index.html`, `blog/<slug>/index.html`, which GitHub Pages serves for `/about` and `/blog/<slug>`), a `404.html` copy with `noindex`, and `sitemap.xml` of every page. `public/robots.txt` points to the sitemap. A new page goes into `seoPageList`, and the app sets the same title as it moves (`titleOf` in `src/handler/navigation-handler.ts`).
+
+Every page is rendered ahead of time, as on TEA Ecosystem. `pnpm run build` runs Vite twice: once for the browser (`dist/`), once with `--ssr` to compile `src/prerender.tsx` for Node (`dist-ssr/`, every package bundled in, `ssr.noExternal`, as fp-ts has no `exports` map). Then `tool/prerender.mjs` fills the root of each page with its HTML (`renderPage`, the root view of the model `init` gives) and the time it was rendered with (`src/common/util/boot.ts`), and draws the share image of each page (`src/share-card.tsx`, with satori and resvg: inline styles and flexbox only, so that one file does not use Tailwind; the photo goes through sharp, as resvg draws no WebP). In the browser, `src/root.tsx` hydrates a page that holds its HTML (an address with a query, a product opened or a category, is drawn from nothing, as its HTML is the plain page), and the program boots with the time of the page (`initOnFirstRender`, a patch of react-tea-cup in `patches/`, the same as TEA Ecosystem), so the first render matches the HTML; the time of the browser follows (`SetNow`). So every view must render in Node: no `window` or `document` outside a `Cmd` or a handler, and anything that exists in the browser only (the debug panel) goes in `ClientOnly`.
 
 ## The blog
 

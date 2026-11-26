@@ -59,7 +59,9 @@ pnpm run check && pnpm run lint && pnpm run format:check && pnpm test
 
 ## Deploy
 
-GitHub Pages serves `dist/` at [rinn7e.com](https://rinn7e.com/). `.github/workflows/deploy.yml` checks, builds and deploys every push to `master`. The custom domain is set in the Pages settings of the repository, with "GitHub Actions" as the source. The build writes a copy of the app with its own title, description and canonical URL at `blog/index.html`, `about/index.html`, `privacy/index.html` and `blog/<slug>/index.html` for each post (its canonical URL is its original on dev.to, and it stays out of the sitemap), a `404.html` left out of search, and `sitemap.xml`, so a link straight to `/about` or to a post loads the app and search engines see every page (see "Search engines" in `doc/code-convention.md`).
+GitHub Pages serves `dist/` at [rinn7e.com](https://rinn7e.com/). `.github/workflows/deploy.yml` checks, builds and deploys every push to `master`. The custom domain is set in the Pages settings of the repository, with "GitHub Actions" as the source. The build writes a copy of the app for every page (`index.html`, `blog/index.html`, `about/index.html`, `privacy/index.html` and `blog/<slug>/index.html` for each post), each with its own title, description, canonical URL and link preview, and its content rendered ahead of time, so a visitor sees the page before the script loads, the script then takes it over, and search engines read every page. Each page also gets its own share image (`og/page/<page>.png`, `og/blog/<slug>.png`, 1200x630), drawn at build time. Then `404.html`, left out of search, and `sitemap.xml` (see "Search engines" in `doc/code-convention.md`).
+
+Each blog post names its page here as its canonical URL. On dev.to, set the canonical URL of each post (its settings, "Canonical URL") to its address here, so search engines count the post on this site.
 
 The other GitHub Pages projects of `rinn7e` (such as `/claude-desktop-theme-tuner/`) are served under this domain by their own repositories, so no route of this site may use their names.
 

@@ -6,7 +6,7 @@ tags:
   - purescript
   - date
   - time
-canonicalUrl: https://dev.to/rinn7e/format-date-with-purescript-3g66
+devToUrl: https://dev.to/rinn7e/format-date-with-purescript-3g66
 devToId: 54802
 ---
 

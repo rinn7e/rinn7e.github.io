@@ -5,7 +5,7 @@ date: 2026-03-08
 tags:
   - typescript
   - routing
-canonicalUrl: https://dev.to/rinn7e/how-to-use-fp-ts-routing-to-parse-url-and-format-it-back-3lbm
+devToUrl: https://dev.to/rinn7e/how-to-use-fp-ts-routing-to-parse-url-and-format-it-back-3lbm
 devToId: 3326307
 ---
 

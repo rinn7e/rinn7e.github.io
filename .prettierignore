@@ -1,4 +1,5 @@
 dist
+dist-ssr
 pnpm-lock.yaml
 public
 # The posts are kept as written on dev.to

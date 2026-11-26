@@ -2,6 +2,7 @@ import { type Dispatcher } from 'tea-cup-fp'
 
 import { IS_DEBUG_PANEL_ENABLED } from '@/common/env'
 import { GlobalMsgProvider } from '@/common/global-context'
+import { ClientOnly } from '@/component/client-only'
 import { DebugPanelMemo } from '@/component/debug-panel/component'
 import { FooterMemo } from '@/component/footer'
 import { PageBackdropMemo } from '@/component/page-backdrop'
@@ -33,12 +34,15 @@ export const RootView = ({ model, dispatch }: RootProps) => (
       </main>
       <FooterMemo />
     </div>
+    {/* In the browser only, so a page rendered ahead of time hydrates */}
     {IS_DEBUG_PANEL_ENABLED ? (
-      <DebugPanelMemo
-        model={model.debugPanel}
-        isProductsScreen={model.screenModel._tag === 'ProductsScreenModel'}
-        dispatch={(subMsg) => dispatch({ _tag: 'DebugPanelMsg', subMsg })}
-      />
+      <ClientOnly>
+        <DebugPanelMemo
+          model={model.debugPanel}
+          isProductsScreen={model.screenModel._tag === 'ProductsScreenModel'}
+          dispatch={(subMsg) => dispatch({ _tag: 'DebugPanelMsg', subMsg })}
+        />
+      </ClientOnly>
     ) : null}
   </GlobalMsgProvider>
 )

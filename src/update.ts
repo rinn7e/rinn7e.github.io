@@ -45,6 +45,8 @@ export const update = (msg: Msg, model: Model): [Model, Cmd<Msg>] => {
   switch (msg._tag) {
     case 'NoOp':
       return [model, Cmd.none()]
+    case 'SetNow':
+      return [{ ...model, newSince: newSinceOf(msg.now) }, Cmd.none()]
     case 'NavigationMsg':
       return navigationMsgHandler(msg.subMsg, model)
     case 'ProductsScreenMsg':

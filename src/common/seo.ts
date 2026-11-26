@@ -27,66 +27,125 @@ export const SITE_DESCRIPTION = `${PERSON_NAME} (${HANDLE}), a software engineer
 export const BIO =
   'Enthusiastic Functional Programmer, specialized in Haskell, Typescript(fp-ts), Purescript, and Elm.'
 
-// The picture of a link preview (1200x630): the top of the products page
-export const SOCIAL_IMAGE_URL = `${SITE_URL}/og.png`
-export const SOCIAL_IMAGE_ALT = `The profile of ${PERSON_NAME} (${HANDLE}) and the cards of the open-source work`
-
 // The title of the page of a blog post
 export const blogPostTitleOf = (postTitle: string): string =>
   `${postTitle} - ${HANDLE}`
 
-// A page the build writes, with what a search engine reads of it. `path` is
-// where GitHub Pages serves it: each page but the first is a copy of the
-// app at `<path>index.html`. `canonicalUrl` is the address search engines
-// should count it under, when it is not this page (a blog post: its
-// original on dev.to).
+// The picture of the link preview of a page (`og:image`, 1200x630), drawn
+// for every page by the build (`src/share-card.tsx`, `scripts/prerender.mjs`)
+export const SHARE_IMAGE_WIDTH = 1200
+export const SHARE_IMAGE_HEIGHT = 630
+
+export type ShareImage = {
+  readonly path: string
+  readonly alt: string
+}
+
+// The pages that are not a blog post, each with a share card of its own
+export type SitePage = 'Home' | 'Blog' | 'About' | 'Privacy'
+
+export const sitePageList: readonly SitePage[] = [
+  'Home',
+  'Blog',
+  'About',
+  'Privacy',
+]
+
+export const sitePageImagePathOf = (page: SitePage): string =>
+  `/og/page/${page.toLowerCase()}.png`
+
+export const blogPostImagePathOf = (slug: string): string =>
+  `/og/blog/${slug}.png`
+
+// What a page is to a link preview and to search engines: a blog post is
+// an article, with its day and tags; any other page is the profile
+export type SeoKind =
+  | { readonly _tag: 'Profile' }
+  | {
+      readonly _tag: 'Article'
+      readonly datePublished: string
+      readonly tagList: readonly string[]
+    }
+
+// A page the build writes, with what a search engine and a link preview
+// read of it. `path` is where GitHub Pages serves it: each page but the
+// first is a copy of the app at `<path>index.html`, its content rendered
+// ahead of time (`scripts/prerender.mjs`). Its canonical address is itself.
 export type SeoPage = {
   readonly path: string
   readonly title: string
   readonly description: string
-  readonly canonicalUrl: O.Option<string>
+  readonly image: ShareImage
+  readonly kind: SeoKind
 }
+
+const profile: SeoKind = { _tag: 'Profile' }
 
 export const seoPageList: readonly SeoPage[] = [
   {
     path: '/',
     title: PRODUCTS_TITLE,
     description: SITE_DESCRIPTION,
-    canonicalUrl: O.none,
+    image: {
+      path: sitePageImagePathOf('Home'),
+      alt: `The profile of ${PERSON_NAME} (${HANDLE}) and the open-source work`,
+    },
+    kind: profile,
   },
   {
     path: '/blog/',
     title: BLOG_TITLE,
     description: `The blog posts of ${PERSON_NAME} (${HANDLE}) on functional programming: Elm, PureScript, Haskell and TypeScript with fp-ts.`,
-    canonicalUrl: O.none,
+    image: {
+      path: sitePageImagePathOf('Blog'),
+      alt: `The blog of ${PERSON_NAME} (${HANDLE})`,
+    },
+    kind: profile,
   },
   {
     path: '/about/',
     title: ABOUT_TITLE,
     description: `${PERSON_NAME} (${HANDLE}), software engineer. ${BIO} Links to GitHub and LinkedIn.`,
-    canonicalUrl: O.none,
+    image: {
+      path: sitePageImagePathOf('About'),
+      alt: `About ${PERSON_NAME} (${HANDLE})`,
+    },
+    kind: profile,
   },
   {
     path: '/privacy/',
     title: PRIVACY_TITLE,
     description: `How ${HANDLE}.com treats your privacy: no cookies, nothing kept about you, and visits counted only in total.`,
-    canonicalUrl: O.none,
+    image: {
+      path: sitePageImagePathOf('Privacy'),
+      alt: `The privacy page of ${HANDLE}.com`,
+    },
+    kind: profile,
   },
 ]
 
-// The page of a blog post, a copy of a post of dev.to: search engines are
-// pointed to the original, and it is left out of the sitemap
-// (`sitemapXml`), which lists only the pages counted here
+// The page of a blog post. Its canonical address is the page itself, so
+// search engines count the post here (the copy on dev.to points here too
+// once its `canonical_url` is set to this address).
 export const blogPostSeoPageOf = (post: {
   readonly slug: string
   readonly title: string
   readonly description: string
-  readonly canonicalUrl: string
+  readonly date: string
+  readonly tagList: readonly string[]
 }): SeoPage => ({
   path: `/blog/${post.slug}/`,
   title: blogPostTitleOf(post.title),
   description: post.description,
-  canonicalUrl: O.some(post.canonicalUrl),
+  image: {
+    path: blogPostImagePathOf(post.slug),
+    alt: `The card of the post ${post.title}`,
+  },
+  kind: {
+    _tag: 'Article',
+    datePublished: post.date,
+    tagList: post.tagList,
+  },
 })
 
 const personId = `${SITE_URL}/#person`
@@ -185,6 +244,33 @@ const escapeHtml = (text: string): string =>
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
 
+// The structured data of a page: the person, the site and the products,
+// and on the page of a blog post the post itself
+const structuredDataOf = (page: SeoPage) => {
+  switch (page.kind._tag) {
+    case 'Profile':
+      return structuredData
+    case 'Article':
+      return {
+        ...structuredData,
+        '@graph': [
+          ...structuredData['@graph'],
+          {
+            '@type': 'BlogPosting',
+            headline: page.title,
+            description: page.description,
+            url: `${SITE_URL}${page.path}`,
+            mainEntityOfPage: `${SITE_URL}${page.path}`,
+            image: `${SITE_URL}${page.image.path}`,
+            datePublished: page.kind.datePublished,
+            keywords: page.kind.tagList.join(', '),
+            author: { '@id': personId },
+          },
+        ],
+      }
+  }
+}
+
 // The HTML of `page`: the placeholders of `index.html` filled in, and the
 // structured data added to the head (`<` escaped, so no text of it can end
 // the script). `isIndexed: false` asks search engines to leave the page out
@@ -194,31 +280,32 @@ export const htmlOfPage = (
   page: SeoPage,
   isIndexed: boolean = true,
 ): string => {
-  const url = pipe(
-    page.canonicalUrl,
-    O.getOrElse(() => `${SITE_URL}${page.path}`),
-  )
   const filled = template
     .replaceAll('%SEO_TITLE%', escapeHtml(page.title))
     .replaceAll('%SEO_DESCRIPTION%', escapeHtml(page.description))
-    .replaceAll('%SEO_URL%', escapeHtml(url))
+    .replaceAll('%SEO_URL%', `${SITE_URL}${page.path}`)
+    .replaceAll(
+      '%SEO_TYPE%',
+      page.kind._tag === 'Article' ? 'article' : 'profile',
+    )
     .replaceAll('%SEO_PERSON%', escapeHtml(PERSON_NAME))
     .replaceAll('%SEO_HANDLE%', escapeHtml(HANDLE))
-    .replaceAll('%SEO_IMAGE%', SOCIAL_IMAGE_URL)
-    .replaceAll('%SEO_IMAGE_ALT%', escapeHtml(SOCIAL_IMAGE_ALT))
+    .replaceAll('%SEO_IMAGE%', `${SITE_URL}${page.image.path}`)
+    .replaceAll('%SEO_IMAGE_ALT%', escapeHtml(page.image.alt))
   const head = [
-    `<script type="application/ld+json">${JSON.stringify(structuredData).replaceAll('<', '\\u003c')}</script>`,
+    `<script type="application/ld+json">${JSON.stringify(structuredDataOf(page)).replaceAll('<', '\\u003c')}</script>`,
     ...(isIndexed ? [] : ['<meta name="robots" content="noindex" />']),
   ].join('\n    ')
   return filled.replace('</head>', `    ${head}\n  </head>`)
 }
 
-// The sitemap of every page, for search engines (`/sitemap.xml`)
-export const sitemapXml = (): string =>
+// The sitemap of `pageList` (every page of the build), for search engines
+// (`/sitemap.xml`)
+export const sitemapXml = (pageList: readonly SeoPage[]): string =>
   [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...seoPageList.map(
+    ...pageList.map(
       (page) => `  <url><loc>${SITE_URL}${page.path}</loc></url>`,
     ),
     '</urlset>',

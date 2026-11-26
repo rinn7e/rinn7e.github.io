@@ -5,7 +5,7 @@ date: 2025-09-16
 tags:
   - elm
   - functional
-canonicalUrl: https://dev.to/rinn7e/solving-elm-router-double-update-problem-dde
+devToUrl: https://dev.to/rinn7e/solving-elm-router-double-update-problem-dde
 devToId: 2849012
 ---
 

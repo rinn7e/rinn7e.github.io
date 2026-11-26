@@ -10,3 +10,9 @@ allowBuilds:
   fp-ts-routing: true
   'fp-ts-routing@https://codeload.github.com/rinn7e/fp-ts-routing/tar.gz/0d9ec901639572171d6ada5b75aeee6ff945dc43': true
   'fp-ts-routing@https://codeload.github.com/rinn7e/fp-ts-routing/tar.gz/0d9ec901639572171d6ada5b75aeee6ff945dc43(fp-ts@2.16.11)(io-ts@2.2.22(fp-ts@2.16.11))': true
+
+# `initOnFirstRender` for the Program of react-tea-cup, so the first render
+# draws the model of `init` and React can hydrate a page rendered ahead of
+# time (`src/root.tsx`); the same patch as TEA Ecosystem
+patchedDependencies:
+  react-tea-cup@5.1.3: patches/react-tea-cup@5.1.3.patch

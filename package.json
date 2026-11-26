@@ -11,7 +11,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && vite build --ssr src/prerender.tsx --outDir dist-ssr && node tool/prerender.mjs",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "lint": "eslint .",
@@ -32,6 +32,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@fontsource/inter": "^5.3.0",
+    "@resvg/resvg-js": "2.6.2",
     "@tailwindcss/vite": "^4.1.18",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/markdown-it": "^14.2.0",
@@ -51,6 +53,8 @@
     "markdown-it": "^15.0.3",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
+    "satori": "0.63.2",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.34.1",

@@ -8,7 +8,7 @@ import { type BlogPost } from '@/common/type/blog-post'
 
 // The posts of the blog, newest first: the Markdown files of `content/blog/`,
 // rendered by the build (`tool/blog/plugin.ts`). Each is a copy of a post of
-// dev.to/rinn7e, which stays its canonical address.
+// dev.to/rinn7e; its page here is its canonical address.
 export const blogPostList: readonly BlogPost[] = builtBlogPostList
 
 export const blogPostOf = (slug: string): Option<BlogPost> =>

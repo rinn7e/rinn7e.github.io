@@ -22,7 +22,7 @@ describe('the posts of the blog', () => {
     blogPostList.forEach((post) => {
       expect(post.title).not.toBe('')
       expect(post.description).not.toBe('')
-      expect(post.canonicalUrl).toMatch(/^https:\/\/dev\.to\/rinn7e\//)
+      expect(post.devToUrl).toMatch(/^https:\/\/dev\.to\/rinn7e\//)
     })
   })
 

@@ -6,7 +6,7 @@ tags:
   - elm
   - functional
   - routing
-canonicalUrl: https://dev.to/rinn7e/elm-navigation-with-a-thin-url-wrapper-h2j
+devToUrl: https://dev.to/rinn7e/elm-navigation-with-a-thin-url-wrapper-h2j
 devToId: 4926667
 ---
 

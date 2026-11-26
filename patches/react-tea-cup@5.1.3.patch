@@ -1,0 +1,84 @@
+diff --git a/dist/Navigation.d.ts b/dist/Navigation.d.ts
+index 593ab8f85795116cc98714ec984e86c06c2470ba..d86789c9fb4b41dd43e7cb999fe9024f5ca0c17c 100644
+--- a/dist/Navigation.d.ts
++++ b/dist/Navigation.d.ts
+@@ -12,6 +12,7 @@ export interface NavProps<Model, Msg> extends ProgramInterop<Model, Msg> {
+     readonly update: (msg: Msg, model: Model) => [Model, Cmd<Msg>];
+     readonly subscriptions: (model: Model) => Sub<Msg>;
+     readonly flushSyncDefault?: boolean;
++    readonly initOnFirstRender?: boolean;
+ }
+ export declare function ProgramWithNav<Model, Msg>(props: NavProps<Model, Msg>): React.JSX.Element;
+ export declare function onPopState<M>(toMsg: (l: Location) => M): Sub<M>;
+diff --git a/dist/Navigation.js b/dist/Navigation.js
+index 83ef18054ac0f03561933e3585ea24368a2e8ab1..b929302cc5f81d8a0d5d8310f3341efcee2d8243 100644
+--- a/dist/Navigation.js
++++ b/dist/Navigation.js
+@@ -40,7 +40,7 @@ const React = require("react");
+ function ProgramWithNav(props) {
+     return (React.createElement(Program_1.Program, { init: () => props.init(window.location), view: props.view, update: (msg, model) => {
+             return props.update(msg, model);
+-        }, subscriptions: (m) => addNavSub(props.subscriptions(m), props.onUrlChange), dispatchBridge: props.dispatchBridge, listener: props.listener, setModelBridge: props.setModelBridge, paused: props.paused, flushSyncDefault: props.flushSyncDefault, shutdownHook: props.shutdownHook }));
++        }, subscriptions: (m) => addNavSub(props.subscriptions(m), props.onUrlChange), dispatchBridge: props.dispatchBridge, listener: props.listener, setModelBridge: props.setModelBridge, paused: props.paused, flushSyncDefault: props.flushSyncDefault, shutdownHook: props.shutdownHook, initOnFirstRender: props.initOnFirstRender }));
+ }
+ function addNavSub(sub, toMsg) {
+     return tea_cup_fp_1.Sub.batch([sub, onPopState(toMsg)]);
+diff --git a/dist/Program.d.ts b/dist/Program.d.ts
+index 8374b7373135da036918daaab85c2ad9df4eeb6c..ddcb8d5a6a26e1c24f4d42526939d23f1ae63827 100644
+--- a/dist/Program.d.ts
++++ b/dist/Program.d.ts
+@@ -40,6 +40,12 @@ export interface ProgramProps<Model, Msg> extends ProgramInterop<Model, Msg> {
+     update: (msg: Msg, model: Model) => [Model, Cmd<Msg>];
+     subscriptions: (model: Model) => Sub<Msg>;
+     flushSyncDefault?: boolean;
++    /**
++     * Run `init` during the first render, so the first render already draws
++     * the model `init` gives (its command still runs after mounting). Needed
++     * to hydrate HTML rendered ahead of time from the same model.
++     */
++    initOnFirstRender?: boolean;
+ }
+ /**
+  * A React component that holds a TEA "program", implementing the MVU loop.
+diff --git a/dist/Program.js b/dist/Program.js
+index 078d73d2ef7131261459ec370ccfb7e69e4d9c66..01c11d78d61104fcc501767220a72a3a0f80885a 100644
+--- a/dist/Program.js
++++ b/dist/Program.js
+@@ -55,7 +55,16 @@ exports.SetModelBridge = SetModelBridge;
+  * A React component that holds a TEA "program", implementing the MVU loop.
+  */
+ function Program(props) {
+-    const [model, setModel] = (0, react_1.useState)(tea_cup_fp_1.nothing);
++    // with `initOnFirstRender`, the first render draws the model of `init`,
++    // and the effect below starts the loop from the same init
++    const firstMac = (0, react_1.useRef)(undefined);
++    const [model, setModel] = (0, react_1.useState)(() => {
++        if (props.initOnFirstRender === true) {
++            firstMac.current = props.init();
++            return (0, tea_cup_fp_1.just)(firstMac.current[0]);
++        }
++        return tea_cup_fp_1.nothing;
++    });
+     const cmd = (0, react_1.useRef)(tea_cup_fp_1.Cmd.none());
+     // this could go in state only but as we need it effects it's easier with a ref
+     const modelRef = (0, react_1.useRef)(model);
+@@ -99,15 +108,16 @@ function Program(props) {
+         const current = modelRef.current;
+         // strict mode will shutdown before the init timeout executes
+         let initTimeout;
+-        if (modelRef.current.type === 'Nothing') {
++        if (modelRef.current.type === 'Nothing' || firstMac.current !== undefined) {
+             // sub to bridges if any
+             (_a = props.setModelBridge) === null || _a === void 0 ? void 0 : _a.subscribe((model) => {
+                 setModel((0, tea_cup_fp_1.just)(model));
+                 modelRef.current = (0, tea_cup_fp_1.just)(model);
+             });
+             (_b = props.dispatchBridge) === null || _b === void 0 ? void 0 : _b.subscribe(dispatch);
+-            // init
+-            const mac = props.init();
++            // init (the one of the first render, once)
++            const mac = firstMac.current !== undefined ? firstMac.current : props.init();
++            firstMac.current = undefined;
+             // and start the MVU
+             const [uModel, uCmd] = mac;
+             setModel((0, tea_cup_fp_1.just)(uModel));

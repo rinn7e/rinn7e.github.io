@@ -13,8 +13,9 @@ export type BlogPost = {
   readonly tagList: readonly string[]
   // How long it takes to read, in minutes, as dev.to counts it
   readonly readingMinutes: number
-  // The original on dev.to, the canonical address of the post
-  readonly canonicalUrl: string
+  // The original on dev.to, where its comments and reactions are (the
+  // canonical address of the post is its page here)
+  readonly devToUrl: string
   // A picture of the site (`/blog/<slug>/cover.png`), shown above the post
   readonly coverImage: Option<string>
   // The body, rendered at build time from the Markdown of the repository
