@@ -14,6 +14,7 @@ src/handler/                   the navigation (every move of the app)
 src/util/                      destinationOf and the URL adapter
 src/common/type/destination/   Destination, Screen, NavigationMsg, the URL parser
 src/common/data/product.ts     the products shown
+src/common/data/blog.ts        the blog posts, rendered by the build (`virtual:blog-post-list`)
 src/common/util/               commands for side effects, small helpers
 src/common/seo.ts              what search engines and link previews read
 src/component/                 shared views: the profile header (a component with its own `Msg`,
@@ -27,10 +28,16 @@ src/screen/products-screen/
   product-popup/               the popup, a TEA component of the screen: its phases and
                                slideshow, its view split into the panel, the slideshow,
                                the links and the styles of each phase
-tests/                         mirrors src/
+src/screen/blog-screen/        the list of the posts
+src/screen/blog-post-screen/   the page of a post
+content/blog/                  the posts, one Markdown file each (see "The blog")
+tool/                          what runs in Node, not in the browser: the import from dev.to
+                               (`import-dev-to.ts`, run by `run.ts`) and the blog plugin of
+                               the build (`blog/`)
+tests/                         mirrors src/, and tool/ under tests/tool/
 ```
 
-File and folder names are singular and in kebab-case. A screen with its own state has `type.ts` (`Model`, `Msg`, `Props`, `PropsEq`), `update.ts` (`init`, `update`), `component.tsx` (only the memo component is exported) and `index.ts`, which re-exports `type` and `update`, never `component`. Every screen has these files, also one with no state yet (`about-screen`, `privacy-screen`): its `Model` is empty and its `Msg` is a `NoOp`, so a feature on it starts from its own folder. Its `ScreenModel` variant carries the model, and the root `update` hands each screen message to the `update` of its screen. `not-found-screen` is the one screen kept as a lone `component.tsx`: a static message for any address the app does not know.
+File and folder names are singular and in kebab-case. A screen with its own state has `type.ts` (`Model`, `Msg`, `Props`, `PropsEq`), `update.ts` (`init`, `update`), `component.tsx` (only the memo component is exported) and `index.ts`, which re-exports `type` and `update`, never `component`. Every screen has these files, also one with no state yet (`about-screen`, `privacy-screen`, `blog-screen`, `blog-post-screen`): its `Model` is empty and its `Msg` is a `NoOp`, so a feature on it starts from its own folder. Its `ScreenModel` variant carries the model, and the root `update` hands each screen message to the `update` of its screen. `not-found-screen` is the one screen kept as a lone `component.tsx`: a static message for any address the app does not know.
 
 A part of a screen with state of its own is a TEA component under it, with the same files (`product-popup/`): it talks only to its parent, which opens it (`init`) and hands it its messages. The popup's `update` answers `none` once it has closed, and the screen then puts its card back in the grid.
 
@@ -46,15 +53,25 @@ A part of a screen with state of its own is a TEA component under it, with the s
 
 The app owns where it is; the URL only follows.
 
-1. A `Destination` is a `Screen` with its params (`ProductsScreen` with the `product` opened and the `category` filtered to, `AboutScreen`, `PrivacyScreen`). It is never stored: `destinationOf(model)` reads it from the screen model.
+1. A `Destination` is a `Screen` with its params (`ProductsScreen` with the `product` opened and the `category` filtered to, `BlogScreen`, `BlogPostScreen` with its `slug`, `AboutScreen`, `PrivacyScreen`). It is never stored: `destinationOf(model)` reads it from the screen model.
 2. Every move is a `NavigationMsg` (`Navigate` from a click, `UrlChanged` from the browser back and forward), handled by `navigationMsgHandler`. Links in the app use `Link`, a real anchor that navigates in the app on a plain left click.
-3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?product=damn-center`, `/about`, `/privacy`).
+3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?product=damn-center`, `/blog`, `/blog/format-date-with-purescript`, `/about`, `/privacy`). A slug with no post reads as not found. The build writes a page per post at the same path (`blogPostPathOf` in `tool/blog/post-list.ts`), and a test holds the two spellings together.
 4. The URL is written after every step by `withUrl`, the one wrapper around the root `update`: a change of destination pushes an entry, the same destination writes nothing, and `UrlChanged` already has its entry. The boot replaces the URL when it was another spelling of its destination (`/about/`).
 5. A param of a screen (the product opened) lives in the model of that screen only; opening or closing a product is a message of the screen, and the URL follows. The screenshot shown is not in the URL.
 
 ## Search engines
 
-`src/common/seo.ts` holds what search engines and link previews read: the title and description of each page (`seoPageList`), the social card (`public/og.png`, 1200x630, a render of the top of the products page) and the structured data (schema.org JSON-LD: the person, the site and the products, built from `productList`). `index.html` has placeholders (`%SEO_TITLE%` and the like). In the dev server the plugin of `vite.config.ts` fills them in for the first page; in a build it writes a copy of the app for each page at its path (`about/index.html`, `privacy/index.html`, which GitHub Pages serves for `/about` and `/privacy`), a `404.html` copy with `noindex`, and `sitemap.xml`. `public/robots.txt` points to the sitemap. A new page goes into `seoPageList`, and the app sets the same title as it moves (`titleOf` in `src/handler/navigation-handler.ts`).
+`src/common/seo.ts` holds what search engines and link previews read: the title and description of each page (`seoPageList`), the social card (`public/og.png`, 1200x630, a render of the top of the products page) and the structured data (schema.org JSON-LD: the person, the site and the products, built from `productList`). `index.html` has placeholders (`%SEO_TITLE%` and the like). In the dev server the plugin of `vite.config.ts` fills them in for the first page; in a build it writes a copy of the app for each page at its path (`about/index.html`, `privacy/index.html`, which GitHub Pages serves for `/about` and `/privacy`), a `404.html` copy with `noindex`, and `sitemap.xml`. `public/robots.txt` points to the sitemap. A new page goes into `seoPageList`, and the app sets the same title as it moves (`titleOf` in `src/handler/navigation-handler.ts`). The page of each blog post is added by the build (`blogPostSeoPageOf`): its canonical URL is its original on dev.to, so it stays out of the sitemap.
+
+## The blog
+
+The posts are copies of the posts of `dev.to/rinn7e`, one Markdown file each in `content/blog/<slug>.md` (front matter, then the body as written on dev.to), written by `pnpm run blog:import` (`tool/import-dev-to.ts`). Their pictures are saved in `public/blog/<slug>/`, so no page loads anything from dev.to.
+
+1. The build reads them, not the browser: the plugin of `tool/blog/plugin.ts` decodes each front matter with its io-ts codec (`tool/blog/front-matter.ts`, also used by the import), renders the Markdown with markdown-it and colors the code with the classes of highlight.js (`tool/blog/render.ts`), and serves the posts, newest first, as the module `virtual:blog-post-list`. A file that does not fit stops the build and names itself.
+2. Raw HTML in the Markdown shows as text. A link to another post (its dev.to address) is rewritten to its page here and moves in the app (`bodyClickHandler` of the post screen); any other outside link opens in a new tab.
+3. The body carries no classes, so it is the one place styled by a CSS block, `.blog-prose` in `src/asset/index.css` (with `@apply`, spaced by the gap of its column, with the colors of the code for light and dark).
+4. `tool/` runs in Node. A script there runs through the module runner of Vite (`node tool/run.ts <script>`), as fp-ts has no `exports` map for plain Node.
+5. Prettier leaves `content/` alone, so a post stays as written on dev.to.
 
 ## The privacy page
 
@@ -77,7 +94,7 @@ The Privacy page (`/privacy`) lists every party that sees a visit and everything
 
 ## Styling
 
-1. Tailwind classes only, mobile first: unprefixed classes are the phone, `lg:` is the desktop. No `sm:`, `md:` or `max-*` breakpoints.
+1. Tailwind classes only (but the body of a blog post, see "The blog"), mobile first: unprefixed classes are the phone, `lg:` is the desktop. No `sm:`, `md:` or `max-*` breakpoints.
 2. No margin classes: spacing is padding on the parent, or `gap`.
 3. Explicit sizes in brackets, in `rem` (`px-[1rem]`, `gap-[1.5rem]`, `text-[0.875rem]`), so the whole page follows the root font size: 100% on a phone, 80% on a desktop (`src/asset/index.css`). Only hairlines stay in `px` (`border-[1px]`, the 1px grid gap).
 4. Every hover and focus color has its `dark:` counterpart.

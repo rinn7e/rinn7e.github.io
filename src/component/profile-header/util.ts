@@ -11,6 +11,9 @@ export const headerScreenOf = (
   switch (screen._tag) {
     case 'ProductsScreen':
       return { _tag: 'ProductsHeader', category: screen.category, isFlipped }
+    case 'BlogScreen':
+    case 'BlogPostScreen':
+      return { _tag: 'BlogHeader' }
     case 'AboutScreen':
       return { _tag: 'AboutHeader' }
     case 'PrivacyScreen':

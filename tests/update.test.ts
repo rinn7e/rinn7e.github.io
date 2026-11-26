@@ -58,6 +58,23 @@ describe('the Flip button of the header', () => {
   })
 })
 
+describe('the blog', () => {
+  it('opens a post on its address', () => {
+    const { screenModel } = bootOn('/blog/format-date-with-purescript')
+    expect(
+      screenModel._tag === 'BlogPostScreenModel'
+        ? screenModel.model.post.title
+        : null,
+    ).toBe('Format Date with Purescript')
+  })
+
+  it('shows a slug with no post as not found', () => {
+    expect(bootOn('/blog/nonsense').screenModel._tag).toBe(
+      'NotFoundScreenModel',
+    )
+  })
+})
+
 describe('the screens with no state yet', () => {
   it('keep their model on their own message, and drop the message of another screen', () => {
     const about = bootOn('/about')

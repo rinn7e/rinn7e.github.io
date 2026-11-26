@@ -153,6 +153,188 @@
       opacity 500ms ease-out;
   }
 
+  /* The body of a blog post: HTML rendered by the build from the Markdown
+     of `content/blog/` (`tool/blog/render.ts`), so it carries no classes
+     and is styled here. Sizes are in `em` of the body text, so the whole
+     post follows its one size. Blocks are spaced by the gap of the column,
+     as the rest of the site, with no margins. */
+  .blog-prose {
+    @apply flex min-w-0 flex-col gap-[1.25em] text-[1rem] leading-[1.75] [overflow-wrap:break-word] lg:text-[1.1875rem];
+
+    --code-text: #1f2328;
+    --code-keyword: #cf222e;
+    --code-string: #0a3069;
+    --code-comment: #6e7781;
+    --code-number: #0550ae;
+    --code-title: #8250df;
+    --code-type: #953800;
+    --code-tag: #116329;
+
+    @variant dark {
+      --code-text: #e6edf3;
+      --code-keyword: #ff7b72;
+      --code-string: #a5d6ff;
+      --code-comment: #8b949e;
+      --code-number: #79c0ff;
+      --code-title: #d2a8ff;
+      --code-type: #ffa657;
+      --code-tag: #7ee787;
+    }
+
+    & h1,
+    & h2,
+    & h3,
+    & h4 {
+      @apply pt-[0.5em] leading-[1.3] font-bold text-balance;
+    }
+
+    & h1 {
+      @apply text-[1.5em];
+    }
+
+    & h2 {
+      @apply text-[1.375em];
+    }
+
+    & h3 {
+      @apply text-[1.15em];
+    }
+
+    & h4 {
+      @apply text-[1em];
+    }
+
+    & a {
+      @apply text-blue-700 underline decoration-blue-300 underline-offset-[0.1875em] hover:decoration-blue-700 dark:text-blue-300 dark:decoration-blue-700 dark:hover:decoration-blue-300;
+    }
+
+    & strong {
+      @apply font-semibold;
+    }
+
+    & ul,
+    & ol {
+      @apply flex flex-col gap-[0.375em] pl-[1.5em];
+    }
+
+    & ul {
+      @apply list-disc;
+    }
+
+    & ol {
+      @apply list-decimal;
+    }
+
+    & li > ul,
+    & li > ol {
+      @apply pt-[0.375em];
+    }
+
+    & blockquote {
+      @apply flex flex-col gap-[0.75em] border-l-[3px] border-zinc-300 pl-[1em] text-zinc-600 dark:border-zinc-700 dark:text-zinc-400;
+    }
+
+    & hr {
+      @apply border-zinc-200 dark:border-zinc-800;
+    }
+
+    & img {
+      @apply mx-auto h-auto max-w-full rounded-[0.75rem] border border-zinc-200 dark:border-zinc-800;
+    }
+
+    /* Code within a sentence */
+    & :not(pre) > code {
+      @apply rounded-[0.375em] bg-[#f0f2f5] px-[0.3em] py-[0.1em] text-[0.875em] [overflow-wrap:anywhere] dark:bg-zinc-800;
+    }
+
+    /* A block of code scrolls sideways on its own, never the page */
+    & pre {
+      @apply overflow-x-auto rounded-[0.75rem] border border-zinc-200 bg-[#f6f8fa] px-[1.125em] py-[1em] text-[0.8125em] leading-[1.6] text-(--code-text) dark:border-zinc-800 dark:bg-zinc-900;
+    }
+
+    & pre code {
+      @apply [overflow-wrap:normal] whitespace-pre;
+    }
+
+    & .blog-table {
+      @apply overflow-x-auto;
+    }
+
+    & table {
+      @apply w-full border-collapse text-[0.875em];
+    }
+
+    & th,
+    & td {
+      @apply border border-zinc-200 px-[0.75em] py-[0.375em] text-left dark:border-zinc-800;
+    }
+
+    & th {
+      @apply bg-[#f6f8fa] font-semibold dark:bg-zinc-900;
+    }
+
+    /* The classes of highlight.js, in the colors of GitHub */
+    & .hljs-keyword,
+    & .hljs-selector-tag,
+    & .hljs-meta .hljs-keyword,
+    & .hljs-template-tag,
+    & .hljs-template-variable {
+      color: var(--code-keyword);
+    }
+
+    & .hljs-string,
+    & .hljs-regexp,
+    & .hljs-meta .hljs-string {
+      color: var(--code-string);
+    }
+
+    & .hljs-comment,
+    & .hljs-quote,
+    & .hljs-meta {
+      color: var(--code-comment);
+    }
+
+    & .hljs-number,
+    & .hljs-literal,
+    & .hljs-attr,
+    & .hljs-attribute,
+    & .hljs-symbol,
+    & .hljs-variable.language_,
+    & .hljs-selector-attr,
+    & .hljs-selector-class,
+    & .hljs-selector-id {
+      color: var(--code-number);
+    }
+
+    & .hljs-title,
+    & .hljs-title.function_,
+    & .hljs-section {
+      color: var(--code-title);
+    }
+
+    & .hljs-type,
+    & .hljs-built_in,
+    & .hljs-title.class_,
+    & .hljs-variable,
+    & .hljs-params {
+      color: var(--code-type);
+    }
+
+    & .hljs-name,
+    & .hljs-tag,
+    & .hljs-bullet {
+      color: var(--code-tag);
+    }
+
+    & .hljs-emphasis {
+      font-style: italic;
+    }
+
+    & .hljs-strong {
+      font-weight: 600;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .deal-in {
       animation: none;

@@ -6,6 +6,8 @@ import { type NavigationMsg, type Screen } from '@/common/type/destination'
 import type * as DebugPanel from '@/component/debug-panel'
 import type * as ProfileHeader from '@/component/profile-header'
 import type * as AboutScreen from '@/screen/about-screen'
+import type * as BlogPostScreen from '@/screen/blog-post-screen'
+import type * as BlogScreen from '@/screen/blog-screen'
 import type * as PrivacyScreen from '@/screen/privacy-screen'
 import type * as ProductsScreen from '@/screen/products-screen'
 
@@ -16,6 +18,11 @@ export type ScreenModel =
   | {
       readonly _tag: 'ProductsScreenModel'
       readonly model: ProductsScreen.Model
+    }
+  | { readonly _tag: 'BlogScreenModel'; readonly model: BlogScreen.Model }
+  | {
+      readonly _tag: 'BlogPostScreenModel'
+      readonly model: BlogPostScreen.Model
     }
   | { readonly _tag: 'AboutScreenModel'; readonly model: AboutScreen.Model }
   | {
@@ -67,6 +74,11 @@ export type Msg =
       readonly subMsg: ProductsScreen.Msg
     }
   | { readonly _tag: 'DebugPanelMsg'; readonly subMsg: DebugPanel.Msg }
+  | { readonly _tag: 'BlogScreenMsg'; readonly subMsg: BlogScreen.Msg }
+  | {
+      readonly _tag: 'BlogPostScreenMsg'
+      readonly subMsg: BlogPostScreen.Msg
+    }
   | { readonly _tag: 'AboutScreenMsg'; readonly subMsg: AboutScreen.Msg }
   | { readonly _tag: 'PrivacyScreenMsg'; readonly subMsg: PrivacyScreen.Msg }
   | {
@@ -91,6 +103,10 @@ export const currentScreenOf = (screenModel: ScreenModel): Screen => {
         product: openedProductOf(screenModel.model),
         category: screenModel.model.category,
       }
+    case 'BlogScreenModel':
+      return { _tag: 'BlogScreen' }
+    case 'BlogPostScreenModel':
+      return { _tag: 'BlogPostScreen', slug: screenModel.model.post.slug }
     case 'AboutScreenModel':
       return { _tag: 'AboutScreen' }
     case 'PrivacyScreenModel':

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { productList } from '@/common/data/product'
 import {
+  blogPostSeoPageOf,
   htmlOfPage,
   seoPageList,
   sitemapXml,
@@ -38,6 +39,20 @@ describe('search data', () => {
         `<loc>https://rinn7e.com${page.path}</loc>`,
       )
     })
+  })
+
+  it('points search engines from the page of a post to its original on dev.to', () => {
+    const page = blogPostSeoPageOf({
+      slug: 'a-post',
+      title: 'A post',
+      description: 'About a post',
+      canonicalUrl: 'https://dev.to/rinn7e/a-post-x1y',
+    })
+    const html = htmlOfPage(template, page)
+    expect(page.path).toBe('/blog/a-post/')
+    expect(html).toContain('<title>A post - rinn7e</title>')
+    expect(html).toContain('href="https://dev.to/rinn7e/a-post-x1y"')
+    expect(sitemapXml()).not.toContain('/blog/a-post/')
   })
 
   it('describes every product in the structured data', () => {

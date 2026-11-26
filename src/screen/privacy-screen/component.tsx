@@ -56,8 +56,9 @@ const PrivacyScreen = (_props: Props) => (
       <section className='flex flex-col items-center gap-[0.5rem] text-center'>
         <h1 className='text-[1.5rem] leading-[1.25] font-semibold'>Privacy</h1>
         <p className='text-[0.9375rem] leading-[1.6] text-balance text-zinc-600 dark:text-zinc-400'>
-          This site is a list of open-source projects. It does not know who you
-          are, and it keeps nothing about you; it only counts visits, in total.
+          This site is a list of open-source projects and blog posts. It does
+          not know who you are, and it keeps nothing about you; it only counts
+          visits, in total.
         </p>
       </section>
 
@@ -98,12 +99,12 @@ const PrivacyScreen = (_props: Props) => (
           {rowView({
             label: 'Your browser',
             children:
-              'Nothing is kept in your browser: no cookies, no local storage. The pictures, the icons and the text all come from the site itself, the fonts are the ones of your device, and the one script from elsewhere is the counter of Cloudflare above.',
+              'Nothing is kept in your browser: no cookies, no local storage. The pictures, the icons and the text all come from the site itself (the blog posts and their pictures are copies kept here, not embeds of dev.to), the fonts are the ones of your device, and the one script from elsewhere is the counter of Cloudflare above.',
           })}
           {rowView({
             label: 'Links out',
             children:
-              'The links to GitHub, LinkedIn, the browser stores and the live projects open those sites in a new tab. What they see from then on is under their own privacy policies.',
+              'The links to GitHub, LinkedIn, dev.to (where each blog post was first published), the browser stores, the live projects and the sites a post cites open those sites in a new tab. What they see from then on is under their own privacy policies.',
           })}
         </div>
       </section>

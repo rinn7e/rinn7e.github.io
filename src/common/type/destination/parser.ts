@@ -8,6 +8,7 @@ import {
   lit,
   parse,
   query,
+  str,
   zero,
 } from '@rinn7e/fp-ts-routing'
 import * as O from 'fp-ts/Option'
@@ -16,6 +17,7 @@ import { pipe } from 'fp-ts/function'
 import * as S from 'fp-ts/string'
 import * as t from 'io-ts'
 
+import { blogPostOf } from '@/common/data/blog'
 import {
   type ProductCategory,
   productList,
@@ -26,6 +28,8 @@ import {
   type Destination,
   type Screen,
   aboutScreen,
+  blogPostScreen,
+  blogScreen,
   notFoundScreen,
   privacyScreen,
   productsScreen,
@@ -92,6 +96,8 @@ const categoryToParam = (category: ProductCategory): CategoryParam => {
 }
 
 const productsMatch = query(productsParams).and(end)
+const blogMatch = lit('blog').and(end)
+const blogPostMatch = lit('blog').and(str('slug')).and(end)
 const aboutMatch = lit('about').and(end)
 const privacyMatch = lit('privacy').and(end)
 
@@ -117,13 +123,21 @@ const screenParser: Parser<Screen> = zero<Screen>()
       productsScreen(productFromParam(product), categoryFromParam(category)),
     ),
   )
+  .alt(blogMatch.parser.map(() => blogScreen()))
+  // A slug with no post is a page that is not found
+  .alt(
+    blogPostMatch.parser.map(({ slug }) =>
+      O.isSome(blogPostOf(slug)) ? blogPostScreen(slug) : notFoundScreen(),
+    ),
+  )
   .alt(aboutMatch.parser.map(() => aboutScreen()))
   .alt(privacyMatch.parser.map(() => privacyScreen()))
   .alt(anyStrings.parser.map(() => notFoundScreen()))
 
 // `href`: a full URL (the page's `location.href`). A trailing slash reads
-// the same as none (`/about/` is `/about`), since GitHub Pages serves the
-// About and Privacy pages from `about/index.html` and `privacy/index.html`.
+// the same as none (`/about/` is `/about`), since GitHub Pages serves each
+// page but the first from `<path>/index.html` (`about/index.html`,
+// `blog/<slug>/index.html`).
 export const parseDestination = (href: string): Destination => {
   const url = new URL(href)
   const pathname =
@@ -148,6 +162,10 @@ export const toUrlString = (destination: Destination): string => {
         category: pipe(screen.category, O.map(categoryToParam), O.toUndefined),
         product: O.toUndefined(screen.product),
       })
+    case 'BlogScreen':
+      return format(blogMatch.formatter, {})
+    case 'BlogPostScreen':
+      return format(blogPostMatch.formatter, { slug: screen.slug })
     case 'AboutScreen':
       return format(aboutMatch.formatter, {})
     case 'PrivacyScreen':

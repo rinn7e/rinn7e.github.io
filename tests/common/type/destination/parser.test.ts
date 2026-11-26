@@ -1,10 +1,13 @@
 import * as O from 'fp-ts/Option'
 import { describe, expect, it } from 'vitest'
 
+import { blogPostList } from '@/common/data/blog'
 import { productList, shownCategoryList } from '@/common/data/product'
 import {
   type Destination,
   aboutScreen,
+  blogPostScreen,
+  blogScreen,
   destinationOfScreen,
   notFoundScreen,
   parseDestination,
@@ -62,6 +65,26 @@ describe('parseDestination', () => {
     expect(parsePath('/about/')).toEqual(destinationOfScreen(aboutScreen()))
   })
 
+  it('reads the blog with or without a trailing slash', () => {
+    expect(parsePath('/blog')).toEqual(destinationOfScreen(blogScreen()))
+    expect(parsePath('/blog/')).toEqual(destinationOfScreen(blogScreen()))
+  })
+
+  it('reads a post of the blog by its slug, with or without a trailing slash', () => {
+    expect(parsePath('/blog/format-date-with-purescript')).toEqual(
+      destinationOfScreen(blogPostScreen('format-date-with-purescript')),
+    )
+    expect(parsePath('/blog/format-date-with-purescript/')).toEqual(
+      destinationOfScreen(blogPostScreen('format-date-with-purescript')),
+    )
+  })
+
+  it('reads a slug with no post as not found', () => {
+    expect(parsePath('/blog/nonsense')).toEqual(
+      destinationOfScreen(notFoundScreen()),
+    )
+  })
+
   it('reads the Privacy page with or without a trailing slash', () => {
     expect(parsePath('/privacy')).toEqual(destinationOfScreen(privacyScreen()))
     expect(parsePath('/privacy/')).toEqual(destinationOfScreen(privacyScreen()))
@@ -77,7 +100,7 @@ describe('toUrlString', () => {
     expect(toUrlString(destinationOfScreen(productsScreen()))).toBe('/')
   })
 
-  it('round-trips every product and the About and Privacy pages', () => {
+  it('round-trips every product, every post and the other pages', () => {
     const destinationList = [
       ...productList.map((product) =>
         destinationOfScreen(productsScreen(O.some(product.id))),
@@ -87,6 +110,10 @@ describe('toUrlString', () => {
       ),
       destinationOfScreen(
         productsScreen(O.some('damn-center'), O.some('BrowserExtension')),
+      ),
+      destinationOfScreen(blogScreen()),
+      ...blogPostList.map((post) =>
+        destinationOfScreen(blogPostScreen(post.slug)),
       ),
       destinationOfScreen(aboutScreen()),
       destinationOfScreen(privacyScreen()),

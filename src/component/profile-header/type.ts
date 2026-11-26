@@ -20,6 +20,8 @@ export type HeaderScreen =
       // Whether the cards show their back (the label of Flip)
       readonly isFlipped: boolean
     }
+  // The list of posts, or one post
+  | { readonly _tag: 'BlogHeader' }
   | { readonly _tag: 'AboutHeader' }
   // A page with no tab: Privacy, Not found
   | { readonly _tag: 'NoTabHeader' }

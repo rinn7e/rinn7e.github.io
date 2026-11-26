@@ -18,6 +18,18 @@ export type AboutScreen = {
   readonly _tag: 'AboutScreen'
 }
 
+// The list of the posts of the blog
+export type BlogScreen = {
+  readonly _tag: 'BlogScreen'
+}
+
+// One post of the blog, by its slug (always a post that exists: the parser
+// reads an unknown slug as not found)
+export type BlogPostScreen = {
+  readonly _tag: 'BlogPostScreen'
+  readonly slug: string
+}
+
 export type PrivacyScreen = {
   readonly _tag: 'PrivacyScreen'
 }
@@ -27,7 +39,12 @@ export type NotFoundScreen = {
 }
 
 export type Screen =
-  ProductsScreen | AboutScreen | PrivacyScreen | NotFoundScreen
+  | ProductsScreen
+  | BlogScreen
+  | BlogPostScreen
+  | AboutScreen
+  | PrivacyScreen
+  | NotFoundScreen
 
 export const ProductsScreenEq: EqClass.Eq<ProductsScreen> = EqClass.struct({
   _tag: S.Eq,
@@ -37,6 +54,15 @@ export const ProductsScreenEq: EqClass.Eq<ProductsScreen> = EqClass.struct({
 
 export const AboutScreenEq: EqClass.Eq<AboutScreen> = EqClass.struct({
   _tag: S.Eq,
+})
+
+export const BlogScreenEq: EqClass.Eq<BlogScreen> = EqClass.struct({
+  _tag: S.Eq,
+})
+
+export const BlogPostScreenEq: EqClass.Eq<BlogPostScreen> = EqClass.struct({
+  _tag: S.Eq,
+  slug: S.Eq,
 })
 
 export const PrivacyScreenEq: EqClass.Eq<PrivacyScreen> = EqClass.struct({
@@ -51,6 +77,10 @@ export const ScreenEq: EqClass.Eq<Screen> = {
   equals: (x, y) => {
     if (x._tag === 'ProductsScreen' && y._tag === 'ProductsScreen') {
       return ProductsScreenEq.equals(x, y)
+    } else if (x._tag === 'BlogScreen' && y._tag === 'BlogScreen') {
+      return BlogScreenEq.equals(x, y)
+    } else if (x._tag === 'BlogPostScreen' && y._tag === 'BlogPostScreen') {
+      return BlogPostScreenEq.equals(x, y)
     } else if (x._tag === 'AboutScreen' && y._tag === 'AboutScreen') {
       return AboutScreenEq.equals(x, y)
     } else if (x._tag === 'PrivacyScreen' && y._tag === 'PrivacyScreen') {
@@ -85,12 +115,23 @@ export const productsScreen = (
   product,
   category,
 })
+export const blogScreen = (): Screen => ({ _tag: 'BlogScreen' })
+export const blogPostScreen = (slug: string): Screen => ({
+  _tag: 'BlogPostScreen',
+  slug,
+})
 export const aboutScreen = (): Screen => ({ _tag: 'AboutScreen' })
 export const privacyScreen = (): Screen => ({ _tag: 'PrivacyScreen' })
 export const notFoundScreen = (): Screen => ({ _tag: 'NotFoundScreen' })
 
 export const defaultDestination = (): Destination =>
   destinationOfScreen(productsScreen())
+
+export const blogDestination = (): Destination =>
+  destinationOfScreen(blogScreen())
+
+export const blogPostDestination = (slug: string): Destination =>
+  destinationOfScreen(blogPostScreen(slug))
 
 export const aboutDestination = (): Destination =>
   destinationOfScreen(aboutScreen())

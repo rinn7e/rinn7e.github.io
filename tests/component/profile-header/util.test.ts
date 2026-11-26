@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   aboutScreen,
+  blogPostScreen,
+  blogScreen,
   notFoundScreen,
   privacyScreen,
   productsScreen,
@@ -17,6 +19,10 @@ describe('the header of each screen', () => {
       _tag: 'ProductsHeader',
       category: O.some('Game'),
       isFlipped: true,
+    })
+    expect(headerScreenOf(blogScreen(), true)).toEqual({ _tag: 'BlogHeader' })
+    expect(headerScreenOf(blogPostScreen('a-post'), true)).toEqual({
+      _tag: 'BlogHeader',
     })
     expect(headerScreenOf(aboutScreen(), true)).toEqual({ _tag: 'AboutHeader' })
     expect(headerScreenOf(privacyScreen(), true)).toEqual({

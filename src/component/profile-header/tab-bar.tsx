@@ -1,9 +1,16 @@
 import * as O from 'fp-ts/Option'
-import { FlipHorizontal2, Grid3x3, UserRound, X } from 'lucide-react'
+import {
+  BookOpenText,
+  FlipHorizontal2,
+  Grid3x3,
+  UserRound,
+  X,
+} from 'lucide-react'
 import React from 'react'
 
 import {
   aboutDestination,
+  blogDestination,
   destinationOfScreen,
   productsScreen,
 } from '@/common/type/destination'
@@ -46,7 +53,11 @@ const tabClass = (isCurrent: boolean): string =>
       : 'border-transparent text-[#6a717a] hover:text-[#0c1014] dark:text-zinc-400 dark:hover:text-zinc-50',
   ].join(' ')
 
-// The tabs (the products and About) on the centre axis, with Flip at the
+// The icon of a tab, on a desktop only: on a phone the three tabs fill the
+// row, and their labels alone leave room for Flip and Clear filter at the ends
+const tabIconClass = 'hidden size-[1rem] lg:block'
+
+// The tabs (the products, the blog and About) on the centre axis, with Flip at the
 // left end and Clear filter at the right end (while a category is picked),
 // both with the cards only
 export const tabBarView = ({
@@ -58,22 +69,30 @@ export const tabBarView = ({
 }) => (
   <nav
     aria-label='Sections'
-    className='relative flex w-full justify-center gap-[0.75rem] border-b border-[#dbdfe4] pt-[1.625rem] lg:gap-[3.75rem] dark:border-zinc-800'
+    className='relative flex w-full justify-center gap-[0.5rem] border-b border-[#dbdfe4] pt-[1.625rem] lg:gap-[3.75rem] dark:border-zinc-800'
   >
     <Link
       destination={destinationOfScreen(productsScreen())}
       aria-current={headerScreen._tag === 'ProductsHeader' ? 'page' : undefined}
       className={tabClass(headerScreen._tag === 'ProductsHeader')}
     >
-      <Grid3x3 aria-hidden='true' className='size-[1rem]' />
+      <Grid3x3 aria-hidden='true' className={tabIconClass} />
       Open-source work
+    </Link>
+    <Link
+      destination={blogDestination()}
+      aria-current={headerScreen._tag === 'BlogHeader' ? 'page' : undefined}
+      className={tabClass(headerScreen._tag === 'BlogHeader')}
+    >
+      <BookOpenText aria-hidden='true' className={tabIconClass} />
+      Blog
     </Link>
     <Link
       destination={aboutDestination()}
       aria-current={headerScreen._tag === 'AboutHeader' ? 'page' : undefined}
       className={tabClass(headerScreen._tag === 'AboutHeader')}
     >
-      <UserRound aria-hidden='true' className='size-[1rem]' />
+      <UserRound aria-hidden='true' className={tabIconClass} />
       About
     </Link>
     {headerScreen._tag === 'ProductsHeader' ? (

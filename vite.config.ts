@@ -4,21 +4,31 @@ import { fileURLToPath } from 'node:url'
 import { type Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
-import { htmlOfPage, seoPageList, sitemapXml } from './src/common/seo'
+import {
+  blogPostSeoPageOf,
+  htmlOfPage,
+  seoPageList,
+  sitemapXml,
+} from './src/common/seo'
+import { blogPlugin } from './tool/blog/plugin'
+import { readBlogPostList } from './tool/blog/post-list'
 
 // What search engines read (`src/common/seo.ts`), written into the HTML:
 // in the dev server, the first page; in a build, once the bundle has its
 // asset links, a copy of the app for each page at its path (GitHub Pages
-// serves `about/index.html` for `/about`), a `404.html` copy left out of
-// search, and the sitemap.
+// serves `about/index.html` for `/about`, and `blog/<slug>/index.html` for
+// each post of `content/blog/`), a `404.html` copy left out of search, and
+// the sitemap.
 const seoPlugin = (): Plugin => {
   let isBuild = false
+  let rootDir = process.cwd()
   return {
     name: 'rinn7e-seo',
     // After the HTML plugin of Vite, which writes `index.html` into the bundle
     enforce: 'post',
     configResolved(config) {
       isBuild = config.command === 'build'
+      rootDir = config.root
     },
     transformIndexHtml(html) {
       const [firstPage] = seoPageList
@@ -34,7 +44,8 @@ const seoPlugin = (): Plugin => {
       }
       const built = String(index.source)
       index.source = htmlOfPage(built, firstPage)
-      seoPageList.slice(1).forEach((page) => {
+      const blogPostPageList = readBlogPostList(rootDir).map(blogPostSeoPageOf)
+      ;[...seoPageList.slice(1), ...blogPostPageList].forEach((page) => {
         this.emitFile({
           type: 'asset',
           fileName: `${page.path.replace(/^\//, '')}index.html`,
@@ -81,11 +92,18 @@ const cloudflareWebAnalytics = (): Plugin => ({
   ],
 })
 
-// A static site with path routing (/, /about, /privacy), served at the root
-// of rinn7e.com: asset paths are absolute, so a deep link finds them
+// A static site with path routing (/, /blog, /blog/<slug>, /about,
+// /privacy), served at the root of rinn7e.com: asset paths are absolute, so
+// a deep link finds them
 export default defineConfig({
   base: '/',
-  plugins: [react(), tailwindcss(), cloudflareWebAnalytics(), seoPlugin()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    blogPlugin(),
+    cloudflareWebAnalytics(),
+    seoPlugin(),
+  ],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

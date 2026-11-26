@@ -10,6 +10,8 @@ import {
   navigationMsgHandler,
 } from '@/handler/navigation-handler'
 import * as AboutScreen from '@/screen/about-screen'
+import * as BlogPostScreen from '@/screen/blog-post-screen'
+import * as BlogScreen from '@/screen/blog-screen'
 import * as PrivacyScreen from '@/screen/privacy-screen'
 import * as ProductsScreen from '@/screen/products-screen'
 import { type Model, type Msg, sameScreenWith } from '@/type'
@@ -42,12 +44,64 @@ export const update = (msg: Msg, model: Model): [Model, Cmd<Msg>] => {
       return productsScreenMsgHandler(msg.subMsg, model)
     case 'DebugPanelMsg':
       return debugPanelMsgHandler(msg.subMsg, model)
+    case 'BlogScreenMsg':
+      return blogScreenMsgHandler(msg.subMsg, model)
+    case 'BlogPostScreenMsg':
+      return blogPostScreenMsgHandler(msg.subMsg, model)
     case 'AboutScreenMsg':
       return aboutScreenMsgHandler(msg.subMsg, model)
     case 'PrivacyScreenMsg':
       return privacyScreenMsgHandler(msg.subMsg, model)
     case 'ProfileHeaderMsg':
       return profileHeaderMsgHandler(msg.subMsg, model)
+  }
+}
+
+// A message of the Blog screen changes its model in place, only while it
+// is the screen shown
+const blogScreenMsgHandler = (
+  subMsg: BlogScreen.Msg,
+  model: Model,
+): [Model, Cmd<Msg>] => {
+  const { screenModel } = model
+  if (screenModel._tag === 'BlogScreenModel') {
+    const [screen, screenCmd] = BlogScreen.update(subMsg, screenModel.model)
+    return [
+      {
+        ...model,
+        screenModel: sameScreenWith(screenModel)({
+          _tag: 'BlogScreenModel',
+          model: screen,
+        }),
+      },
+      screenCmd.map((m): Msg => ({ _tag: 'BlogScreenMsg', subMsg: m })),
+    ]
+  } else {
+    return [model, Cmd.none()]
+  }
+}
+
+// A message of the screen of a post changes its model in place, only while
+// it is the screen shown
+const blogPostScreenMsgHandler = (
+  subMsg: BlogPostScreen.Msg,
+  model: Model,
+): [Model, Cmd<Msg>] => {
+  const { screenModel } = model
+  if (screenModel._tag === 'BlogPostScreenModel') {
+    const [screen, screenCmd] = BlogPostScreen.update(subMsg, screenModel.model)
+    return [
+      {
+        ...model,
+        screenModel: sameScreenWith(screenModel)({
+          _tag: 'BlogPostScreenModel',
+          model: screen,
+        }),
+      },
+      screenCmd.map((m): Msg => ({ _tag: 'BlogPostScreenMsg', subMsg: m })),
+    ]
+  } else {
+    return [model, Cmd.none()]
   }
 }
 

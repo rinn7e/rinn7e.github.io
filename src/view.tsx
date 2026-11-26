@@ -8,6 +8,8 @@ import { PageBackdropMemo } from '@/component/page-backdrop'
 import { headerScreenOf } from '@/component/profile-header'
 import { ProfileHeaderMemo } from '@/component/profile-header/component'
 import { AboutScreenMemo } from '@/screen/about-screen/component'
+import { BlogPostScreenMemo } from '@/screen/blog-post-screen/component'
+import { BlogScreenMemo } from '@/screen/blog-screen/component'
 import { notFoundScreenView } from '@/screen/not-found-screen/component'
 import { PrivacyScreenMemo } from '@/screen/privacy-screen/component'
 import { ProductsScreenMemo } from '@/screen/products-screen/component'
@@ -62,6 +64,20 @@ const screenView = ({ model, dispatch }: RootProps) => {
         <ProductsScreenMemo
           model={screenModel.model}
           dispatch={(subMsg) => dispatch({ _tag: 'ProductsScreenMsg', subMsg })}
+        />
+      )
+    case 'BlogScreenModel':
+      return (
+        <BlogScreenMemo
+          model={screenModel.model}
+          dispatch={(subMsg) => dispatch({ _tag: 'BlogScreenMsg', subMsg })}
+        />
+      )
+    case 'BlogPostScreenModel':
+      return (
+        <BlogPostScreenMemo
+          model={screenModel.model}
+          dispatch={(subMsg) => dispatch({ _tag: 'BlogPostScreenMsg', subMsg })}
         />
       )
     case 'AboutScreenModel':

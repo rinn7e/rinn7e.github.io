@@ -1,6 +1,10 @@
 import { memo } from 'react'
 
-import { aboutDestination, privacyDestination } from '@/common/type/destination'
+import {
+  aboutDestination,
+  blogDestination,
+  privacyDestination,
+} from '@/common/type/destination'
 import { newTabProps } from '@/common/util'
 
 import { Link } from './link'
@@ -17,6 +21,9 @@ const Footer = () => (
     >
       <Link destination={aboutDestination()} className={footerLinkClass}>
         About
+      </Link>
+      <Link destination={blogDestination()} className={footerLinkClass}>
+        Blog
       </Link>
       <a
         {...newTabProps}

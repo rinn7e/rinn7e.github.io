@@ -17,6 +17,7 @@ export const GITHUB_URL = 'https://github.com/rinn7e'
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/moremi-vannak/'
 
 export const PRODUCTS_TITLE = `${PERSON_NAME} (${HANDLE}): open-source work`
+export const BLOG_TITLE = `Blog of ${PERSON_NAME} (${HANDLE})`
 export const ABOUT_TITLE = `About ${PERSON_NAME} (${HANDLE})`
 export const PRIVACY_TITLE = `Privacy - ${HANDLE}`
 
@@ -30,28 +31,63 @@ export const BIO =
 export const SOCIAL_IMAGE_URL = `${SITE_URL}/og.png`
 export const SOCIAL_IMAGE_ALT = `The profile of ${PERSON_NAME} (${HANDLE}) and the cards of the open-source work`
 
+// The title of the page of a blog post
+export const blogPostTitleOf = (postTitle: string): string =>
+  `${postTitle} - ${HANDLE}`
+
 // A page the build writes, with what a search engine reads of it. `path` is
 // where GitHub Pages serves it: each page but the first is a copy of the
-// app at `<path>index.html`.
+// app at `<path>index.html`. `canonicalUrl` is the address search engines
+// should count it under, when it is not this page (a blog post: its
+// original on dev.to).
 export type SeoPage = {
   readonly path: string
   readonly title: string
   readonly description: string
+  readonly canonicalUrl: O.Option<string>
 }
 
 export const seoPageList: readonly SeoPage[] = [
-  { path: '/', title: PRODUCTS_TITLE, description: SITE_DESCRIPTION },
+  {
+    path: '/',
+    title: PRODUCTS_TITLE,
+    description: SITE_DESCRIPTION,
+    canonicalUrl: O.none,
+  },
+  {
+    path: '/blog/',
+    title: BLOG_TITLE,
+    description: `The blog posts of ${PERSON_NAME} (${HANDLE}) on functional programming: Elm, PureScript, Haskell and TypeScript with fp-ts.`,
+    canonicalUrl: O.none,
+  },
   {
     path: '/about/',
     title: ABOUT_TITLE,
     description: `${PERSON_NAME} (${HANDLE}), software engineer. ${BIO} Links to GitHub and LinkedIn.`,
+    canonicalUrl: O.none,
   },
   {
     path: '/privacy/',
     title: PRIVACY_TITLE,
     description: `How ${HANDLE}.com treats your privacy: no cookies, nothing kept about you, and visits counted only in total.`,
+    canonicalUrl: O.none,
   },
 ]
+
+// The page of a blog post, a copy of a post of dev.to: search engines are
+// pointed to the original, and it is left out of the sitemap
+// (`sitemapXml`), which lists only the pages counted here
+export const blogPostSeoPageOf = (post: {
+  readonly slug: string
+  readonly title: string
+  readonly description: string
+  readonly canonicalUrl: string
+}): SeoPage => ({
+  path: `/blog/${post.slug}/`,
+  title: blogPostTitleOf(post.title),
+  description: post.description,
+  canonicalUrl: O.some(post.canonicalUrl),
+})
 
 const personId = `${SITE_URL}/#person`
 
@@ -158,10 +194,14 @@ export const htmlOfPage = (
   page: SeoPage,
   isIndexed: boolean = true,
 ): string => {
+  const url = pipe(
+    page.canonicalUrl,
+    O.getOrElse(() => `${SITE_URL}${page.path}`),
+  )
   const filled = template
     .replaceAll('%SEO_TITLE%', escapeHtml(page.title))
     .replaceAll('%SEO_DESCRIPTION%', escapeHtml(page.description))
-    .replaceAll('%SEO_URL%', `${SITE_URL}${page.path}`)
+    .replaceAll('%SEO_URL%', escapeHtml(url))
     .replaceAll('%SEO_PERSON%', escapeHtml(PERSON_NAME))
     .replaceAll('%SEO_HANDLE%', escapeHtml(HANDLE))
     .replaceAll('%SEO_IMAGE%', SOCIAL_IMAGE_URL)
