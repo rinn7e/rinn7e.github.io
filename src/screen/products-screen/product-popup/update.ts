@@ -3,7 +3,7 @@ import { type Option } from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
 import { Cmd } from 'tea-cup-fp'
 
-import { afterNextPaintCmd, delayCmd } from '@/common/util'
+import { afterNextPaintCmd, cmdSucceed, delayCmd } from '@/common/util'
 
 import { gridCardDomId, panelCardDomId } from '../common/product-card/dom-id'
 import {
@@ -15,7 +15,9 @@ import {
   type OpenPhase,
   RETURN_MS,
   SPIN_MS,
+  VIDEO_VOLUME,
   isClosingPhase,
+  videoPlayerDomId,
 } from './type'
 
 // Opens the popup of `id` as the open `seq`: with `from`, its card flies
@@ -76,8 +78,30 @@ export const update = (msg: Msg, model: Model): [Option<Model>, Cmd<Msg>] => {
       ])
     case 'PlayVideo':
       return keep([{ ...model, isPlaying: true }, Cmd.none()])
+    case 'PlayerLoaded':
+      return keep([model, startPlayerCmd()])
+    case 'NoOp':
+      return keep([model, Cmd.none()])
   }
 }
+
+// Sets the volume of the player, then starts it, through the commands its
+// page takes as messages (`enablejsapi=1` in its URL). It is loaded without
+// `autoplay`, so it never plays a moment at full volume first; the click on
+// play lets it start.
+const startPlayerCmd = (): Cmd<Msg> =>
+  cmdSucceed(() => {
+    const player = document.getElementById(videoPlayerDomId)
+    if (player instanceof HTMLIFrameElement) {
+      const send = (func: string, args: readonly unknown[]) =>
+        player.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func, args }),
+          'https://www.youtube-nocookie.com',
+        )
+      send('setVolume', [VIDEO_VOLUME])
+      send('playVideo', [])
+    }
+  }).map((): Msg => ({ _tag: 'NoOp' }))
 
 const keep = ([model, cmd]: [Model, Cmd<Msg>]): [Option<Model>, Cmd<Msg>] => [
   O.some(model),

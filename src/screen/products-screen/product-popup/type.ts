@@ -78,6 +78,9 @@ export type Msg =
   | { readonly _tag: 'CloseDone'; readonly seq: number }
   | { readonly _tag: 'ShowSlide'; readonly index: number }
   | { readonly _tag: 'PlayVideo' }
+  // The player of YouTube has loaded: it gets its volume, then plays
+  | { readonly _tag: 'PlayerLoaded' }
+  | { readonly _tag: 'NoOp' }
 
 export const CardRectEq: EqClass.Eq<CardRect> = EqClass.struct({
   left: N.Eq,
@@ -137,3 +140,10 @@ export const isClosingPhase = (phase: OpenPhase): boolean =>
 export const SPIN_MS = 750
 export const RETURN_MS = 560
 export const CLOSE_MS = 260
+
+// The volume a video starts at, out of 100: quiet enough not to startle a
+// visitor who pressed play
+export const VIDEO_VOLUME = 20
+
+// The id of the player of YouTube in the popup, for the commands it gets
+export const videoPlayerDomId = 'product-video-player'

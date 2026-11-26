@@ -8,16 +8,18 @@ import { type Dispatcher } from 'tea-cup-fp'
 import { type Product, type ProductSlide } from '@/common/data/product'
 
 import { roundButtonClass } from './round-button'
-import { type Msg } from './type'
+import { type Msg, videoPlayerDomId } from './type'
 
 // A key and a label of a slide, for the dots under the slideshow
 const slideKeyOf = (slide: ProductSlide): string =>
   slide._tag === 'ImageSlide' ? slide.src : slide.youtubeId
 
 // The player of YouTube in its privacy-enhanced mode (no cookies before
-// play), started at once: it is only drawn after a click on play
+// play), drawn only after a click on play. It takes commands as messages
+// (`enablejsapi`), so once it loads it gets its volume, then plays (see
+// `startPlayerCmd`).
 const youtubeEmbedUrlOf = (youtubeId: string): string =>
-  `https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}?autoplay=1&rel=0`
+  `https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}?enablejsapi=1&rel=0&origin=${encodeURIComponent(window.location.origin)}`
 
 // A video before it is played: its poster, a screenshot of this site, with
 // a play button on the axis. Nothing comes from YouTube until the click.
@@ -78,7 +80,9 @@ const slideView = ({
     case 'VideoSlide':
       return isPlaying ? (
         <iframe
+          id={videoPlayerDomId}
           src={youtubeEmbedUrlOf(slide.youtubeId)}
+          onLoad={() => dispatch({ _tag: 'PlayerLoaded' })}
           title={slide.title}
           allow='autoplay; encrypted-media; picture-in-picture; fullscreen'
           allowFullScreen

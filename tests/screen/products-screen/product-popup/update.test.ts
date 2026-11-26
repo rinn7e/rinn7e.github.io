@@ -152,6 +152,11 @@ describe('product popup update', () => {
     expect(step({ _tag: 'ShowSlide', index: 1 }, playing).isPlaying).toBe(false)
   })
 
+  it('keeps playing as the player loads and gets its volume', () => {
+    const playing = step({ _tag: 'PlayVideo' }, shown)
+    expect(step({ _tag: 'PlayerLoaded' }, playing)).toEqual(playing)
+  })
+
   it('draws again on a change of its model or side, not for a new dispatch', () => {
     const product = productList[0]
     expect(product).toBeDefined()
