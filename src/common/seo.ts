@@ -292,11 +292,108 @@ export const htmlOfPage = (
     .replaceAll('%SEO_HANDLE%', escapeHtml(HANDLE))
     .replaceAll('%SEO_IMAGE%', `${SITE_URL}${page.image.path}`)
     .replaceAll('%SEO_IMAGE_ALT%', escapeHtml(page.image.alt))
+    .replaceAll('%SEO_FEED_URL%', `${SITE_URL}${FEED_PATH}`)
+    .replaceAll('%SEO_FEED_TITLE%', escapeHtml(FEED_TITLE))
   const head = [
     `<script type="application/ld+json">${JSON.stringify(structuredDataOf(page)).replaceAll('<', '\\u003c')}</script>`,
     ...(isIndexed ? [] : ['<meta name="robots" content="noindex" />']),
   ].join('\n    ')
   return filled.replace('</head>', `    ${head}\n  </head>`)
+}
+
+// The feed of the blog (RSS 2.0), written by the build next to the sitemap
+// and linked from the head of every page, so a feed reader finds it from
+// any of them
+export const FEED_PATH = '/feed.xml'
+export const FEED_TITLE = `${PERSON_NAME} (${HANDLE}): blog`
+
+// What the feed needs of a post: a part of `BlogPost`, so a test can build one
+export type FeedPost = {
+  readonly slug: string
+  readonly title: string
+  readonly description: string
+  // `YYYY-MM-DD`
+  readonly date: string
+  readonly tagList: readonly string[]
+  readonly html: string
+}
+
+// The HTML of a post read away from the site (in a feed reader): its
+// addresses from the root of the site (`/blog/...`) made absolute
+export const withAbsoluteUrls = (html: string): string =>
+  html.replace(/(\s(?:src|href|srcset)=")\/(?!\/)/g, `$1${SITE_URL}/`)
+
+const escapeXml = (text: string): string =>
+  escapeHtml(text).replaceAll("'", '&apos;')
+
+// A day as RSS writes it (RFC 822), at midnight UTC
+const rfc822Of = (date: string): string =>
+  new Date(`${date}T00:00:00Z`).toUTCString()
+
+// The HTML of a post in CDATA, which only `]]>` can end: split there
+const cdataOf = (html: string): string =>
+  `<![CDATA[${html.replaceAll(']]>', ']]]]><![CDATA[>')}]]>`
+
+// The feed of `postList` (newest first, as the build reads them): each post
+// whole, with its title, address, day, description and tags. Its date is
+// the one of the newest post, so a build with no new post writes the same
+// feed.
+export const rssXml = (postList: readonly FeedPost[]): string => {
+  const blogUrl = `${SITE_URL}/blog/`
+  const blogDescription = pipe(
+    seoPageList,
+    RA.findFirst((page) => page.path === '/blog/'),
+    O.fold(
+      () => SITE_DESCRIPTION,
+      (page) => page.description,
+    ),
+  )
+  const itemList = postList.map((post) => {
+    const url = `${SITE_URL}/blog/${post.slug}/`
+    return [
+      '    <item>',
+      `      <title>${escapeXml(post.title)}</title>`,
+      `      <link>${url}</link>`,
+      `      <guid isPermaLink="true">${url}</guid>`,
+      `      <pubDate>${rfc822Of(post.date)}</pubDate>`,
+      `      <description>${escapeXml(post.description)}</description>`,
+      ...post.tagList.map(
+        (tag) => `      <category>${escapeXml(tag)}</category>`,
+      ),
+      `      <content:encoded>${cdataOf(withAbsoluteUrls(post.html))}</content:encoded>`,
+      '    </item>',
+    ].join('\n')
+  })
+  const lastDate = pipe(
+    RA.head(postList),
+    O.map(
+      (post) => `    <lastBuildDate>${rfc822Of(post.date)}</lastBuildDate>`,
+    ),
+    O.fold(
+      (): readonly string[] => [],
+      (line) => [line],
+    ),
+  )
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">',
+    '  <channel>',
+    `    <title>${escapeXml(FEED_TITLE)}</title>`,
+    `    <link>${blogUrl}</link>`,
+    `    <description>${escapeXml(blogDescription)}</description>`,
+    '    <language>en</language>',
+    `    <atom:link href="${SITE_URL}${FEED_PATH}" rel="self" type="application/rss+xml" />`,
+    '    <image>',
+    `      <url>${SITE_URL}/apple-touch-icon.png</url>`,
+    `      <title>${escapeXml(FEED_TITLE)}</title>`,
+    `      <link>${blogUrl}</link>`,
+    '    </image>',
+    ...lastDate,
+    ...itemList,
+    '  </channel>',
+    '</rss>',
+    '',
+  ].join('\n')
 }
 
 // The sitemap of `pageList` (every page of the build), for search engines

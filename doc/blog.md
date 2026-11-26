@@ -44,6 +44,10 @@ pnpm run blog:import
 
 The import reads every post through the public API of dev.to, writes its file and saves its pictures. A post imported before keeps its file and its slug (rename the file to change its address); a new one gets the slug of dev.to without its random ending. Read the diff before committing.
 
+## Feed
+
+The build writes the RSS feed of the blog, `https://rinn7e.com/feed.xml`, with every post whole; a new post is in it once it is deployed.
+
 ## Canonical URL
 
 Each post names its page here as its canonical URL, and its copy on dev.to points back to it, so search engines count the post on this site.

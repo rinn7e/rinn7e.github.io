@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import { productList } from '@/common/data/product'
 import {
+  FEED_PATH,
   blogPostSeoPageOf,
   htmlOfPage,
+  rssXml,
   seoPageList,
   sitemapXml,
   structuredData,
+  withAbsoluteUrls,
 } from '@/common/seo'
 import {
   type Destination,
@@ -112,5 +115,54 @@ describe('search data', () => {
     productList.forEach((product) => {
       expect(names).toContain(product.name)
     })
+  })
+})
+
+describe('the feed of the blog', () => {
+  const post = {
+    slug: 'a-post',
+    title: 'Tom & Jerry <3',
+    description: 'About a post',
+    date: '2026-11-26',
+    tagList: ['elm', 'haskell'],
+    html: '<p><img src="/blog/a-post/flow.svg" alt=""> <a href="/blog/other">x</a> <a href="https://elm-lang.org">y</a> ]]> end</p>',
+  }
+  const feed = rssXml([post])
+
+  it('lists each post whole, at its address on the site', () => {
+    expect(feed).toContain('<link>https://rinn7e.com/blog/a-post/</link>')
+    expect(feed).toContain(
+      '<guid isPermaLink="true">https://rinn7e.com/blog/a-post/</guid>',
+    )
+    expect(feed).toContain('<pubDate>Thu, 26 Nov 2026 00:00:00 GMT</pubDate>')
+    expect(feed).toContain('<title>Tom &amp; Jerry &lt;3</title>')
+    expect(feed).toContain('<category>haskell</category>')
+    expect(feed).toContain('<content:encoded><![CDATA[<p>')
+  })
+
+  it('makes the addresses of the site absolute, and keeps the others', () => {
+    expect(withAbsoluteUrls(post.html)).toContain(
+      'src="https://rinn7e.com/blog/a-post/flow.svg"',
+    )
+    expect(withAbsoluteUrls(post.html)).toContain(
+      'href="https://rinn7e.com/blog/other"',
+    )
+    expect(withAbsoluteUrls(post.html)).toContain('href="https://elm-lang.org"')
+  })
+
+  it('keeps a ]]> in a post from ending its CDATA', () => {
+    expect(feed).toContain(']]]]><![CDATA[> end')
+  })
+
+  it('is linked from the head of every page', () => {
+    const [home] = seoPageList
+    const head =
+      '<html><head><link rel="alternate" type="application/rss+xml" title="%SEO_FEED_TITLE%" href="%SEO_FEED_URL%" /></head></html>'
+    expect(home).toBeDefined()
+    if (home !== undefined) {
+      expect(htmlOfPage(head, home)).toContain(
+        `href="https://rinn7e.com${FEED_PATH}"`,
+      )
+    }
   })
 })

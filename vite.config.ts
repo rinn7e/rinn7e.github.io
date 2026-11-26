@@ -5,8 +5,10 @@ import { type Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
 import {
+  FEED_PATH,
   blogPostSeoPageOf,
   htmlOfPage,
+  rssXml,
   seoPageList,
   sitemapXml,
 } from './src/common/seo'
@@ -17,8 +19,8 @@ import { readBlogPostList } from './tool/blog/post-list'
 // in the dev server, the first page; in a build, once the bundle has its
 // asset links, a copy of the app for each page at its path (GitHub Pages
 // serves `about/index.html` for `/about`, and `blog/<slug>/index.html` for
-// each post of `content/blog/`), a `404.html` copy left out of search, and
-// the sitemap.
+// each post of `content/blog/`), a `404.html` copy left out of search, the
+// sitemap, and the feed of the blog (`feed.xml`).
 const seoPlugin = (): Plugin => {
   let isBuild = false
   let rootDir = process.cwd()
@@ -44,10 +46,8 @@ const seoPlugin = (): Plugin => {
       }
       const built = String(index.source)
       index.source = htmlOfPage(built, firstPage)
-      const pageList = [
-        ...seoPageList,
-        ...readBlogPostList(rootDir).map(blogPostSeoPageOf),
-      ]
+      const postList = readBlogPostList(rootDir)
+      const pageList = [...seoPageList, ...postList.map(blogPostSeoPageOf)]
       pageList.slice(1).forEach((page) => {
         this.emitFile({
           type: 'asset',
@@ -64,6 +64,11 @@ const seoPlugin = (): Plugin => {
         type: 'asset',
         fileName: 'sitemap.xml',
         source: sitemapXml(pageList),
+      })
+      this.emitFile({
+        type: 'asset',
+        fileName: FEED_PATH.replace(/^\//, ''),
+        source: rssXml(postList),
       })
     },
   }
