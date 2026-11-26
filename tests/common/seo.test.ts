@@ -8,6 +8,15 @@ import {
   sitemapXml,
   structuredData,
 } from '@/common/seo'
+import {
+  type Destination,
+  type Screen,
+  aboutDestination,
+  blogDestination,
+  defaultDestination,
+  privacyDestination,
+  toUrlString,
+} from '@/common/type/destination'
 
 const template =
   '<html><head><title>%SEO_TITLE%</title><link rel="canonical" href="%SEO_URL%" /><meta property="og:type" content="%SEO_TYPE%" /><meta property="og:image" content="%SEO_IMAGE%" /></head><body></body></html>'
@@ -20,7 +29,32 @@ const aPost = blogPostSeoPageOf({
   tagList: ['elm'],
 })
 
+// Every screen of the app that is a page of its own, at its address. A new
+// screen fails the type check here until it is added, and then the test
+// below until it has its entry in `seoPageList`, which puts it in the
+// prerendered build and in the sitemap. A blog post gets its entry from the
+// build, and the page not found is left out of search.
+const pageOfScreen: Record<
+  Exclude<Screen['_tag'], 'BlogPostScreen' | 'NotFoundScreen'>,
+  Destination
+> = {
+  ProductsScreen: defaultDestination(),
+  BlogScreen: blogDestination(),
+  AboutScreen: aboutDestination(),
+  PrivacyScreen: privacyDestination(),
+}
+
+const withTrailingSlash = (path: string): string =>
+  path.endsWith('/') ? path : `${path}/`
+
 describe('search data', () => {
+  it('has an entry for every page of the app, for search engines and the sitemap', () => {
+    const seoPathList = seoPageList.map((page) => withTrailingSlash(page.path))
+    Object.values(pageOfScreen).forEach((destination) => {
+      expect(seoPathList).toContain(withTrailingSlash(toUrlString(destination)))
+    })
+  })
+
   it('fills in the head of each page with its own title and address', () => {
     seoPageList.forEach((page) => {
       const html = htmlOfPage(template, page)
