@@ -22,12 +22,19 @@ const hashColorOf = (tag: string): string =>
 
 // The tags of a blog post, as dev.to spells them (`#elm`), centred: on a
 // card of the list and on the page of a post. Plain labels, not links.
+// With `oneRow` (the cards of the list, which all have the same height),
+// only the tags that fit on the first row show: the rest wrap to a second
+// row that is cut off whole, so no tag is ever cut in half.
 export const blogTagListView = ({
   tagList,
+  oneRow = false,
 }: {
   readonly tagList: readonly string[]
+  readonly oneRow?: boolean
 }) => (
-  <ul className='flex flex-wrap justify-center gap-x-[0.75rem] gap-y-[0.25rem]'>
+  <ul
+    className={`flex flex-wrap justify-center gap-x-[0.75rem] gap-y-[0.25rem] ${oneRow ? 'max-h-[1.25rem] overflow-hidden' : ''}`}
+  >
     {pipe(
       tagList,
       RA.map((tag) => (

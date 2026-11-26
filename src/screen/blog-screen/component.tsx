@@ -41,7 +41,9 @@ const BlogScreen = ({ newSince }: Props) => (
 // A card of the list, mirrored around its axis: the day on the left edge
 // and the minutes to read on the right, then the title, the description and
 // the tags, centred, and the badge New on the axis on a post of the last 30
-// days. Every card has the same frame.
+// days. Every card has the same frame and the same height: the title and
+// the description each get a box of two lines, clamped to it, with a
+// shorter text centred in it, so a long title never makes its card taller.
 const postCardView = ({
   post,
   isNew,
@@ -66,13 +68,13 @@ const postCardView = ({
         </span>
       </div>
       <div className='flex flex-col items-center gap-[0.625rem] px-[0.5rem] pb-[0.5rem] lg:px-[2rem]'>
-        <h2 className='text-[1.25rem] leading-[1.3] font-bold text-balance lg:text-[1.625rem]'>
-          {post.title}
+        <h2 className='flex min-h-[2.6em] items-center justify-center text-[1.25rem] leading-[1.3] font-bold text-balance lg:text-[1.625rem]'>
+          <span className='line-clamp-2'>{post.title}</span>
         </h2>
-        <p className='text-[0.875rem] leading-[1.6] text-balance text-zinc-600 lg:text-[1rem] dark:text-zinc-400'>
-          {post.description}
+        <p className='flex min-h-[3.2em] items-center justify-center text-[0.875rem] leading-[1.6] text-balance text-zinc-600 lg:text-[1rem] dark:text-zinc-400'>
+          <span className='line-clamp-2'>{post.description}</span>
         </p>
-        {blogTagListView({ tagList: post.tagList })}
+        {blogTagListView({ tagList: post.tagList, oneRow: true })}
       </div>
     </Link>
   </li>
