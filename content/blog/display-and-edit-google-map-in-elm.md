@@ -26,11 +26,11 @@ The tool that is needed:
 
 ```
 elm-google-map
-â”œâ”€â”€ src
-â”‚   â”œâ”€â”€ Main.elm
-â”‚   â”œâ”€â”€ Map.elm
-â”‚   â””â”€â”€ Port.elm
-â””â”€â”€ index.html
+├── src
+│   ├── Main.elm
+│   ├── Map.elm
+│   └── Port.elm
+└── index.html
 ```
 
 

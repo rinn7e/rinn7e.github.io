@@ -65,7 +65,7 @@ The app owns where it is; the URL only follows.
 
 ## The blog
 
-The posts are copies of the posts of `dev.to/rinn7e`, one Markdown file each in `content/blog/<slug>.md` (front matter, then the body as written on dev.to), written by `pnpm run blog:import` (`tool/import-dev-to.ts`). Their pictures are saved in `public/blog/<slug>/`, so no page loads anything from dev.to.
+The posts are copies of the posts of `dev.to/rinn7e`, one Markdown file each in `content/blog/<slug>.md` (front matter, then the body as written on dev.to), written by `pnpm run blog:import` (`tool/import-dev-to.ts`). Their pictures are saved in `public/blog/<slug>/`, so no page loads anything from dev.to. The import repairs text that dev.to itself holds garbled (UTF-8 read as Windows-1252, `tool/blog/mojibake.ts`).
 
 1. The build reads them, not the browser: the plugin of `tool/blog/plugin.ts` decodes each front matter with its io-ts codec (`tool/blog/front-matter.ts`, also used by the import), renders the Markdown with markdown-it and colors the code with the classes of highlight.js (`tool/blog/render.ts`), and serves the posts, newest first, as the module `virtual:blog-post-list`. A file that does not fit stops the build and names itself.
 2. Raw HTML in the Markdown shows as text. A link to another post (its dev.to address) is rewritten to its page here and moves in the app (`bodyClickHandler` of the post screen); any other outside link opens in a new tab.

@@ -21,6 +21,7 @@ import {
   decodePostFile,
   postFileText,
 } from './blog/front-matter'
+import { repairMojibake } from './blog/mojibake'
 
 const USERNAME = 'rinn7e'
 const API_URL = 'https://dev.to/api'
@@ -144,9 +145,10 @@ const withLocalImages = async (body: string, slug: string): Promise<string> => {
   )
 }
 
-// The body without the front matter of dev.to, with Unix line ends
+// The body without the front matter of dev.to, with Unix line ends, and
+// any text garbled by a wrong encoding on dev.to repaired
 const bodyOf = (article: Article): string =>
-  article.body_markdown
+  repairMojibake(article.body_markdown)
     .replaceAll('\r\n', '\n')
     .replace(/^---\n[\s\S]*?\n---\n/, '')
     .replace(/^\n+/, '')
@@ -194,11 +196,13 @@ const postFileOf = async (
           ),
         }
   const body = bodyOf(article)
-  const description = article.description.replace(/\s+/g, ' ').trim()
+  const description = repairMojibake(article.description)
+    .replace(/\s+/g, ' ')
+    .trim()
   const frontMatter = decodeOrThrow(
     FrontMatter,
     {
-      title: article.title,
+      title: repairMojibake(article.title),
       description: description === '' ? excerptOf(body) : description,
       date: article.published_at.slice(0, 10),
       tags: article.tags,
