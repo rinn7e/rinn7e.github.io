@@ -104,15 +104,14 @@ const discussionView = ({ devToUrl }: { readonly devToUrl: string }) => (
 const barLinkClass =
   'flex h-[2.75rem] items-center gap-[0.375rem] rounded-[0.5rem] px-[0.75rem] text-[0.75rem] font-semibold tracking-[0.06em] text-[#6a717a] uppercase transition-colors hover:bg-[#f0f2f5] hover:text-[#0c1014] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50'
 
-// On a phone, a bar across the bottom of the screen that stays in view
-// while the post is read (sticky, so it stops at the end of the post and
-// never covers the footer): back to the list on the left, the discussion
-// on dev.to on the right, mirrored as the row at the top of the card on a
-// desktop
+// On a phone, a row at the end of the post, in the flow of the page (not
+// fixed to the screen, so it never covers the text): back to the list on
+// the left, the discussion on dev.to on the right, mirrored as the row at
+// the top of the card on a desktop
 const phoneBarView = ({ post }: { readonly post: BlogPost }) => (
   <nav
     aria-label='This post'
-    className='sticky bottom-0 z-10 flex w-[calc(100%+2rem)] items-center justify-between border-t border-zinc-200 bg-white px-[0.5rem] py-[0.25rem] lg:hidden dark:border-zinc-800 dark:bg-zinc-950'
+    className='flex w-full items-center justify-between lg:hidden'
   >
     <Link destination={blogDestination()} className={barLinkClass}>
       <ArrowLeft aria-hidden='true' className='size-[1rem]' />
