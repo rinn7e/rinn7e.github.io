@@ -46,13 +46,16 @@ Its pictures go in `public/blog/<slug>/`, and the body links them as `/blog/<slu
 
 The build renders the Markdown to HTML, with the code colored by highlight.js (`tool/blog/`), so the browser gets no Markdown code. Raw HTML in a post is shown as text. Prettier leaves `content/` alone, so a post stays as written.
 
-### Cross-post to dev.to
+### Publish a new post (required: here and on dev.to)
 
-A post is written here first, then copied to dev.to:
+Every new post lives in both places, linked both ways: the page here is the original, and dev.to has a copy that points back to it. A post is not done until all of these steps are:
 
-1. Give the copy the canonical URL `https://rinn7e.com/blog/<slug>/` (`canonical_url` in the front matter of the editor of dev.to), so search engines count the post here.
-2. Give its pictures absolute addresses, as PNG or WebP. dev.to serves an SVG with the type `image/webp`, and browsers do not draw it; uploading the pictures in the editor of dev.to works.
-3. To link the copy from the page here (a dev.to link and "Join the discussion"), add `devToUrl: <its address on dev.to>` to the front matter of the post. Do not add `devToId`: the import would then replace the file with the copy.
+1. Write the post here (above) and push it. Wait for the deploy, then open `https://rinn7e.com/blog/<slug>/` and check it.
+2. Publish the copy on [dev.to](https://dev.to/new) with the same title, the same description and the same tags (dev.to takes at most 4).
+3. Give the copy the canonical URL `https://rinn7e.com/blog/<slug>/` (`canonical_url` in the front matter of the editor of dev.to), so search engines count the post here.
+4. Give its pictures absolute addresses, as PNG or WebP. dev.to serves an SVG with the type `image/webp`, and browsers do not draw it. Render each picture to PNG (the light version) and upload it in the editor of dev.to; check them in its Preview before publishing.
+5. Add `devToUrl: <the address of the copy on dev.to>` to the front matter of the post here, and push. Its page then shows a dev.to link and "Join the discussion on dev.to". Do not add `devToId`: the import would then replace the file with the copy.
+6. Check both sides: the page here links the copy, and the API of dev.to (`https://dev.to/api/articles/rinn7e/<its dev.to slug>`) shows it published with the right `canonical_url`.
 
 Keep the title the same on both sides: the import leaves a post without `devToId` alone and skips the dev.to post of the same slug, but a copy under another title would come back as a second file.
 
