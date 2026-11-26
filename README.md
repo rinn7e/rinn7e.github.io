@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/rinn7e/rinn7e.github.io" alt="License: GPL-3.0"></a>
 </p>
 
-[rinn7e.com](https://rinn7e.com/) is laid out like a profile page: my photo, the counts of the products, highlights for the product categories (each filters the grid) and three tabs, Open-source work, Blog and About, with a Privacy page in the footer. The Open-source work tab is a grid of portrait playing cards, one per project, that tilt under the pointer. A click opens a popup: the card flies into it with a spin while a slideshow of its screenshots, a short description and its links (the live app, the browser stores, the code) fade in. The Blog tab lists my posts, newest first, each readable on its own page with a link to its original on [dev.to](https://dev.to/rinn7e). The About tab links my LinkedIn and my GitHub.
+[rinn7e.com](https://rinn7e.com/) is laid out like a profile page: my photo and name, the counts of the products, links to my GitHub and LinkedIn, highlights for the product categories (each filters the grid) and three tabs, Open-source work, Blog and About, with a Privacy page in the footer. The Open-source work tab is a grid of portrait playing cards, one per project, that tilt under the pointer, and the Flip button turns them all over to their backs. A click opens a popup: the card flies into it with a spin while a slideshow of its screenshots, a short description and its links (the live app, the browser stores, the code) fade in. The Blog tab lists my posts, newest first, with the posts of the last 30 days marked New. Each post has its own page here, its canonical home; a post that is also on [dev.to](https://dev.to/rinn7e) links to its discussion there. The site follows the light or dark theme of the system. The About tab links my LinkedIn and my GitHub.
 
 ## Screenshot
 
@@ -29,13 +29,42 @@ Only public repositories go here, and no libraries.
 
 ## Add a blog post
 
-The posts are copies of my posts on [dev.to](https://dev.to/rinn7e): one Markdown file each in `content/blog/<slug>.md`, with a front matter (the title, the description, the day, the tags, the dev.to address as the canonical URL and the dev.to id), then the body as written on dev.to. Their pictures are in `public/blog/<slug>/`, so the site shows them from itself.
+Each post is one Markdown file, `content/blog/<slug>.md`: a front matter, then the body. The slug is its address, `/blog/<slug>`.
+
+```yaml
+---
+title: Command Sourcing vs Event Sourcing
+description: One or two sentences, shown in the list and in link previews.
+date: 2026-11-26
+tags:
+  - architecture
+  - database
+---
+```
+
+Its pictures go in `public/blog/<slug>/`, and the body links them as `/blog/<slug>/<name>.<ext>`. A picture may also have a version for the dark theme, `<name>.dark.<ext>` next to it: the page then shows the one that matches the theme of the system. A picture without one is shown in both themes.
+
+The build renders the Markdown to HTML, with the code colored by highlight.js (`tool/blog/`), so the browser gets no Markdown code. Raw HTML in a post is shown as text. Prettier leaves `content/` alone, so a post stays as written.
+
+### Cross-post to dev.to
+
+A post is written here first, then copied to dev.to:
+
+1. Give the copy the canonical URL `https://rinn7e.com/blog/<slug>/` (`canonical_url` in the front matter of the editor of dev.to), so search engines count the post here.
+2. Give its pictures absolute addresses, as PNG or WebP. dev.to serves an SVG with the type `image/webp`, and browsers do not draw it; uploading the pictures in the editor of dev.to works.
+3. To link the copy from the page here (a dev.to link and "Join the discussion"), add `devToUrl: <its address on dev.to>` to the front matter of the post. Do not add `devToId`: the import would then replace the file with the copy.
+
+Keep the title the same on both sides: the import leaves a post without `devToId` alone and skips the dev.to post of the same slug, but a copy under another title would come back as a second file.
+
+### Import from dev.to
+
+The older posts were first written on [dev.to](https://dev.to/rinn7e) and are copied here, with `devToUrl` and `devToId` in their front matter. Their pictures are in `public/blog/<slug>/`, so the site shows them from itself.
 
 ```bash
 pnpm run blog:import
 ```
 
-The import reads every post through the public API of dev.to, writes its file and saves its pictures. A post imported before keeps its file and its slug (rename the file to change its address); a new one gets the slug of dev.to without its random ending. Read the diff before committing. The build renders the Markdown to HTML, with the code colored by highlight.js (`tool/blog/`), so the browser gets no Markdown code. Prettier leaves `content/` alone, so a post stays as written.
+The import reads every post through the public API of dev.to, writes its file and saves its pictures. A post imported before keeps its file and its slug (rename the file to change its address); a new one gets the slug of dev.to without its random ending. Read the diff before committing.
 
 ## Development
 
