@@ -1,3 +1,5 @@
+import * as O from 'fp-ts/Option'
+import { type Option } from 'fp-ts/Option'
 import * as Ord from 'fp-ts/Ord'
 import * as RA from 'fp-ts/ReadonlyArray'
 import * as B from 'fp-ts/boolean'
@@ -346,6 +348,83 @@ const newestFirstOrd: Ord.Ord<Product> = pipe(
   Ord.reverse,
   Ord.contramap((product: Product) => product.createdAt),
 )
+
+// The one place the card of a product links to straight away, without
+// opening it: the live app, else the game, else the browser stores, else the
+// code. An extension in both stores links to the Chrome Web Store, and to
+// Firefox Add-ons in Firefox (`firefoxUrl`): the page is rendered ahead of
+// time, where no browser is known, so the click picks it.
+export type QuickLink = {
+  readonly label: string
+  readonly url: string
+  readonly firefoxUrl: Option<string>
+}
+
+const urlOfTag = (
+  tag: ProductLink['_tag'],
+  linkList: readonly ProductLink[],
+): Option<string> =>
+  pipe(
+    linkList,
+    RA.findFirst((link) => link._tag === tag),
+    O.map((link) => link.url),
+  )
+
+const storeQuickLinkOf = (
+  linkList: readonly ProductLink[],
+): Option<QuickLink> => {
+  const chrome = urlOfTag('ChromeWebStoreLink', linkList)
+  const firefox = urlOfTag('FirefoxAddonsLink', linkList)
+  if (O.isSome(chrome) && O.isSome(firefox)) {
+    return O.some({
+      label: 'Add to browser',
+      url: chrome.value,
+      firefoxUrl: firefox,
+    })
+  } else if (O.isSome(chrome)) {
+    return O.some({
+      label: 'Chrome Web Store',
+      url: chrome.value,
+      firefoxUrl: O.none,
+    })
+  } else {
+    return pipe(
+      firefox,
+      O.map((url): QuickLink => ({
+        label: 'Firefox Add-ons',
+        url,
+        firefoxUrl: O.none,
+      })),
+    )
+  }
+}
+
+export const quickLinkOf = (product: Product): Option<QuickLink> =>
+  pipe(
+    product.linkList,
+    RA.findFirstMap((link): Option<QuickLink> =>
+      link._tag === 'LiveLink'
+        ? O.some({ label: link.label, url: link.url, firefoxUrl: O.none })
+        : O.none,
+    ),
+    O.alt(() =>
+      pipe(
+        urlOfTag('PlayLink', product.linkList),
+        O.map((url): QuickLink => ({ label: 'Play', url, firefoxUrl: O.none })),
+      ),
+    ),
+    O.alt(() => storeQuickLinkOf(product.linkList)),
+    O.alt(() =>
+      pipe(
+        urlOfTag('SourceLink', product.linkList),
+        O.map((url): QuickLink => ({
+          label: 'Source',
+          url,
+          firefoxUrl: O.none,
+        })),
+      ),
+    ),
+  )
 
 export const productList: readonly Product[] = pipe(
   unorderedProductList,

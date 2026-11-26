@@ -139,6 +139,7 @@ const productPanelView = ({
             onClick={() => dispatch(closeMsg())}
           >
             <ProductCardMemo
+              hasQuickLink={false}
               product={product}
               size='PanelCard'
               isFlipped={isFlipped}

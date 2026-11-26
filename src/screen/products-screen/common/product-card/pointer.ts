@@ -5,11 +5,14 @@ import type React from 'react'
 // waits for them.
 const MAX_TILT_DEG = 16
 
-export const trackPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+// A layer over a card (its quick link) carries this attribute: the pointer
+// on it still tilts the card under it
+export const cardLayerAttr = 'data-card-layer'
+
+const tiltOn = (element: HTMLElement, event: React.PointerEvent) => {
   if (event.pointerType === 'touch') {
     // A finger scrolls the page; the card stays flat
   } else {
-    const element = event.currentTarget
     const rect = element.getBoundingClientRect()
     const x = (event.clientX - rect.left) / rect.width
     const y = (event.clientY - rect.top) / rect.height
@@ -24,8 +27,7 @@ export const trackPointer = (event: React.PointerEvent<HTMLDivElement>) => {
   }
 }
 
-export const releasePointer = (event: React.PointerEvent<HTMLDivElement>) => {
-  const element = event.currentTarget
+const flatten = (element: HTMLElement) => {
   element.dataset.tracking = 'false'
   ;[
     '--card-rx',
@@ -36,4 +38,48 @@ export const releasePointer = (event: React.PointerEvent<HTMLDivElement>) => {
     '--card-ny',
     '--card-hover',
   ].forEach((name) => element.style.removeProperty(name))
+}
+
+// Whether `target` is within the layer over the card of `tracker`, or within
+// the card itself
+const isLayerOf = (target: EventTarget | null, tracker: HTMLElement) =>
+  target instanceof Element &&
+  (tracker.contains(target) ||
+    (target.closest(`[${cardLayerAttr}]`)?.parentElement?.contains(tracker) ??
+      false))
+
+export const trackPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+  tiltOn(event.currentTarget, event)
+}
+
+// The pointer left the card: it flattens, unless it went onto its layer,
+// which tilts it on
+export const releasePointer = (event: React.PointerEvent<HTMLDivElement>) => {
+  if (!isLayerOf(event.relatedTarget, event.currentTarget)) {
+    flatten(event.currentTarget)
+  }
+}
+
+// The tracker of the card under a layer: the box with `data-tracked` in its
+// sibling
+const trackerUnder = (layer: HTMLElement): HTMLElement | null =>
+  layer.parentElement?.querySelector<HTMLElement>('[data-tracked]') ?? null
+
+// On a layer over a card, the pointer tilts the card under it
+export const trackPointerThroughLayer = (
+  event: React.PointerEvent<HTMLElement>,
+) => {
+  const tracker = trackerUnder(event.currentTarget)
+  if (tracker !== null) {
+    tiltOn(tracker, event)
+  }
+}
+
+export const releasePointerThroughLayer = (
+  event: React.PointerEvent<HTMLElement>,
+) => {
+  const tracker = trackerUnder(event.currentTarget)
+  if (tracker !== null && !isLayerOf(event.relatedTarget, tracker)) {
+    flatten(tracker)
+  }
 }

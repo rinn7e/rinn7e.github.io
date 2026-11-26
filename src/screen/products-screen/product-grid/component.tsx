@@ -10,11 +10,17 @@ import {
   type Product,
   type ProductCategory,
   productList,
+  quickLinkOf,
 } from '@/common/data/product'
-import { prefersReducedMotion } from '@/common/util'
+import { newTabProps, prefersReducedMotion } from '@/common/util'
 
 import { ProductCardMemo } from '../common/product-card/component'
 import { gridCardDomId } from '../common/product-card/dom-id'
+import {
+  cardLayerAttr,
+  releasePointerThroughLayer,
+  trackPointerThroughLayer,
+} from '../common/product-card/pointer'
 import { type Msg } from '../type'
 import { type Props, PropsEq } from './type'
 
@@ -48,6 +54,48 @@ const isInCategory =
       ),
     )
 
+// The footer of a card links straight to the product (`quickLinkOf`), so a
+// visitor need not open the card first: a layer over the footer band (the
+// bottom 17 of the 140 units of the card), a sibling of the card as a link
+// cannot sit in a button. The card draws where it goes; the layer passes
+// the pointer on, so the card keeps its tilt. A card turned over has none.
+const quickLinkLayerView = ({
+  product,
+  isFlipped,
+}: {
+  readonly product: Product
+  readonly isFlipped: boolean
+}) =>
+  isFlipped
+    ? null
+    : pipe(
+        quickLinkOf(product),
+        O.fold(
+          () => null,
+          (link) => (
+            <a
+              {...newTabProps}
+              {...{ [cardLayerAttr]: '' }}
+              href={link.url}
+              aria-label={`${link.label}: ${product.name}`}
+              className='absolute inset-x-[0] bottom-[0] h-[12.15%] rounded-b-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100'
+              onPointerMove={trackPointerThroughLayer}
+              onPointerLeave={releasePointerThroughLayer}
+              onClick={(event) => {
+                // The page is the same for every browser, so the click
+                // picks the store of the browser it is in
+                if (
+                  O.isSome(link.firefoxUrl) &&
+                  navigator.userAgent.includes('Firefox')
+                ) {
+                  event.currentTarget.href = link.firefoxUrl.value
+                }
+              }}
+            />
+          ),
+        ),
+      )
+
 const gridCardView = ({
   product,
   isFlipped,
@@ -57,29 +105,33 @@ const gridCardView = ({
   readonly isFlipped: boolean
   readonly dispatch: Dispatcher<Msg>
 }) => (
-  <button
-    type='button'
-    id={gridCardDomId(product.id)}
-    aria-label={`Open ${product.name}`}
-    className='block w-full rounded-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100'
-    onClick={(event) => {
-      const rect = event.currentTarget.getBoundingClientRect()
-      dispatch({
-        _tag: 'OpenProduct',
-        id: product.id,
-        from: prefersReducedMotion()
-          ? O.none
-          : O.some({ left: rect.left, top: rect.top, width: rect.width }),
-      })
-    }}
-  >
-    <ProductCardMemo
-      product={product}
-      size='ColumnCard'
-      isFlipped={isFlipped}
-      isTracked
-    />
-  </button>
+  <div className='group/card relative'>
+    <button
+      type='button'
+      id={gridCardDomId(product.id)}
+      aria-label={`Open ${product.name}`}
+      className='block w-full rounded-[1.125rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100'
+      onClick={(event) => {
+        const rect = event.currentTarget.getBoundingClientRect()
+        dispatch({
+          _tag: 'OpenProduct',
+          id: product.id,
+          from: prefersReducedMotion()
+            ? O.none
+            : O.some({ left: rect.left, top: rect.top, width: rect.width }),
+        })
+      }}
+    >
+      <ProductCardMemo
+        product={product}
+        size='ColumnCard'
+        isFlipped={isFlipped}
+        isTracked
+        hasQuickLink={O.isSome(quickLinkOf(product))}
+      />
+    </button>
+    {quickLinkLayerView({ product, isFlipped })}
+  </div>
 )
 
 const ProductGrid = ({

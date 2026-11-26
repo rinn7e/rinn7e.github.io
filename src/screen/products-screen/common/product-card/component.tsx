@@ -25,7 +25,13 @@ const sizeClassOf = (size: ProductCardSize): string => {
 // card itself, an edge would tilt away from under the pointer, end the hover
 // and flatten the card again, so only its middle would respond. The CSS
 // variables set there pass down to the card.
-const ProductCard = ({ product, size, isFlipped, isTracked }: Props) => (
+const ProductCard = ({
+  product,
+  size,
+  isFlipped,
+  isTracked,
+  hasQuickLink,
+}: Props) => (
   <div
     onPointerMove={isTracked ? trackPointer : undefined}
     onPointerLeave={isTracked ? releasePointer : undefined}
@@ -39,7 +45,7 @@ const ProductCard = ({ product, size, isFlipped, isTracked }: Props) => (
     ].join(' ')}
   >
     <div className='card-tilt relative size-full'>
-      {cardFrontView({ product })}
+      {cardFrontView({ product, hasQuickLink })}
       {cardBackView({ product })}
     </div>
   </div>

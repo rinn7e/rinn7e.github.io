@@ -12,6 +12,9 @@ export type Props = {
   // Tilts and catches the light under the pointer; off while the card flies,
   // so the hover never fights the flight
   readonly isTracked: boolean
+  // Its footer links straight to the product (a card of the grid): on
+  // hover the tagline gives way to where the link goes
+  readonly hasQuickLink: boolean
 }
 
 // `product` is static data, so its id stands for it
@@ -20,5 +23,6 @@ export const PropsEq: EqClass.Eq<Props> = {
     x.product.id === y.product.id &&
     x.size === y.size &&
     x.isFlipped === y.isFlipped &&
-    x.isTracked === y.isTracked,
+    x.isTracked === y.isTracked &&
+    x.hasQuickLink === y.hasQuickLink,
 }
