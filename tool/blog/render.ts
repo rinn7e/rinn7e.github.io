@@ -53,6 +53,30 @@ const linkAttrListOf = (
   }
 }
 
+// A heading written with no space after its hashes (`##Conclusion`): the
+// old renderer of dev.to read it as a heading, and some posts imported from
+// there use it, but CommonMark needs the space and shows it as text. The
+// space is put in, outside code blocks, so those posts read as they did.
+export const withSpacedHeadings = (markdown: string): string => {
+  const fencePattern = /^\s*(```|~~~)/
+  return markdown
+    .split('\n')
+    .reduce<{ readonly lines: readonly string[]; readonly inFence: boolean }>(
+      ({ lines, inFence }, line) =>
+        fencePattern.test(line)
+          ? { lines: [...lines, line], inFence: !inFence }
+          : {
+              lines: [
+                ...lines,
+                inFence ? line : line.replace(/^(#{1,6})(?=[^\s#])/, '$1 '),
+              ],
+              inFence,
+            },
+      { lines: [], inFence: false },
+    )
+    .lines.join('\n')
+}
+
 export const renderMarkdown = (
   markdown: string,
   localLinkMap: LocalLinkMap,
@@ -100,5 +124,5 @@ export const renderMarkdown = (
   md.renderer.rules.table_open = () => '<div class="blog-table"><table>\n'
   md.renderer.rules.table_close = () => '</table></div>\n'
 
-  return md.render(markdown)
+  return md.render(withSpacedHeadings(markdown))
 }

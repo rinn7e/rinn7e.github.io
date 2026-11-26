@@ -1,7 +1,7 @@
 import * as O from 'fp-ts/Option'
 import { describe, expect, it } from 'vitest'
 
-import { renderMarkdown } from '../../../tool/blog/render'
+import { renderMarkdown, withSpacedHeadings } from '../../../tool/blog/render'
 
 const localLinkMap = new Map([
   ['https://dev.to/rinn7e/a-post-x1y', '/blog/a-post'],
@@ -66,5 +66,19 @@ describe('the HTML of a post', () => {
     const html = render('![a map](/blog/a-post/map.png)')
     expect(html).not.toContain('<picture>')
     expect(html).toContain('<img src="/blog/a-post/map.png"')
+  })
+})
+
+describe('a heading with no space after its hashes', () => {
+  it('is read as a heading, as the old renderer of dev.to read it', () => {
+    expect(render('##Conclusion\nThe end.')).toContain('<h2>Conclusion</h2>')
+    expect(render('###Requirement')).toContain('<h3>Requirement</h3>')
+  })
+
+  it('is left alone in a code block, and a heading with its space too', () => {
+    const code = '```bash\n#!/bin/sh\n#comment\n```'
+    expect(withSpacedHeadings(code)).toBe(code)
+    expect(withSpacedHeadings('## Title')).toBe('## Title')
+    expect(withSpacedHeadings('####### seven')).toBe('####### seven')
   })
 })
