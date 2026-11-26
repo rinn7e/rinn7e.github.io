@@ -7,11 +7,52 @@
   html {
     color-scheme: light dark;
     font-size: 100%;
+    /* The scrollbar of the page is always shown, so a short page (a blog
+       post near its end, About) sits on the same axis as a long one and a
+       move between them never shifts the page sideways, as on TEA
+       Ecosystem. Its room stays kept while a popup locks the page. */
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
   }
 
   @media (min-width: 64rem) {
     html {
       font-size: 80%;
+    }
+  }
+
+  /* Scrollbars in the colors of the site, as on TEA Ecosystem: a slim thumb
+     on the page color, darker under the pointer. Chrome and Safari read the
+     `-webkit-` rules, which also keep the bar shown on macOS instead of
+     drawn over the page; Firefox reads `scrollbar-color`. */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    @apply bg-white dark:bg-zinc-950;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply border-[3px] border-solid border-white bg-[#dbdfe4] dark:border-zinc-950 dark:bg-zinc-700;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-[#a3a9b1] dark:bg-zinc-500;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #dbdfe4 transparent;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      * {
+        scrollbar-color: var(--color-zinc-700) transparent;
+      }
     }
   }
 
@@ -33,8 +74,11 @@
     cursor: not-allowed;
   }
 
-  /* A product popup is open: the page under it does not scroll */
-  body:has([data-popup-open='true']) {
+  /* A product popup is open: the page under it does not scroll. On `html`,
+     which scrolls the page (its `overflow-y: scroll` keeps `body` from
+     passing its overflow to the window); `scrollbar-gutter` keeps the room
+     of the bar, so the page does not shift as the popup opens. */
+  html:has([data-popup-open='true']) {
     overflow: hidden;
   }
 

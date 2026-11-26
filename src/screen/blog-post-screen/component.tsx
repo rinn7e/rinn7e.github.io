@@ -112,7 +112,7 @@ const barLinkClass =
 const phoneBarView = ({ post }: { readonly post: BlogPost }) => (
   <nav
     aria-label='This post'
-    className='sticky bottom-0 z-10 flex w-dvw items-center justify-between border-t border-zinc-200 bg-white px-[0.5rem] py-[0.25rem] lg:hidden dark:border-zinc-800 dark:bg-zinc-950'
+    className='sticky bottom-0 z-10 flex w-[calc(100%+2rem)] items-center justify-between border-t border-zinc-200 bg-white px-[0.5rem] py-[0.25rem] lg:hidden dark:border-zinc-800 dark:bg-zinc-950'
   >
     <Link destination={blogDestination()} className={barLinkClass}>
       <ArrowLeft aria-hidden='true' className='size-[1rem]' />
@@ -134,11 +134,12 @@ const BlogPostScreen = ({ model }: Props) => {
   const { post } = model
   return (
     <div className='flex flex-col items-center gap-[1rem] pt-[1rem] pb-[6rem] lg:pt-[1.5rem]'>
-      {/* On a phone the card is a band across the whole screen, as wide as
-          the window (its column is centred, so it reaches past the side
-          padding of the page on both sides alike), so the text gets the
-          width of the screen; on a desktop it is a card on the axis */}
-      <article className='w-dvw max-w-[68.5rem] overflow-hidden border-y border-zinc-200 bg-white lg:w-full lg:rounded-[0.875rem] lg:border-x dark:border-zinc-800 dark:bg-zinc-950'>
+      {/* On a phone the card is a band across the whole screen: its column
+          plus the 1rem side padding of the page (the column is centred, so
+          it reaches past that padding on both sides alike). Not `100dvw`,
+          which counts the scrollbar the page always shows and would scroll
+          the page sideways. On a desktop it is a card on the axis. */}
+      <article className='w-[calc(100%+2rem)] max-w-[68.5rem] overflow-hidden border-y border-zinc-200 bg-white lg:w-full lg:rounded-[0.875rem] lg:border-x dark:border-zinc-800 dark:bg-zinc-950'>
         {pipe(
           post.coverImage,
           O.fold(
