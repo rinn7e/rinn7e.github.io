@@ -26,7 +26,11 @@ const BlogScreen = ({ newSince }: Props) => (
         No posts yet.
       </p>
     ) : (
-      <ul className='flex w-full max-w-[45rem] flex-col divide-y divide-zinc-200 overflow-hidden rounded-[0.875rem] border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950'>
+      // On a phone the card is a band across the whole screen, its column
+      // plus the 1rem side padding of the page (the column is centred, so
+      // it reaches past that padding on both sides alike), as the page of a
+      // post; on a desktop it is a card on the axis
+      <ul className='flex w-[calc(100%+2rem)] max-w-[45rem] flex-col divide-y divide-zinc-200 overflow-hidden border-y border-zinc-200 bg-white lg:w-full lg:rounded-[0.875rem] lg:border-x dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950'>
         {pipe(
           blogPostList,
           RA.map((post) =>
