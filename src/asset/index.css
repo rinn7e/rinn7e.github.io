@@ -190,6 +190,36 @@
       opacity 500ms ease-out;
   }
 
+  /* The paper of a card, front and back, and its ink (`--card-ink`, for the
+     title, the tagline, the suits and the frame): white paper and the color
+     of the product in the light theme. In the dark theme, dark paper with a
+     faint edge (an outline, so it changes neither the layout nor the
+     shadow, which does not show on a dark page), the ink lighter so every
+     product color reads on it, and a dimmer sun, so the glare is a sheen
+     rather than a smudge. */
+  .card-paper {
+    --card-ink: var(--card-color);
+    background: #fff;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .card-paper {
+      --card-ink: color-mix(in oklab, var(--card-color) 70%, white);
+      background: var(--color-zinc-900);
+      outline: 1px solid rgb(255 255 255 / 0.1);
+      outline-offset: -1px;
+    }
+
+    .card-glare {
+      background: radial-gradient(
+        ellipse 42% 30% at 50% 36%,
+        rgb(255 247 222 / 0.1) 0%,
+        rgb(255 247 222 / 0.04) 40%,
+        transparent 70%
+      );
+    }
+  }
+
   /* The body of a blog post: HTML rendered by the build from the Markdown
      of `content/blog/` (`tool/blog/render.ts`), so it carries no classes
      and is styled here. Sizes are in `em` of the body text, so the whole

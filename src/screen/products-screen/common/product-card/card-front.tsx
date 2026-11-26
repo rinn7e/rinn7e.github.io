@@ -53,7 +53,7 @@ const cardFrameView = () => (
   >
     <path
       d={framePath()}
-      stroke='var(--card-color)'
+      stroke='var(--card-ink)'
       strokeOpacity='0.55'
       strokeWidth='0.6'
     />
@@ -76,7 +76,7 @@ const suitView = ({ product }: { readonly product: Product }) =>
 // the product: the title at the top left with the suit across from it, and a
 // short tagline at the bottom right with the suit across from it
 const cardTitleView = ({ product }: { readonly product: Product }) => (
-  <div className='absolute inset-x-[0] top-[0] flex h-[17cqw] items-center justify-between gap-[3cqw] px-[7cqw] text-[var(--card-color)]'>
+  <div className='absolute inset-x-[0] top-[0] flex h-[17cqw] items-center justify-between gap-[3cqw] px-[7cqw] text-[var(--card-ink)]'>
     <p className='min-w-0 truncate text-left text-[7cqw] leading-[1.2] font-semibold'>
       {product.cardName}
     </p>
@@ -95,7 +95,7 @@ const cardTaglineView = ({
   readonly product: Product
   readonly quickLabel: Option<string>
 }) => (
-  <div className='absolute inset-x-[0] bottom-[0] flex h-[17cqw] items-center justify-between gap-[3cqw] px-[7cqw] text-[var(--card-color)]'>
+  <div className='absolute inset-x-[0] bottom-[0] flex h-[17cqw] items-center justify-between gap-[3cqw] px-[7cqw] text-[var(--card-ink)]'>
     {suitView({ product })}
     <p className='relative flex min-w-0 items-center justify-end text-right text-[5.4cqw] leading-[1.2]'>
       <span
@@ -155,7 +155,7 @@ const logoView = ({ product }: { readonly product: Product }) => {
         <span
           aria-hidden='true'
           style={{ '--card-color': product.color }}
-          className='text-[19cqw] leading-none font-bold text-[var(--card-color)]'
+          className='text-[19cqw] leading-none font-bold text-[var(--card-ink)]'
         >
           {logo.letters}
         </span>
@@ -172,7 +172,7 @@ export const cardFrontView = ({
 }) => (
   <div
     style={{ '--card-color': product.color }}
-    className='card-edge absolute inset-0 overflow-hidden rounded-[4.5cqw] bg-white [backface-visibility:hidden]'
+    className='card-edge card-paper absolute inset-0 overflow-hidden rounded-[4.5cqw] [backface-visibility:hidden]'
   >
     {cardFrameView()}
     {cardTitleView({ product })}

@@ -23,7 +23,7 @@ const BACK_ROW_TEXT = pipe(
 const backRowList: ReadonlyArray<number> = RA.makeBy(19, (index) => index)
 
 export const cardBackView = ({ product }: { readonly product: Product }) => (
-  <div className='card-edge absolute inset-0 [transform:rotateY(180deg)] overflow-hidden rounded-[4.5cqw] bg-white [backface-visibility:hidden]'>
+  <div className='card-edge card-paper absolute inset-0 [transform:rotateY(180deg)] overflow-hidden rounded-[4.5cqw] [backface-visibility:hidden]'>
     <svg
       viewBox='0 0 100 140'
       aria-hidden='true'
