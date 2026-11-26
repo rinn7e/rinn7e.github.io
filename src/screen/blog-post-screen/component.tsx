@@ -30,9 +30,9 @@ import { type Props, PropsEq } from './type'
 // edge, the original on dev.to on the right), the day and the minutes to
 // read, the title and the tags, centred; the body, left-aligned in a
 // centred column (HTML rendered by the build, styled by `.blog-prose` in
-// `src/asset/index.css`); and, for a post first published on dev.to, the
-// discussion, which lives there, centred between two rules. A post first
-// published here has no dev.to link and no discussion. A memo of the post:
+// `src/asset/index.css`); and, for a post that is also on dev.to, the
+// discussion, which lives there, centred between two rules. A post that is
+// not there (yet) has no dev.to link and no discussion. A memo of the post:
 // it draws once per post.
 
 // A link of the body to a page of this site (another post) moves in the app
@@ -90,8 +90,7 @@ const discussionView = ({ devToUrl }: { readonly devToUrl: string }) => (
       {ruleView()}
     </div>
     <p className='text-[0.9375rem] leading-[1.6] text-balance text-zinc-600 lg:text-[1.125rem] dark:text-zinc-400'>
-      This post was first published on dev.to, where its comments and reactions
-      are.
+      Its comments and reactions are on dev.to.
     </p>
     <a {...newTabProps} href={`${devToUrl}#comments`} className={buttonClass}>
       Join the discussion on dev.to
