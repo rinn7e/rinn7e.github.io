@@ -100,16 +100,26 @@ const productPanelView = ({
   <article className='relative flex w-full flex-col gap-[1rem]'>
     {/* The slideshow spans the popup, its card over the bottom right
         corner (the padding keeps the room of the card); the text sits
-        under it */}
+        under it. While a video plays the card fades out, so it never hides
+        the controls of the player; it is back for another slide, and for
+        its flight back to the grid on close. */}
     <div className='relative w-full pb-[5.25rem] lg:pb-[3rem]'>
       <div className={revealClassOf(model.phase, 'delay-[0ms]')}>
         {slideshowView({
           product,
           slideIndex: model.slideIndex,
+          isPlaying: model.isPlaying,
           dispatch,
         })}
       </div>
-      <div className='absolute right-[0.75rem] bottom-[0] lg:right-[1.5rem]'>
+      <div
+        className={[
+          'absolute right-[0.75rem] bottom-[0] transition-opacity lg:right-[1.5rem]',
+          model.isPlaying && model.phase._tag === 'Shown'
+            ? 'pointer-events-none opacity-0'
+            : '',
+        ].join(' ')}
+      >
         <div
           id={panelCardDomId(product.id)}
           style={flightStyleOf(model.phase)}

@@ -97,14 +97,31 @@ const PrivacyScreen = (_props: Props) => (
             ),
           })}
           {rowView({
+            label: 'Videos',
+            children: (
+              <>
+                A project with a video shows a picture from this site and a play
+                button. Nothing comes from YouTube until you press play. Then
+                the player loads from youtube-nocookie.com, the privacy-enhanced
+                mode of YouTube: YouTube sees your visit and may keep data in
+                your browser for the player, under the{' '}
+                {externalLinkView({
+                  href: 'https://policies.google.com/privacy',
+                  label: 'Google privacy policy',
+                })}
+                .
+              </>
+            ),
+          })}
+          {rowView({
             label: 'Your browser',
             children:
-              'Nothing is kept in your browser: no cookies, no local storage. The pictures, the icons and the text all come from the site itself (the blog posts and their pictures are copies kept here, not embeds of dev.to), the fonts are the ones of your device, and the one script from elsewhere is the counter of Cloudflare above.',
+              'The site keeps nothing in your browser: no cookies, no local storage. The pictures, the icons and the text all come from the site itself (the blog posts and their pictures are kept here, not embeds of dev.to), the fonts are the ones of your device, and the one script from elsewhere is the counter of Cloudflare above, until you play a video.',
           })}
           {rowView({
             label: 'Links out',
             children:
-              'The links to GitHub, LinkedIn, dev.to (where each blog post was first published), the browser stores, the live projects and the sites a post cites open those sites in a new tab. What they see from then on is under their own privacy policies.',
+              'The links to GitHub, LinkedIn, dev.to (where the blog posts are discussed), the browser stores, the live projects and the sites a post cites open those sites in a new tab. What they see from then on is under their own privacy policies.',
           })}
         </div>
       </section>
@@ -112,8 +129,9 @@ const PrivacyScreen = (_props: Props) => (
       <section className='flex flex-col gap-[0.75rem]'>
         {sectionTitleView('What it does not do')}
         <p className='text-center text-[0.875rem] leading-[1.6] text-balance text-zinc-600 dark:text-zinc-400'>
-          No cookies, no accounts, no forms, no ads and no third-party trackers.
-          Nothing about you is collected, sold or shared.
+          No cookies of its own, no accounts, no forms, no ads and no
+          third-party trackers. Nothing about you is collected, sold or shared.
+          A video is the one thing from elsewhere, and only once you play it.
         </p>
       </section>
 

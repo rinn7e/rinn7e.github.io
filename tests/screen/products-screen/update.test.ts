@@ -13,10 +13,11 @@ const toPopup = (subMsg: PopupMsg, model: Model) =>
   update({ _tag: 'ProductPopupMsg', subMsg }, model)[0]
 
 describe('products screen update', () => {
-  it('starts with the product of its destination open on its first screenshot', () => {
+  it('starts with the product of its destination open on its first slide', () => {
     expect(openedOf(init(O.some('damn-center'))[0])).toEqual({
       id: 'damn-center',
       slideIndex: 0,
+      isPlaying: false,
       phase: { _tag: 'Shown' },
       seq: 0,
     })

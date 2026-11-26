@@ -30,11 +30,17 @@ export const init = (
     from,
     O.fold(
       (): [Model, Cmd<Msg>] => [
-        { id, slideIndex: 0, phase: { _tag: 'Shown' }, seq },
+        { id, slideIndex: 0, isPlaying: false, phase: { _tag: 'Shown' }, seq },
         Cmd.none(),
       ],
       (rect): [Model, Cmd<Msg>] => [
-        { id, slideIndex: 0, phase: { _tag: 'Measuring', from: rect }, seq },
+        {
+          id,
+          slideIndex: 0,
+          isPlaying: false,
+          phase: { _tag: 'Measuring', from: rect },
+          seq,
+        },
         measureCardCmd(id, seq),
       ],
     ),
@@ -64,7 +70,12 @@ export const update = (msg: Msg, model: Model): [Option<Model>, Cmd<Msg>] => {
         ? [O.none, Cmd.none()]
         : keep([model, Cmd.none()])
     case 'ShowSlide':
-      return keep([{ ...model, slideIndex: msg.index }, Cmd.none()])
+      return keep([
+        { ...model, slideIndex: msg.index, isPlaying: false },
+        Cmd.none(),
+      ])
+    case 'PlayVideo':
+      return keep([{ ...model, isPlaying: true }, Cmd.none()])
   }
 }
 

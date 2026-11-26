@@ -29,11 +29,19 @@ export type ProductLogo =
   | { readonly _tag: 'ImageLogo'; readonly src: string }
   | { readonly _tag: 'MonogramLogo'; readonly letters: string }
 
-// One screenshot of the slideshow, in `public/shot/<product id>/`
-export type ProductSlide = {
-  readonly src: string
-  readonly alt: string
-}
+// One slide of the slideshow: a screenshot in `public/shot/<product id>/`,
+// or a video on YouTube. A video shows its poster (a screenshot of this
+// site) until the visitor plays it, so YouTube sees nothing before that.
+export type ProductSlide =
+  | { readonly _tag: 'ImageSlide'; readonly src: string; readonly alt: string }
+  | {
+      readonly _tag: 'VideoSlide'
+      // The id of the video, as in `youtube.com/watch?v=<id>`
+      readonly youtubeId: string
+      // Its title on YouTube, for the player and screen readers
+      readonly title: string
+      readonly poster: string
+    }
 
 export type Product = {
   // Spelled in the URL (`/?product=<id>`)
@@ -79,11 +87,24 @@ const slidesOf = (
 ): readonly ProductSlide[] =>
   pipe(
     altList,
-    RA.mapWithIndex((index, alt) => ({
+    RA.mapWithIndex((index, alt): ProductSlide => ({
+      _tag: 'ImageSlide',
       src: `shot/${id}/${index + 1}.webp`,
       alt,
     })),
   )
+
+// The video of a product, on the poster of its first screenshot
+const videoSlideOf = (
+  id: string,
+  youtubeId: string,
+  title: string,
+): ProductSlide => ({
+  _tag: 'VideoSlide',
+  youtubeId,
+  title,
+  poster: `shot/${id}/1.webp`,
+})
 
 const unorderedProductList: readonly Product[] = [
   {
@@ -99,11 +120,18 @@ const unorderedProductList: readonly Product[] = [
     categoryList: ['BrowserExtension'],
     logo: imageLogo('logo/damn-center.png'),
     color: '#2a9d8f',
-    slideList: slidesOf('damn-center', [
-      'The Damn Center popup next to a website centered on a wide screen',
-      'The popup with its padding, side and theme settings',
-      'A match for one site, with its own padding',
-    ]),
+    slideList: [
+      videoSlideOf(
+        'damn-center',
+        'GnFG-Eb1EGc',
+        'Damn Center the page (V2): Center Any Website on Wide Screens - Chrome/Firefox Extension',
+      ),
+      ...slidesOf('damn-center', [
+        'The Damn Center popup next to a website centered on a wide screen',
+        'The popup with its padding, side and theme settings',
+        'A match for one site, with its own padding',
+      ]),
+    ],
     isPixelArt: false,
     linkList: [
       {
@@ -130,9 +158,16 @@ const unorderedProductList: readonly Product[] = [
     categoryList: ['WebApp', 'DeveloperTool'],
     logo: imageLogo('logo/claude-desktop-theme-tuner.svg'),
     color: '#6d5bd0',
-    slideList: slidesOf('claude-desktop-theme-tuner', [
-      'The theme tuner with its presets and knobs, and a live preview of the app in both modes',
-    ]),
+    slideList: [
+      videoSlideOf(
+        'claude-desktop-theme-tuner',
+        'DfnZwI23iNM',
+        'Claude Desktop Theme Tuner (V1): Theme the Claude Desktop App (30 Presets, Light & Dark)',
+      ),
+      ...slidesOf('claude-desktop-theme-tuner', [
+        'The theme tuner with its presets and knobs, and a live preview of the app in both modes',
+      ]),
+    ],
     isPixelArt: false,
     linkList: [
       {

@@ -26,10 +26,11 @@ const step = (msg: Msg, model: Model): Model => {
 const shown = init('damn-center', O.none, seq)[0]
 
 describe('product popup update', () => {
-  it('opens at once on its first screenshot when it has no card to fly', () => {
+  it('opens at once on its first slide, not playing, when it has no card to fly', () => {
     expect(shown).toEqual({
       id: 'damn-center',
       slideIndex: 0,
+      isPlaying: false,
       phase: { _tag: 'Shown' },
       seq,
     })
@@ -143,6 +144,12 @@ describe('product popup update', () => {
 
   it('moves to the screenshot asked for', () => {
     expect(step({ _tag: 'ShowSlide', index: 2 }, shown).slideIndex).toBe(2)
+  })
+
+  it('plays the video only on a click, and stops it on another slide', () => {
+    const playing = step({ _tag: 'PlayVideo' }, shown)
+    expect(playing.isPlaying).toBe(true)
+    expect(step({ _tag: 'ShowSlide', index: 1 }, playing).isPlaying).toBe(false)
   })
 
   it('draws again on a change of its model or side, not for a new dispatch', () => {

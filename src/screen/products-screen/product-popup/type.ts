@@ -48,8 +48,11 @@ export type OpenPhase =
 export type Model = {
   // The product shown
   readonly id: string
-  // Not in the URL: a popup opens on the first screenshot
+  // Not in the URL: a popup opens on the first slide
   readonly slideIndex: number
+  // The video of the slide shown has been played: only then is the player
+  // of YouTube loaded. Another slide stops it.
+  readonly isPlaying: boolean
   readonly phase: OpenPhase
   // The open this popup is: a late message of an earlier popup carries
   // another `seq` and is dropped. Each phase also takes only the messages
@@ -74,6 +77,7 @@ export type Msg =
     }
   | { readonly _tag: 'CloseDone'; readonly seq: number }
   | { readonly _tag: 'ShowSlide'; readonly index: number }
+  | { readonly _tag: 'PlayVideo' }
 
 export const CardRectEq: EqClass.Eq<CardRect> = EqClass.struct({
   left: N.Eq,
@@ -104,6 +108,7 @@ export const OpenPhaseEq: EqClass.Eq<OpenPhase> = {
 export const ModelEq: EqClass.Eq<Model> = EqClass.struct({
   id: S.Eq,
   slideIndex: N.Eq,
+  isPlaying: B.Eq,
   phase: OpenPhaseEq,
   seq: N.Eq,
 })
