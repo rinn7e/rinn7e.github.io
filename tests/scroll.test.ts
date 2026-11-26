@@ -16,11 +16,11 @@ import { bootOn } from './helper/app'
 
 const step = (model: Model, msg: Msg): Model => update(msg, model)[0]
 
-// A link click at `scrollY` to `destination`
-const click = (model: Model, destination: Destination, scrollY: number) =>
+// A link click to `destination`
+const click = (model: Model, destination: Destination) =>
   step(model, {
     _tag: 'NavigationMsg',
-    subMsg: { _tag: 'Navigate', destination, scrollY },
+    subMsg: { _tag: 'Navigate', destination },
   })
 
 // The browser's back or forward landing on `destination`, whose entry saved
@@ -36,24 +36,24 @@ describe('where a move draws its screen', () => {
   })
 
   it('draws a page opened by a link at the top', () => {
-    const onAbout = click(bootOn('/blog'), aboutDestination(), 1500)
+    const onAbout = click(bootOn('/blog'), aboutDestination())
     expect(onAbout.scroll).toEqual({ seq: 1, top: 0 })
   })
 
   it('draws the entry the browser lands on at its saved scroll', () => {
-    const onAbout = click(bootOn('/blog'), aboutDestination(), 1500)
+    const onAbout = click(bootOn('/blog'), aboutDestination())
     const back = step(onAbout, landing(blogDestination(), 1500))
     expect(back.screenModel._tag).toBe('BlogScreenModel')
     expect(back.scroll).toEqual({ seq: 2, top: 1500 })
   })
 
   it('changes nothing when the browser lands on the destination shown', () => {
-    const onBlog = click(bootOn('/'), blogDestination(), 700)
+    const onBlog = click(bootOn('/'), blogDestination())
     expect(step(onBlog, landing(blogDestination(), 300))).toBe(onBlog)
   })
 
   it('draws the home page the browser comes back to at its saved scroll', () => {
-    const onBlog = click(bootOn('/'), blogDestination(), 900)
+    const onBlog = click(bootOn('/'), blogDestination())
     const back = step(onBlog, landing(defaultDestination(), 900))
     expect(back.scroll.top).toBe(900)
   })

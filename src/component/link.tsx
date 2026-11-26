@@ -2,7 +2,6 @@ import React, { useContext } from 'react'
 
 import { SetGlobalMsgContext } from '@/common/global-context'
 import { type Destination, toUrlString } from '@/common/type/destination'
-import { pushEntryOfLink } from '@/common/util'
 
 // Not memoized: `children` is arbitrary JSX, which has no meaningful Eq
 export type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -32,10 +31,9 @@ export const Link = ({
       !e.altKey
     ) {
       e.preventDefault()
-      pushEntryOfLink(toUrlString(destination))
       setGlobalMsg({
         _tag: 'NavigationMsg',
-        subMsg: { _tag: 'Navigate', destination, scrollY: window.scrollY },
+        subMsg: { _tag: 'Navigate', destination },
       })
     }
   }

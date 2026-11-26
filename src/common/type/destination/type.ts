@@ -142,14 +142,12 @@ export const privacyDestination = (): Destination =>
 // Every move of the app goes through `navigationMsgHandler`. `UrlChanged`
 // is the browser's back or forward, the only move that comes from the URL
 // after the boot.
-// Each carries a scroll read at the edge: `Navigate` the scroll of the page
-// at the click (the screen it leaves), `UrlChanged` the scroll saved in the
-// history entry it lands on.
+// `UrlChanged` carries the scroll saved in the history entry it lands on,
+// read at the edge.
 export type NavigationMsg =
   | {
       readonly _tag: 'Navigate'
       readonly destination: Destination
-      readonly scrollY: number
     }
   | {
       readonly _tag: 'UrlChanged'

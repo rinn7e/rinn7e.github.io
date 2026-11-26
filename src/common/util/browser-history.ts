@@ -6,12 +6,13 @@ import { type NoOpMsg, cmdSucceed } from './cmd'
 // ---------------------------------------------
 //
 // Each history entry keeps the scroll it was left at in its state
-// (`scrollY`): saved by a link move at the click (`pushEntryOfLink`), or by
-// a push that does not move the page (a product opened or closed, a
-// category), and read when the browser lands on it (`savedScrollOfEntry`,
-// in `UrlChanged`). The step decides where the screen it shows is drawn
-// (`Model.scroll`), and the app scrolls there after React has drawn that
-// screen and before the browser paints it (`useScrollOf`).
+// (`scrollY`): saved by every push (`pushUrl`), which runs before React
+// draws the step (see `urlWriterOf` in `src/util/url.ts`), so the page is
+// still the one it leaves; read when the browser lands on the entry
+// (`savedScrollOfEntry`, in `UrlChanged`). The step decides where the
+// screen it shows is drawn (`Model.scroll`), and the app scrolls there
+// after React has drawn that screen and before the browser paints it
+// (`useScrollOf`).
 //
 // The browser restores the scroll of an entry too (its restoration stays
 // `auto`), and the swipe back of Safari needs it: Safari shows its snapshot
@@ -19,12 +20,12 @@ import { type NoOpMsg, cmdSucceed } from './cmd'
 // at the scroll of the snapshot), and with `manual` it drew a blank page
 // under the finger. Both land on the same place, because the app draws the
 // entry it lands on in the `popstate` event itself (`popStateSub`), before
-// the browser restores the scroll, and a link move adds its entry before it
-// draws the new screen, while the page is still at the scroll it leaves
-// (`pushEntryOfLink`): Safari takes its snapshot of the entry left, and
-// saves its scroll, when the new entry is added. `doc/swipe-back.md` says
-// what Safari does on a swipe back, how to measure it, and why this site
-// does not scroll in its own box as TEA Ecosystem does.
+// the browser restores the scroll, and a push runs while the page left is
+// still drawn: Safari takes its snapshot of the entry left, and saves its
+// scroll, when the new entry is added. The view never writes the history:
+// a link only dispatches its move. `doc/swipe-back.md` says what Safari
+// does on a swipe back, how to measure it, and why this site does not
+// scroll in its own box as TEA Ecosystem does.
 
 type ScrollState = { readonly scrollY: number }
 
@@ -35,7 +36,7 @@ const isScrollState = (state: unknown): state is ScrollState =>
   typeof state.scrollY === 'number'
 
 // The scroll of the page, kept in the history entry shown
-export const saveScrollOfEntry = (): void => {
+const saveScrollOfEntry = (): void => {
   const state: ScrollState = { scrollY: window.scrollY }
   window.history.replaceState(state, '')
 }
@@ -50,45 +51,26 @@ export const savedScrollOfEntry = (): number => {
 // URL writes
 // ---------------------------------------------
 
-// The URL of the page, with its query
-const currentUrl = (): string =>
-  window.location.pathname + window.location.search
-
-// A move by a link, at the click and before the move is dispatched: the
-// entry it leaves keeps the scroll of the page, and the entry of `url` is
-// added while the page is still there, so the browser keeps that scroll
-// and its snapshot for the entry left (see "Scroll" above). The push of the
-// step (`pushUrlCmd`) then finds the URL already there. A link to the page
-// shown adds no entry.
-export const pushEntryOfLink = (url: string): void => {
-  saveScrollOfEntry()
-  if (url !== currentUrl()) {
-    window.history.pushState(null, '', url)
-  }
-}
-
 // Adds `url` to the history as a new entry (no `popstate` fires for it),
-// unless the browser shows it already (a link added it at the click). With
-// `saveScroll`, the entry it leaves first keeps the scroll of the page: for
-// a push that does not move the page (a product opened or closed, a
-// category).
-export const pushUrlCmd = (url: string, saveScroll: boolean): Cmd<NoOpMsg> =>
-  cmdSucceed(() => {
-    if (url === currentUrl()) {
-      return
-    }
-    if (saveScroll) {
-      saveScrollOfEntry()
-    }
-    window.history.pushState(null, '', url)
-  })
+// and the entry it leaves keeps the scroll of the page first. Called only
+// by the URL writer of the program (`urlWriterOf`), before React draws the
+// step, so the page and its scroll are still the ones the entry leaves.
+export const pushUrl = (url: string): void => {
+  saveScrollOfEntry()
+  window.history.pushState(null, '', url)
+}
 
 // Changes the history entry shown to `url` (no `popstate` fires for it),
 // and the entry keeps its saved scroll
+export const replaceUrl = (url: string): void => {
+  const state: unknown = window.history.state
+  window.history.replaceState(state, '', url)
+}
+
+// `replaceUrl` as a command, for the correction of the URL at boot
 export const replaceUrlCmd = (url: string): Cmd<NoOpMsg> =>
   cmdSucceed(() => {
-    const state: unknown = window.history.state
-    window.history.replaceState(state, '', url)
+    replaceUrl(url)
   })
 
 // Back and forward

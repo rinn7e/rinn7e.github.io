@@ -1,6 +1,6 @@
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
-import { Cmd } from 'tea-cup-fp'
+import { type ProgramListener } from 'react-tea-cup'
 
 import {
   type Destination,
@@ -8,24 +8,18 @@ import {
   parseDestination,
   toUrlString,
 } from '@/common/type/destination'
-import { pushUrlCmd, replaceUrlCmd, savedScrollOfEntry } from '@/common/util'
+import { pushUrl, replaceUrl, savedScrollOfEntry } from '@/common/util'
 import { type Model, type Msg } from '@/type'
 
 import { destinationOf } from './destination'
 
-// The URL is an adapter at the edges: written from the destination
-// (`destinationOf`, read from the models) after every step, read only at
-// boot and on the browser's back and forward (`UrlChanged`).
-// `toUrlString` / `parseDestination` are the only code that knows its
-// spelling.
-// A push that does not move the page (`saveScroll`: anything but a move
-// by a link) keeps the scroll of the entry it leaves first.
+// The URL is an adapter at the edges: written from the destination (`destinationOf`,
+// read from the models) after every step, by the one URL writer of the
+// program (`urlWriterOf`), and read only at boot and on the browser's back
+// and forward (`UrlChanged`). `toUrlString` / `parseDestination` are the
+// only code that knows its spelling.
 export type UrlWrite =
-  | {
-      readonly _tag: 'PushUrl'
-      readonly url: string
-      readonly saveScroll: boolean
-    }
+  | { readonly _tag: 'PushUrl'; readonly url: string }
   | { readonly _tag: 'ReplaceUrl'; readonly url: string }
 
 // How the browser's history follows a step: every change of destination
@@ -45,13 +39,7 @@ export const urlWriteOf = (
   ) {
     return O.none
   } else {
-    return O.some({
-      _tag: 'PushUrl',
-      url: toUrlString(destinationOf(model)),
-      saveScroll: !(
-        msg._tag === 'NavigationMsg' && msg.subMsg._tag === 'Navigate'
-      ),
-    })
+    return O.some({ _tag: 'PushUrl', url: toUrlString(destinationOf(model)) })
   }
 }
 
@@ -89,26 +77,27 @@ export const urlChangedMsg = (location: Location): Msg => ({
   },
 })
 
-// Keeps the URL in sync with the destination (see `urlWriteOf`). The one
-// wrapper around the root `update` (`program.tsx`): see "No update wrapper"
-// in the code convention.
-export const withUrl = (
-  msg: Msg,
-  prevModel: Model,
-  [model, cmd]: [Model, Cmd<Msg>],
-): [Model, Cmd<Msg>] =>
-  pipe(
-    urlWriteOf(msg, prevModel, model),
-    O.fold(
-      (): [Model, Cmd<Msg>] => [model, cmd],
-      (write): [Model, Cmd<Msg>] => [
-        model,
-        Cmd.batch([
-          write._tag === 'PushUrl'
-            ? pushUrlCmd(write.url, write.saveScroll)
-            : replaceUrlCmd(write.url),
-          cmd,
-        ]),
-      ],
-    ),
-  )
+// Keeps the URL in sync with the destination (see `urlWriteOf`): the
+// listener of the program (`src/program.tsx`), which it calls with the
+// model of `init` and then after every step, right after `update` and
+// before React draws the step. So a push runs while the page left is still
+// drawn at its scroll: the browser keeps that scroll, and Safari its
+// snapshot, for the entry left (`doc/swipe-back.md`). It holds the model of
+// the step before, to compare the destinations. Not a wrapper around
+// `update`, and no `Cmd`: a command runs after React has drawn the step.
+export const urlWriterOf = (): ProgramListener<Model, Msg> => {
+  let prevModel: O.Option<Model> = O.none
+  return (event) => {
+    const [model] = event.mac
+    if (event.tag === 'update') {
+      pipe(
+        prevModel,
+        O.chain((prev) => urlWriteOf(event.msg, prev, model)),
+        O.map((write) =>
+          write._tag === 'PushUrl' ? pushUrl(write.url) : replaceUrl(write.url),
+        ),
+      )
+    }
+    prevModel = O.some(model)
+  }
+}

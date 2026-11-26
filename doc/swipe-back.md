@@ -51,9 +51,9 @@ On top of it, three rules make the first frame after a back the finished screen 
 
 1. The restoration of the browser stays `auto`, so step 2 shows the snapshot even when the window is at another scroll than the picture (a post at its top, a list scrolled down).
 2. The back and forward are drawn in the `popstate` event itself (`popStateSub`, given to `Program` in `src/program.tsx`). The subscription of `ProgramWithNav` dispatches in a later task, so Safari restored the scroll on the screen being left and checked the size of the wrong page.
-3. A link adds its history entry at the click (`pushEntryOfLink`, called by `Link` and by a link in the body of a post), before the move is dispatched and while the page is still at its scroll. So the snapshot is of the screen left, and the scroll saved with it is its own. The push of the step (`pushUrlCmd`) then finds the URL there already and adds nothing.
+3. The new entry is added before React draws the step, while the page is still at its scroll: the URL writer of the program (`urlWriterOf` in `src/util/url.ts`) is the `listener` of `Program`, which runs right after `update` and before the render (a `Cmd` runs only after it). So the snapshot is of the screen left, and the scroll saved with it is its own. The URL stays a thin wrapper around the destination: the writer is its only writer, from the destination after the step, and a link only dispatches its `Navigate`.
 
-The scroll of the app and the one of the browser land on the same place: the app scrolls in `popstate`, and the browser restores the scroll it saved at the click, right after.
+The scroll of the app and the one of the browser land on the same place: the app scrolls in `popstate`, and the browser restores the scroll it saved at the push, right after.
 
 ## How to measure it
 
@@ -91,6 +91,7 @@ To see what the swipe looks like, record the screen of the Simulator (`xcrun sim
 2. The port of TEA Ecosystem `310fd94` (`history.scrollRestoration = 'manual'`, the scroll of the app in a layout effect) fixed the back button, but the swipe showed a blank page under the finger (step 2: no restoration by the browser, and a window at another scroll) and a blank page for about 0.4 seconds after.
 3. The page in its own scroll box, as TEA Ecosystem does (its commit `45150fa`): the window never scrolls, so every test of step 2 passes and the swipe is clean. It was set aside because the toolbar of Safari no longer shrinks while a post is read. It is kept on the local branch `rinn7e/scroll-box-backup`.
 4. The window scroll with the three rules above: the swipe shows the list under the finger and the page under it is the list at its scroll, with no blank frame in the Simulator.
+5. The first version of rule 3 had `Link` push the URL itself at the click. It broke the rule that the URL is a thin wrapper around the destination (two writers, one of them the view), so the one URL writer moved into the `listener` of `Program` instead, which runs at the same moment.
 
 ## Open question
 

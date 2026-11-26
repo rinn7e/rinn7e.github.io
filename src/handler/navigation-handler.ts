@@ -142,7 +142,7 @@ export const navigateHandler =
   }
 
 // Every move of the app. The URL follows the destination after the step
-// (`withUrl`), so nothing here writes it. Each move also says where its
+// (`urlWriterOf`), so nothing here writes it. Each move also says where its
 // screen is drawn: a move by a link at the top, a landing on a history
 // entry (the browser's back or forward) at the scroll saved in that entry.
 // A landing on the destination already shown changes nothing.
