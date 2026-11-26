@@ -21,8 +21,9 @@ const closeMsg = (): Msg => ({
   isAnimated: !prefersReducedMotion(),
 })
 
-// The popup of a product over the page: a dimmed backdrop, and on it a white
-// panel with the screenshots, the card and the text. It closes with its
+// The popup of a product over the page: a backdrop that leaves the page as
+// it is (fully transparent, it only catches the click that closes), and on
+// it a white panel with the screenshots, the card and the text. It closes with its
 // close button, Escape, or a click on the backdrop. On a small screen the
 // popup scrolls by itself, and no scroll in it ever reaches the page under
 // it (`overscroll-contain`). The page keeps its scrollbar: hiding it
@@ -59,7 +60,7 @@ const productPopupView = ({
   >
     <div
       aria-hidden='true'
-      className={`absolute inset-0 bg-black/45 ${popupLayerClassOf(model.phase)}`}
+      className={`absolute inset-0 ${popupLayerClassOf(model.phase)}`}
       onClick={() => dispatch(closeMsg())}
     />
     <div
