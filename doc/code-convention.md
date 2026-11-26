@@ -8,7 +8,7 @@ The site is a small app on The Elm Architecture: React with `react-tea-cup`, `fp
 src/root.tsx                   hydrates the page rendered ahead of time, or mounts the program
 src/prerender.tsx              renders every page to HTML at build time (see "Search engines")
 src/share-card.tsx             the share image of every page, drawn at build time
-src/program.tsx                the ProgramWithNav, with withUrl around update
+src/program.tsx                the Program, with withUrl around update and popStateSub
 src/type.ts                    the root Model and Msg, the screen model
 src/update.ts                  init (the boot) and the root update
 src/view.tsx                   the root view: backdrop, header, screen, footer
@@ -61,8 +61,24 @@ The app owns where it is; the URL only follows.
 2. Every move is a `NavigationMsg` (`Navigate` from a click, `UrlChanged` from the browser back and forward), handled by `navigationMsgHandler`. Links in the app use `Link`, a real anchor that navigates in the app on a plain left click.
 3. `parseDestination` and `toUrlString` are the only code that knows how the URL is spelled. URLs use full readable names (`/?product=damn-center`, `/blog`, `/blog/format-date-with-purescript`, `/about`, `/privacy`). A slug with no post reads as not found. The build writes a page per post at the same path (`blogPostPathOf` in `tool/blog/post-list.ts`), and a test holds the two spellings together.
 4. The URL is written after every step by `withUrl`, the one wrapper around the root `update`: a change of destination pushes an entry, the same destination writes nothing, and `UrlChanged` already has its entry. The boot replaces the URL when it was another spelling of its destination (`/about/`).
-5. The scroll of a move is the app's, as on TEA Ecosystem (`src/common/util/browser-history.ts`): the browser's own restoration is off, each history entry keeps the scroll it was left at (saved by `Link` at the click, or by a push that does not move the page, a product opened or closed), and every move sets `Model.scroll`, a link move at the top and the browser's back or forward at the scroll saved in its entry. `useScrollOf` in `src/view.tsx` scrolls there after React has drawn the screen and before the browser paints it, so a page never shows at a wrong scroll first.
+5. Every move sets where its screen is drawn (`Model.scroll`): a link move at the top, the back and forward of the browser at the scroll saved in its entry. How that scroll is kept, and how it differs from TEA Ecosystem, is the next section.
 6. A param of a screen (the product opened) lives in the model of that screen only; opening or closing a product is a message of the screen, and the URL follows. The screenshot shown is not in the URL.
+
+## Scroll and the swipe back
+
+The page scrolls in the window (`window.scrollY`), as a reading page should: the toolbar of Safari on a phone shrinks as a post is read, and the whole page can be scrolled from anywhere. `src/common/util/browser-history.ts` holds the code, with a comment on each part.
+
+Each history entry keeps the scroll it was left at in its state (`{ scrollY }`): saved at the click of a link (`pushEntryOfLink`), or by a push that does not move the page (a product opened or closed). The back and forward read it (`savedScrollOfEntry`, in `UrlChanged`), and `useScrollOf` in `src/view.tsx` scrolls to `Model.scroll` in a layout effect, after React has drawn the screen and before the browser paints it, so a page never shows at a wrong scroll first. The browser restores the scroll of an entry as well, and the two always agree, for the reasons below.
+
+### Not as on TEA Ecosystem
+
+TEA Ecosystem keeps the scroll of each entry the same way (its commit `310fd94`, which this site ported first), but it turns the restoration of the browser off (`history.scrollRestoration = 'manual'`) and scrolls the page inside its own box (its commit `45150fa`), so the window never scrolls. This site keeps the window scroll, and so does three things differently:
+
+1. The restoration of the browser stays on (`auto`). WebKit shows its snapshot of the entry under the finger of a swipe back only when it restores the scroll itself, or when the scroll of the window is the same as when the snapshot was taken. TEA Ecosystem meets the second rule (its window is always at 0). Here, with `manual`, a post at the top and a list scrolled down never met it, and Safari drew a blank page through the whole swipe.
+2. The back and forward are drawn in the `popstate` event itself (`popStateSub`, given to `Program` in `src/program.tsx`), not by the subscription of `ProgramWithNav`, which dispatches in a later task. The browser restores the scroll right after the event, so the screen of the entry must already be there: with the later task, Safari restored the scroll on the post being left, then took the snapshot down over a blank page, which stayed until the next touch (0.4 seconds or more with `manual`).
+3. A link adds its history entry at the click (`pushEntryOfLink`, called by `Link` and by a link in the body of a post), before the move is dispatched, while the page is still at the scroll it leaves. The browser saves the scroll of the entry left when the entry is added, and the push of the step (`pushUrlCmd`) runs after the new screen has scrolled to the top, too late: the browser saved 0 and brought the list back at its top. `pushUrlCmd` then finds the URL there already and adds nothing.
+
+So with this site in a window, the swipe back of Safari shows the list under the finger and lands on it at once, at its scroll. A page that moves to a scroll box, as TEA Ecosystem does, would not need points 2 and 3, but a post would lose the shrinking toolbar.
 
 ## Search engines
 

@@ -3,11 +3,7 @@ import { pipe } from 'fp-ts/function'
 import { Cmd } from 'tea-cup-fp'
 
 import { newSinceOf } from '@/common/data/blog'
-import {
-  manualScrollRestorationCmd,
-  replaceUrlCmd,
-  updateAndCmd,
-} from '@/common/util'
+import { replaceUrlCmd, updateAndCmd } from '@/common/util'
 import * as DebugPanel from '@/component/debug-panel'
 import type * as ProfileHeader from '@/component/profile-header'
 import {
@@ -48,11 +44,7 @@ export const init = (
       newSince: newSinceOf(now),
       scroll: { seq: 0, top: scrollY },
     },
-    Cmd.batch([
-      manualScrollRestorationCmd().map((noOp): Msg => noOp),
-      bootUrlCmd,
-      screenCmd,
-    ]),
+    Cmd.batch([bootUrlCmd, screenCmd]),
   ]
 }
 

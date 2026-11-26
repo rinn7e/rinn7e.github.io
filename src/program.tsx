@@ -1,9 +1,9 @@
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
-import { ProgramWithNav } from 'react-tea-cup'
-import { Cmd, type Dispatcher, Sub, Task } from 'tea-cup-fp'
+import { Program } from 'react-tea-cup'
+import { Cmd, type Dispatcher, Task } from 'tea-cup-fp'
 
-import { savedScrollOfEntry } from '@/common/util'
+import { popStateSub, savedScrollOfEntry } from '@/common/util'
 import { bootOf } from '@/common/util/boot'
 
 import { type Model, type Msg } from './type'
@@ -44,17 +44,16 @@ const bootInit = (location: Location): [Model, Cmd<Msg>] =>
   )
 
 export const AppProgram = () => (
-  <ProgramWithNav<Model, Msg>
-    // The browser's back and forward (the app's own URL writes fire no
-    // `popstate`)
-    onUrlChange={urlChangedMsg}
-    init={bootInit}
+  <Program<Model, Msg>
+    init={() => bootInit(window.location)}
     // The first render draws the model of `init`, so React can hydrate the
     // HTML of a page rendered ahead of time (the patch of
     // `patches/react-tea-cup@5.1.3.patch`)
     initOnFirstRender
     update={appUpdate}
     view={appView}
-    subscriptions={() => Sub.none()}
+    // The browser's back and forward (the app's own URL writes fire no
+    // `popstate`)
+    subscriptions={() => popStateSub(urlChangedMsg)}
   />
 )
