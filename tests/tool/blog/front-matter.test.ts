@@ -35,6 +35,24 @@ describe('a post file', () => {
     )
   })
 
+  it('reads a post first published here, with no dev.to fields', () => {
+    const own = postFile
+      .split('\n')
+      .filter((l) => !l.startsWith('devToUrl') && !l.startsWith('devToId'))
+      .join('\n')
+    expect(decodePostFile(own)).toEqual(
+      E.right({
+        frontMatter: {
+          title: 'A post',
+          description: 'About a post',
+          date: '2026-10-27',
+          tags: ['elm'],
+        },
+        body: 'The body.\n',
+      }),
+    )
+  })
+
   it('reads a file with Windows line ends the same', () => {
     expect(decodePostFile(postFile.replaceAll('\n', '\r\n'))).toEqual(
       decodePostFile(postFile),

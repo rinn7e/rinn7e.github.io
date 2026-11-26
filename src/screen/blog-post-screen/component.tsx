@@ -30,8 +30,10 @@ import { type Props, PropsEq } from './type'
 // edge, the original on dev.to on the right), the day and the minutes to
 // read, the title and the tags, centred; the body, left-aligned in a
 // centred column (HTML rendered by the build, styled by `.blog-prose` in
-// `src/asset/index.css`); and the discussion, which lives on dev.to,
-// centred between two rules. A memo of the post: it draws once per post.
+// `src/asset/index.css`); and, for a post first published on dev.to, the
+// discussion, which lives there, centred between two rules. A post first
+// published here has no dev.to link and no discussion. A memo of the post:
+// it draws once per post.
 
 // A link of the body to a page of this site (another post) moves in the app
 // on a plain left click, as a `Link` does; every other link keeps the
@@ -77,7 +79,7 @@ const ruleView = () => (
   />
 )
 
-const discussionView = ({ post }: { readonly post: BlogPost }) => (
+const discussionView = ({ devToUrl }: { readonly devToUrl: string }) => (
   <section
     aria-label='Discussion'
     className='flex flex-col items-center gap-[1rem] px-[1rem] pb-[2rem] text-center lg:px-[4rem] lg:pb-[3rem]'
@@ -91,11 +93,7 @@ const discussionView = ({ post }: { readonly post: BlogPost }) => (
       This post was first published on dev.to, where its comments and reactions
       are.
     </p>
-    <a
-      {...newTabProps}
-      href={`${post.devToUrl}#comments`}
-      className={buttonClass}
-    >
+    <a {...newTabProps} href={`${devToUrl}#comments`} className={buttonClass}>
       Join the discussion on dev.to
       <ArrowUpRight aria-hidden='true' className='size-[1rem]' />
     </a>
@@ -120,14 +118,22 @@ const phoneBarView = ({ post }: { readonly post: BlogPost }) => (
       <ArrowLeft aria-hidden='true' className='size-[1rem]' />
       All posts
     </Link>
-    <a
-      {...newTabProps}
-      href={`${post.devToUrl}#comments`}
-      className={barLinkClass}
-    >
-      Discuss
-      <MessageCircle aria-hidden='true' className='size-[1rem]' />
-    </a>
+    {pipe(
+      post.devToUrl,
+      O.fold(
+        () => null,
+        (devToUrl) => (
+          <a
+            {...newTabProps}
+            href={`${devToUrl}#comments`}
+            className={barLinkClass}
+          >
+            Discuss
+            <MessageCircle aria-hidden='true' className='size-[1rem]' />
+          </a>
+        ),
+      ),
+    )}
   </nav>
 )
 
@@ -166,10 +172,18 @@ const BlogPostScreen = ({ model, newSince }: Props) => {
             <ArrowLeft aria-hidden='true' className='size-[1rem]' />
             All posts
           </Link>
-          <a {...newTabProps} href={post.devToUrl} className={edgeLinkClass}>
-            dev.to
-            <ArrowUpRight aria-hidden='true' className='size-[1rem]' />
-          </a>
+          {pipe(
+            post.devToUrl,
+            O.fold(
+              () => null,
+              (devToUrl) => (
+                <a {...newTabProps} href={devToUrl} className={edgeLinkClass}>
+                  dev.to
+                  <ArrowUpRight aria-hidden='true' className='size-[1rem]' />
+                </a>
+              ),
+            ),
+          )}
         </nav>
         <header className='flex flex-col items-center gap-[1rem] px-[1rem] pt-[1.75rem] text-center lg:gap-[1.25rem] lg:px-[4rem] lg:pt-[1.5rem]'>
           {isNewPost(post, newSince) ? newBadgeView() : null}
@@ -186,7 +200,13 @@ const BlogPostScreen = ({ model, newSince }: Props) => {
           onClick={bodyClickHandler(setGlobalMsg)}
           dangerouslySetInnerHTML={{ __html: post.html }}
         />
-        {discussionView({ post })}
+        {pipe(
+          post.devToUrl,
+          O.fold(
+            () => null,
+            (devToUrl) => discussionView({ devToUrl }),
+          ),
+        )}
       </article>
       {neighbourPostView({ slug: post.slug })}
       {phoneBarView({ post })}

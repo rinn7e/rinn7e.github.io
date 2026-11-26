@@ -1,4 +1,5 @@
 import * as O from 'fp-ts/Option'
+import { pipe } from 'fp-ts/function'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -18,12 +19,25 @@ describe('the posts of the blog', () => {
     expect(dateList).toEqual([...dateList].sort().reverse())
   })
 
-  it('each have a title, a description and their original on dev.to', () => {
+  it('each have a title, a description, and their original on dev.to if any', () => {
     blogPostList.forEach((post) => {
       expect(post.title).not.toBe('')
       expect(post.description).not.toBe('')
-      expect(post.devToUrl).toMatch(/^https:\/\/dev\.to\/rinn7e\//)
+      pipe(
+        post.devToUrl,
+        O.map((url) => expect(url).toMatch(/^https:\/\/dev\.to\/rinn7e\//)),
+      )
     })
+  })
+
+  it('include posts first published here, with no original on dev.to', () => {
+    expect(
+      blogPostList.some(
+        (post) =>
+          post.slug === 'command-sourcing-vs-event-sourcing' &&
+          O.isNone(post.devToUrl),
+      ),
+    ).toBe(true)
   })
 
   it('are written by the build at the address the app spells', () => {

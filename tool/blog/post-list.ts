@@ -85,10 +85,15 @@ export const readBlogPostList = (rootDir: string): readonly BlogPost[] => {
   const localLinkMap = new Map(
     pipe(
       namedList,
-      RA.map(({ slug, file }): [string, string] => [
-        file.frontMatter.devToUrl.replace(/\/$/, ''),
-        blogPostPathOf(slug),
-      ]),
+      RA.filterMap(({ slug, file }) =>
+        pipe(
+          O.fromNullable(file.frontMatter.devToUrl),
+          O.map((url): [string, string] => [
+            url.replace(/\/$/, ''),
+            blogPostPathOf(slug),
+          ]),
+        ),
+      ),
     ),
   )
   return pipe(
@@ -100,7 +105,7 @@ export const readBlogPostList = (rootDir: string): readonly BlogPost[] => {
       date: frontMatter.date,
       tagList: frontMatter.tags,
       readingMinutes: readingMinutesOf(body),
-      devToUrl: frontMatter.devToUrl,
+      devToUrl: O.fromNullable(frontMatter.devToUrl),
       coverImage: O.fromNullable(frontMatter.coverImage),
       html: renderMarkdown(body, localLinkMap),
     })),

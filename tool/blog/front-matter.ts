@@ -27,13 +27,14 @@ export const FrontMatter = t.intersection([
     description: t.string,
     date: IsoDate,
     tags: t.array(t.string),
+  }),
+  // Both absent on a post first published here, not on dev.to
+  t.partial({
     // The original on dev.to, where its comments and reactions are
     devToUrl: t.string,
     // The id of the post on dev.to, so a new import keeps its file (and its
     // slug) even when its title changed there
     devToId: t.number,
-  }),
-  t.partial({
     // A picture of the site, `/blog/<slug>/cover.<ext>`
     coverImage: t.string,
   }),

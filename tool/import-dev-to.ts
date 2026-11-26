@@ -78,8 +78,14 @@ const get = async (url: string): Promise<Response> => {
 
 const getJson = async (url: string): Promise<unknown> => (await get(url)).json()
 
-// The slug of the posts imported before, by their dev.to id
-const knownSlugMap = async (): Promise<ReadonlyMap<number, string>> => {
+// The posts already in `content/blog/`: their slug, and their dev.to id
+// when they were imported (a post first published here has none)
+type KnownPost = {
+  readonly slug: string
+  readonly devToId: number | undefined
+}
+
+const knownPostList = async (): Promise<readonly KnownPost[]> => {
   await mkdir(contentDir, { recursive: true })
   const fileList = (await readdir(contentDir)).filter((name) =>
     name.endsWith('.md'),
@@ -88,17 +94,17 @@ const knownSlugMap = async (): Promise<ReadonlyMap<number, string>> => {
     fileList.map(async (name) =>
       pipe(
         decodePostFile(await readFile(join(contentDir, name), 'utf8')),
-        E.map((file): [number, string] => [
-          file.frontMatter.devToId,
-          name.replace(/\.md$/, ''),
-        ]),
-        E.getOrElse((reason): [number, string] => {
+        E.map((file): KnownPost => ({
+          slug: name.replace(/\.md$/, ''),
+          devToId: file.frontMatter.devToId,
+        })),
+        E.getOrElse((reason): KnownPost => {
           throw new Error(`content/blog/${name}: ${reason}`)
         }),
       ),
     ),
   )
-  return new Map(entryList)
+  return entryList
 }
 
 // dev.to ends every slug with a few random characters (`-h2j`)
@@ -219,7 +225,20 @@ const postFileOf = async (
 }
 
 const main = async () => {
-  const slugMap = await knownSlugMap()
+  const knownList = await knownPostList()
+  // The slug of the posts imported before, by their dev.to id
+  const slugMap = new Map(
+    knownList.flatMap(({ slug, devToId }): [number, string][] =>
+      devToId === undefined ? [] : [[devToId, slug]],
+    ),
+  )
+  // A post first published here is the original: a copy of it on dev.to
+  // (same slug) never overwrites it
+  const ownSlugSet = new Set(
+    knownList
+      .filter(({ devToId }) => devToId === undefined)
+      .map(({ slug }) => slug),
+  )
   const summaryList = decodeOrThrow(
     t.array(ArticleSummary),
     await getJson(
@@ -236,6 +255,10 @@ const main = async () => {
       `article ${summary.id}`,
     )
     const slug = slugMap.get(article.id) ?? slugOfDevTo(article.slug)
+    if (ownSlugSet.has(slug)) {
+      console.log(`content/blog/${slug}.md  kept, first published here`)
+      continue
+    }
     const file = await postFileOf(article, slug)
     await writeFile(join(contentDir, `${slug}.md`), postFileText(file))
     console.log(`content/blog/${slug}.md  ${article.title}`)
