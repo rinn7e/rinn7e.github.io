@@ -10,7 +10,7 @@ tags:
 devToUrl: https://dev.to/rinn7e/command-sourcing-vs-event-sourcing-12i6
 ---
 
-**Command sourcing logs the request and runs your business rules again on every replay. Event sourcing logs the result and only applies it.** That is the whole difference, and it decides what breaks when your code changes.
+**Command sourcing logs the accepted request and works out its result again on every replay. Event sourcing logs the result and only applies it.** That is the whole difference, and it decides what breaks when your code changes.
 
 In a typical CRUD backend you `UPDATE` the row, and the old value is gone. Both patterns keep every change in an append-only log instead, and treat the tables as something you can drop and rebuild from it. You have probably run command sourcing already without the name: Redis with its append-only file (AOF) turned on writes every write command to that file, and replays it after a crash.
 
@@ -22,31 +22,36 @@ Strip any app down and you get the same loop. Here it is for a note-taking app:
 
 * **State**: the notes, each one a private draft or published.
 * **Command**: a request to change it, `PublishNote n1`.
-* **`decide`**: the business rules. Does `n1` exist, does it belong to Alice, is it still a draft? It refuses, or returns what changed: an **event**, `NotePublished n1`.
+* **`check`**: the rules that may refuse. Does `n1` exist, does it belong to Alice, is it still a draft, is it still the version her screen showed? It runs once, when the request comes in, against the state the user saw.
+* **`decide`**: the rules that work out what changes, for a request `check` accepted: an **event**, `NotePublished n1`. It never refuses.
 * **`apply`**: writes the event into the state. No rules, no checks, it only writes.
 * The next command is decided against the new state.
 
 ![Every app is a state machine](/blog/command-sourcing-vs-event-sourcing/state-machine.svg)
 
-In code, it is two functions:
+In code, it is three functions:
 
 ```haskell
--- The rules: may this command happen, and what changes if it does?
-decide :: State -> Command -> Either Rejection [Event]
+-- Once, when the request comes in: may it happen?
+check :: State -> Command -> Either Rejection Command
+
+-- Every run, replay included: what changes? It never refuses.
+decide :: State -> Command -> [Event]
 
 -- No rules: write the change into the state
 apply :: State -> Event -> State
 ```
 
-To survive a restart, you write something to a log and rebuild the state from it. There are exactly two places in this loop to cut: before `decide`, or after it.
+To survive a restart, you write something to a log and rebuild the state from it. A request `check` refuses is never logged. After it, there are exactly two places in this loop to cut: before `decide`, or after it.
 
 ```haskell
--- Command sourcing: log the commands, run the rules again on replay.
--- Only accepted commands are logged, so a refusal (Left) means drift.
-replayCommands :: [Command] -> Either Rejection State
-replayCommands = foldM step initialState
+-- Command sourcing: log the accepted commands, work out their result
+-- again on replay. `check` ran when each one came in, so replay never
+-- refuses.
+replayCommands :: [Command] -> State
+replayCommands = foldl step initialState
   where
-    step state command = foldl apply state <$> decide state command
+    step state command = foldl apply state (decide state command)
 
 -- Event sourcing: log the events, only apply them on replay
 replayEvents :: [Event] -> State
@@ -59,13 +64,13 @@ Everything else in this post follows from where you cut.
 
 ![Two ways to keep the log](/blog/command-sourcing-vs-event-sourcing/two-logs.svg)
 
-Alice publishes a note. Command sourcing stores the request:
+Alice publishes a note. First `check` runs, against the state her screen showed: does `n1` belong to her, is it still a draft, is it still at version 3 (so a stale click gets refused)? Only then does command sourcing store the request:
 
 ```json
-{ "type": "PublishNote", "actor": "alice", "noteId": "n1", "expectedVersion": 3 }
+{ "type": "PublishNote", "actor": "alice", "noteId": "n1" }
 ```
 
-On replay, `decide` runs again: does `n1` still belong to Alice, is it still at version 3 (the version her screen showed, so a stale click gets refused), is it still a draft?
+On replay, `decide` runs again and works out what changes. The checks do not run again: the request was accepted when it was logged, and replay is history, not a new click.
 
 Event sourcing stores the result:
 
@@ -94,14 +99,14 @@ A naming trap: Fowler calls the LMAX inputs "input events". The name in the log 
 The good:
 
 * **The log is the intent.** Every accepted request, in order, as the user sent it.
-* **Bug fixes reach the past.** Fix the rules, rebuild, and every old command goes through the fixed code. Log what imports and webhooks hand in as commands too, with the data exactly as it arrived, and a better parser reads all of it again.
+* **Bug fixes reach the past.** Fix `decide`, rebuild, and every old command goes through the fixed code. Log what imports and webhooks hand in as commands too, with the data exactly as it arrived, and a better parser reads all of it again.
 * **Less to design.** One log, one `decide`, and no second schema of events next to the commands. The commands, old versions included, are the schema that lives forever.
 * **Trivial to test.** Replay a log, compare the state.
 
 The bad:
 
 * **Replay drift.** The big one, see below.
-* **The rules must be deterministic.** Same state and command in, same result out, every time. Reading the clock, making a random id or calling an API inside `decide` breaks replay.
+* **`decide` must be deterministic.** Same state and command in, same result out, every time. Reading the clock, making a random id or calling an API inside `decide` breaks replay.
 * **The log does not say what happened.** To know the outcome of a command, you run it again.
 * **One global order.** Usually one writer, one command at a time. Simple and consistent, and a hard cap on write throughput.
 
@@ -122,51 +127,55 @@ The bad:
 * **The intent gets lost.** `NotePublished` says what happened, not who asked or why, unless you store that too.
 * **Wrong decisions are frozen in.** A bug in `apply` or in a projection is fixed by a rebuild, but a wrong decision is stored as a fact. Fixing it means appending correcting events.
 
-## Replay drift: old commands meet new rules
+## Replay drift: old commands meet new code
 
 This is the first objection you will hear to command sourcing, and it is a fair one.
 
 ![Replay drift](/blog/command-sourcing-vs-event-sourcing/replay-drift.svg)
 
-In March, Alice publishes a note with no title. That is allowed. In June you ship a rule: a note needs a title before it is published. Then you rebuild the state from the log. Her March command runs through the June rule, gets refused, and her note is a private draft again. The rebuilt state no longer matches what happened.
+In March, Alice publishes a note with no title. That is allowed. In June you ship a rule: a note needs a title before it is published. Then you rebuild the state from the log.
 
-The fix is to version the command. When a rule changes the result of a command that already exists, add a new version and keep the old rule for the old one (the owner, the draft and the version checks are left out to keep it short):
+If replay checked the rules again, her March command would meet the June rule, get refused, and her note would be a private draft again. That is why the rules that refuse live in `check`: it runs once, when a request comes in, and a logged command was already accepted. The June rule refuses new requests, and her March note stays published.
+
+So a new rule never breaks the past. What is left is a change in what `decide` produces, and it comes in two kinds.
+
+**A result that must stay as it was.** Say the March code makes the public address of a note from its title, and in June you change how. Old notes must keep their addresses, or every shared link breaks. Version the command, and keep the old way for the old one:
 
 ```haskell
 data Command
   = CreateNote NoteId UTCTime Text
-  | PublishNoteV1 NoteId -- the March rule: any note can be published
-  | PublishNoteV2 NoteId -- the June rule: a title first
+  | PublishNoteV1 NoteId -- March: the address is the title in lower case
+  | PublishNoteV2 NoteId -- June: the address is the title, transliterated
 
-decide :: State -> Command -> Either Rejection [Event]
+decide :: State -> Command -> [Event]
 decide state = \case
-  PublishNoteV1 noteId -> Right [NotePublished noteId]
-  PublishNoteV2 noteId
-    | Text.null (Text.strip (titleOf state noteId)) -> Left NoTitle
-    | otherwise -> Right [NotePublished noteId]
+  PublishNoteV1 noteId -> [NotePublished noteId (addressV1 (titleOf state noteId))]
+  PublishNoteV2 noteId -> [NotePublished noteId (addressV2 (titleOf state noteId))]
   -- ...
 ```
 
-The log stores the version (an old record with no version, like the `PublishNote` above, reads as V1), the API only ever creates the newest one, and old records replay under the rule they were decided with.
+The log stores the version (an old record with no version, like the `PublishNote` above, reads as V1), the API only ever creates the newest one, and old records replay with the code of their time.
+
+**A fix that reaches the commands after it.** A fix to one command can change the state that later commands see. Say a parser fix makes an old import create one more note in the notebook of Alice. Her later commands must mean the same thing whatever the notes around them became, so each one carries what she acted on, resolved when she clicked: `PublishNote n1` names its note, never "the third note of the list", and "mark these as read" names every note it marked. Nothing in a command asks the state to look as it did then, so a fix changes only what it fixes, and the replay never stops on it. A command whose note is gone on replay (the fixed import never creates it) changes nothing, and the rebuild report says so.
 
 When do you need a new version?
 
-* A rule changes the result of an existing command (stricter, looser, computed differently): **yes**.
-* A new command, or a rule for a case that never happened before: **no**.
+* A new rule that refuses (stricter, a new limit): **no**. It goes in `check`, which never runs on replay.
+* A change in what an existing command produces, that old commands must keep (an address, a price): **yes**.
+* A new command: **no**.
 * A bug fix that changes what an accepted command produces: **no**. Fixing the past on the next rebuild is the point.
-* A bug fix that would now refuse old commands: **yes**, or append a correcting command. Otherwise the next rebuild stops on them.
-* The parser of imported data: usually **no**. Reading old data again with better code is the point.
+* The parser of imported data: **no**. Reading old data again with better code is the point.
 
 Two more guards:
 
 * **Keep the state somewhere durable.** In a database or a snapshot file, a restart replays only the tail of the log, and drift can only bite on a full rebuild.
-* **Check every rebuild.** Rebuild next to the live state and diff the two. Stop on a replayed command that gets refused: it was accepted when it was logged, so a refusal means drift. Never skip it silently.
+* **Check every rebuild.** Rebuild next to the live state and diff the two. Report the first command in the log whose events differ from the last rebuild: that is where the change starts, so you can see whether it is the fix you meant or something further down. Report the commands whose target was gone too. Never skip either silently.
 
 ## Replay needs deterministic rules
 
 `decide` must be a pure function: state and command in, events out. No clock, no random, no network.
 
-So do the impure work before the command exists, and put the results into it:
+So do the impure work before the command exists, and put the results into it. The same goes for what the user acted on: turn "these notes" into their ids before the command is logged.
 
 ```haskell
 -- In the API handler: everything impure happens here, once
@@ -194,7 +203,7 @@ Data from other systems follows the same rule. An import or a webhook becomes a 
 | The past to stay exactly as decided (money, audit) | event sourcing |
 | Fixes in the logic to reach old data (parsers, translations) | command sourcing |
 | Many read models, other services listening | event sourcing |
-| Simple code: one log, one function that decides | command sourcing |
+| Simple code: one log, no second schema of events | command sourcing |
 | Many writes in parallel | event sourcing |
 | To replay exactly what users did (games, simulations) | command sourcing |
 

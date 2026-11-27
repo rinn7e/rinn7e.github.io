@@ -14,7 +14,7 @@
   <text x="148.0" y="370.0" text-anchor="middle" font-size="16" fill="#0891b2" font-family="'JetBrains Mono', Menlo, Consolas, monospace">PublishNote n1</text>
   <rect x="284.0" y="300" width="180" height="96" rx="16" fill="#0891b214" stroke="#0891b2" stroke-opacity="0.85" stroke-width="1.6"/>
   <text x="374.0" y="343.0" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">decide</text>
-  <text x="374.0" y="370.0" text-anchor="middle" font-size="16" fill="#0891b2">may it happen?</text>
+  <text x="374.0" y="370.0" text-anchor="middle" font-size="16" fill="#0891b2">what changes?</text>
   <rect x="510.0" y="300" width="180" height="96" rx="16" fill="#7c3aed14" stroke="#7c3aed" stroke-opacity="0.85" stroke-width="1.6"/>
   <text x="600.0" y="343.0" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">Event</text>
   <text x="600.0" y="370.0" text-anchor="middle" font-size="16" fill="#7c3aed" font-family="'JetBrains Mono', Menlo, Consolas, monospace">NotePublished n1</text>
@@ -34,7 +34,7 @@
   <rect x="430.0" y="186" width="340" height="40" rx="20" fill="#7c3aed1f" stroke="#7c3aed" stroke-width="1.4"/>
   <text x="600.0" y="211" text-anchor="middle" font-size="14" font-weight="700" fill="#7c3aed" letter-spacing="2.5">EVENT SOURCING LOGS THIS</text>
   <line x1="600.0" y1="226" x2="600.0" y2="292" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4 5"/>
-  <text x="374.0" y="426" text-anchor="middle" font-size="15" fill="#e11d48">or refuse: Rejection</text>
+  <text x="374.0" y="426" text-anchor="middle" font-size="15" fill="#e11d48">a refusal happens before the log, in check</text>
   <path d="M1052.0 396 L1052.0 520 L374.0 520 L374.0 442" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#g)"/>
   <text x="600" y="506" text-anchor="middle" font-size="15" fill="#047857">the next decision reads the new state</text>
 </svg>
