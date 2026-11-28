@@ -22,7 +22,7 @@ Strip any app down and you get the same loop. Here it is for a note-taking app:
 
 * **State**: the notes, each one a private draft or published.
 * **Command**: a request to change it, `PublishNote n1`.
-* **`check`**: the rules that may refuse. Does `n1` exist, does it belong to Alice, is it still a draft, is it still the version her screen showed? It runs once, when the request comes in, against the state the user saw.
+* **`check`**: the rules that can refuse. Does `n1` exist, does it belong to Alice, is it still a draft, is it still the version her screen showed? It runs once, when the request comes in, against the state the user saw.
 * **`decide`**: the rules that work out what changes, for a request `check` accepted: an **event**, `NotePublished n1`. It never refuses.
 * **`apply`**: writes the event into the state. No rules, no checks, it only writes.
 * The next command is decided against the new state.
@@ -32,7 +32,7 @@ Strip any app down and you get the same loop. Here it is for a note-taking app:
 In code, it is three functions:
 
 ```haskell
--- Once, when the request comes in: may it happen?
+-- Once, when the request comes in: is it allowed?
 check :: State -> Command -> Either Rejection Command
 
 -- Every run, replay included: what changes? It never refuses.
@@ -71,6 +71,14 @@ Alice publishes a note. First `check` runs, against the state her screen showed:
 ```
 
 On replay, `decide` runs again and works out what changes. The checks do not run again: the request was accepted when it was logged, and replay is history, not a new click.
+
+Why would a request that is not allowed reach the backend at all? Because the app cannot know for sure:
+
+* **The screen is stale.** Alice published `n1` from her phone, or someone edited it in another tab, after her screen loaded.
+* **Two requests race.** Two clicks arrive at almost the same moment, and only the first one can win.
+* **The client cannot be trusted.** Anyone can call the API directly, with a changed app or a script.
+
+The app can hide a button it already knows is useless, but only the backend sees the real state, so `check` is the real gate. A refused request gets an error back ("this note changed, reload it") and is never logged.
 
 Event sourcing stores the result:
 

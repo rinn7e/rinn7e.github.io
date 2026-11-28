@@ -31,7 +31,7 @@
   <text x="600" y="570.0" text-anchor="middle" font-size="20" font-weight="700" fill="#f1f5f9">PublishNote n1</text>
   <rect x="110.0" y="630" width="380" height="96" rx="16" fill="#34d39914" stroke="#34d399" stroke-opacity="0.85" stroke-width="1.6"/>
   <text x="300" y="673.0" text-anchor="middle" font-size="19" font-weight="700" fill="#f1f5f9" font-family="'JetBrains Mono', Menlo, Consolas, monospace">check</text>
-  <text x="300" y="700.0" text-anchor="middle" font-size="16" fill="#34d399">once, before it is logged: may it happen?</text>
+  <text x="300" y="700.0" text-anchor="middle" font-size="16" fill="#34d399">once, before it is logged: is it allowed?</text>
   <rect x="710.0" y="630" width="380" height="96" rx="16" fill="#22d3ee14" stroke="#22d3ee" stroke-opacity="0.85" stroke-width="1.6"/>
   <text x="900" y="673.0" text-anchor="middle" font-size="19" font-weight="700" fill="#f1f5f9" font-family="'JetBrains Mono', Menlo, Consolas, monospace">decide</text>
   <text x="900" y="700.0" text-anchor="middle" font-size="16" fill="#22d3ee">every run, replay too: never refuses</text>
